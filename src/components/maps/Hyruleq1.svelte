@@ -1,0 +1,338 @@
+<script>
+	import { onMount } from 'svelte';
+	import { each } from 'svelte/internal';
+    import tilesheet from '../tilesheet.js';
+    import areamap from '../areamap.js'
+
+    const hyruleQ1MapTilesheet = new tilesheet(
+        '/images/hyrule-q1-halfscale.png',
+        2048, 704, 16, 8
+    );
+
+    const mapState = [
+        { active: false },
+        { active: true },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: true },
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+
+        { active: true },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: true },
+        { active: false },
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: true },
+
+        { active: false },
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: false },
+        { active: false },
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: false },
+
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: false },
+
+        { active: false },
+        { active: true },
+        { active: false },
+        { active: false },
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: false },
+        { active: false },
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: false },
+
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: true },
+        { active: false },
+        { active: true },
+
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: true },
+        { active: true },
+        { active: true },
+        { active: false },
+        { active: false }
+    ];
+
+    const roomStates = ['cleared', 'warp', 'shop', 'potion-shop', 'locked-sword', 'equip', 'quest'];
+    const hyruleQ1Map = new areamap('Hyrule (Q1)', hyruleQ1MapTilesheet, roomStates, mapState);
+
+	export let name;
+
+	onMount(() => {
+    });
+</script>
+
+
+<h2>{name}</h2>
+<p>256x176 rooms.  8x16 tiles.  2048 x 704 px total.</p>
+
+<!-- <img src="/images/hyrule-q1-halfscale.png" alt="" /> -->
+<div class="grid-container">
+	{#each mapState as cell,index (index)}
+            <p class="hyrule-q1" class:active={cell.active}></p>
+    {/each}
+</div>
+
+<style>
+	.active {
+		filter: saturate(120%)
+	}
+
+	.hyrule-q1:not(.active) {
+		/* filter: grayscale(30%) opacity(70%) */
+		filter: opacity(70%) saturate(70%) /* drop-shadow(6px 6px 10px black) */
+	}
+
+	.active:hover {
+		z-index: 10;
+		cursor: pointer;
+
+		filter: drop-shadow(10px 10px 10px rgba(97, 97, 35, 0.801));
+		-webkit-animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+		animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+	}
+
+/* ----------------------------------------------
+ * Generated by Animista on 2021-5-8 23:11:36
+ * Licensed under FreeBSD License.
+ * See http://animista.net/license for more info. 
+ * w: http://animista.net, t: @cssanimista
+ * ---------------------------------------------- */
+
+/**
+ * ----------------------------------------
+ * animation scale-up-center
+ * ----------------------------------------
+ */
+ @-webkit-keyframes scale-up-center {
+  0% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+  100% {
+    -webkit-transform: scale(1.15);
+            transform: scale(1.15);
+  }
+}
+@keyframes scale-up-center {
+  0% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+  }
+  100% {
+    -webkit-transform: scale(1.15);
+            transform: scale(1.15);
+  }
+}
+
+
+	.grid-container {
+		display: grid;
+		grid-template-columns: repeat(16, 6.25%);
+		grid-template-rows: repeat(8, 12.5%);
+		gap: 1px;
+		aspect-ratio: 32/11;
+	}
+
+	.hyrule-q1 {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		background: url(/images/hyrule-q1-halfscale.png);
+
+		background-size: 1600% 800%;
+	}
+
+	/*  Target row cells  */
+	.hyrule-q1:nth-child(-n+16) {
+		background-position-y: 0;
+	}
+
+	.hyrule-q1:nth-child(n+17):nth-child(-n+32) {
+		background-position-y: calc(1 * 100% / 7);
+	}
+
+	.hyrule-q1:nth-child(n+33):nth-child(-n+48) {
+		background-position-y: calc(2 * 100% / 7);
+	}
+
+	.hyrule-q1:nth-child(n+49):nth-child(-n+64) {
+		background-position-y: calc(3 * 100% / 7);
+	}
+
+	.hyrule-q1:nth-child(n+65):nth-child(-n+80) {
+		background-position-y: calc(4 * 100% / 7);
+	}
+
+	.hyrule-q1:nth-child(n+81):nth-child(-n+96) {
+		background-position-y: calc(5 * 100% / 7);
+	}
+
+	.hyrule-q1:nth-child(n+97):nth-child(-n+112) {
+		background-position-y: calc(6 * 100% / 7);
+	}
+
+	.hyrule-q1:nth-child(n+113):nth-child(-n+128) {
+		background-position-y: calc(7 * 100% / 7);
+	}
+
+
+	/*  Target column cells  */
+	.hyrule-q1:nth-child(16n-15) {
+		background-position-x: 0;
+	}
+
+	.hyrule-q1:nth-child(16n-14) {
+		background-position-x: calc(1 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-13) {
+		background-position-x: calc(2 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-12) {
+		background-position-x: calc(3 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-11) {
+		background-position-x: calc(4 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-10) {
+		background-position-x: calc(5 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-9) {
+		background-position-x: calc(6 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-8) {
+		background-position-x: calc(7 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-7) {
+		background-position-x: calc(8 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-6) {
+		background-position-x: calc(9 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-5) {
+		background-position-x: calc(10 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-4) {
+		background-position-x: calc(11 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-3) {
+		background-position-x: calc(12 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-2) {
+		background-position-x: calc(13 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n-1) {
+		background-position-x: calc(14 * 100% / 15);
+	}
+
+	.hyrule-q1:nth-child(16n) {
+		background-position-x: calc(15 * 100% / 15);
+	}
+</style>
