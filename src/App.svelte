@@ -43,16 +43,30 @@
 		<svelte:component this={curLevel.component} name={curLevel.name} />
 	</section>
 	<section style="flex: 0 0; margin-top: 1rem;">
-		<div style="display: flex; justify-content: space-between; align-content: space-around;">
+		<div class="map-card-grid">
 			{#each areaMaps as map,index (index)}
-				<div class="map" on:click={() => { curLevel = map; } }>{ map.name }</div>
+				<div class="map-card" on:click={() => { curLevel = map; } }>{ map.name }</div>
 		 	 {/each}
 		</div>
 	</section>
 </main>
 
 <style>
-	.map {
-		flex: 1 0 auto; margin: 1rem; width: 3rem; border: 1px solid red;
+	.map-card-grid {
+		display: grid;
+		grid-gap: 2px;
+		grid-template-columns: repeat(auto-fill, 10rem);
+
+		font-family: 'Baloo 2', cursive;
+		font-weight: 600;
+	}
+
+	.map-card {
+		background-color: #ddd;
+		height: 5rem;
+		border-radius: 1rem;
+		cursor: pointer;
+		padding: 1rem;
+		text-align: center;
 	}
 </style>
