@@ -4,9 +4,8 @@
 	import Level1 from './components/maps/Level1.svelte';
 	import Level2 from './components/maps/Level2.svelte';
 	import Kraids from './components/maps/Kraids.svelte';
-
-	let curLevel = { name: 'Hyrule (Q1)', component: Hyruleq1};
-
+	import '@fortawesome/fontawesome-free/css/all.css'
+	
 	const areaMaps = [
 		{ name: 'Hyrule (Q1)', component: Hyruleq1},
 		{ name: 'Level 1 (Q1)', component: Level1},
@@ -23,24 +22,56 @@
 		{ name: 'Kraid\'s Lair', component: Kraids},
 		{ name: 'Ridley\'s Hideout', component: Hyruleq1}
 	];
+	
+	let curLevel = areaMaps.filter(a => a.name === 'Hyrule (Q1)')[0];
+	
+	const toolbars = [
+		{ name: 'dungeon', actions: ['cleared', 'warp', 'equip', 'quest'] },
+		{ name: 'overworld', actions: ['cleared', 'warp', 'shop', 'potion-shop', 'locked-sword', 'equip', 'quest'] }
+	];
+
+	let curToolbars = toolbars;//.filter(tb => tb.name === 'overworld');
+	let curLCAction = 'cleared';
+	let curRCAction = 'warp';
+
+    //  Dynamic style vars
+    let styles = {
+      'shadow-color': 'rgb(128, 128, 128)'
+    };
+
+    $: cssVarStyles = Object.entries(styles)
+		.map(([key, value]) => `--${key}:${value}`)
+		.join(';');
 
 	onMount(() => {
     });
 </script>
 
-<!-- <svelte:window on:resize="{handleResize}"/> -->
+<svelte:window on:contextmenu="{(e) => e.preventDefault()}"/>
+<svelte:head>
+	<link rel="prefetch" href="/images/hyrule-q1-halfscale.png">
+	<link rel="prefetch" href="/images/dungeons-halfscale.png">
+	<link rel="prefetch" href="/images/zebes-quarterscale.png">
+</svelte:head>
 
-<main style="margin: auto; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; align-content: space-around;">
-	<section style="flex: 0 0; background-color: cyan;">
-		<div style=" display: flex; flex-direction: column; justify-content: space-between; align-content: space-around;">
-			<div style="flex: 1 0 auto;  height: 30px; background-color: olive;">tilesheet</div>
-			<div style="flex: 1 0 auto;  height: 30px; background-color: olive;">tilesheet</div>
-			<div style="flex: 1 0 auto;  height: 30px; background-color: olive;">tilesheet</div>
-			<div style="flex: 1 0 auto;  height: 30px; background-color: olive;">tilesheet</div>
+<main style="{cssVarStyles}">
+	<section style="flex: 0 0;">
+		<div class="toolbars">
+			{#each curToolbars as tb,index (index)}
+				<div class="toolbar">
+					{#each tb.actions as action,index (index)}
+						<div class="action" class:lcselected={ curLCAction === action }
+							class:rcselected={ curRCAction === action }
+							on:click={() => { curLCAction = action; }}
+							on:contextmenu={(e) => { curRCAction = action }}
+						>{ action }</div>
+					{/each}
+				</div>
+		 	 {/each}
 		</div>
 	</section>
 	<section style="flex: 0 0;">
-		<svelte:component this={curLevel.component} name={curLevel.name} />
+		<svelte:component this={curLevel.component} name={curLevel.name} bind:action={curLCAction} />
 	</section>
 	<section style="flex: 0 0; margin-top: 1rem;">
 		<div class="map-card-grid">
@@ -52,6 +83,60 @@
 </main>
 
 <style>
+	main {
+		margin: auto;
+		width: 100%;
+		height: 100vh;
+		
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-content: space-around;
+	}
+
+	.toolbars {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-content: space-around;
+	}
+
+	.toolbar {
+		flex: 1 0 auto;
+
+		display: flex;
+		align-content: center;
+		align-items: center;
+
+		margin: 0.2rem;
+	}
+
+	.toolbar .action {
+		margin: 0.1rem;
+		background-color: beige;
+		padding: 0.8rem;
+		width: 3.0rem;
+		height: 3.0rem;
+		border-radius: 0.4rem;
+	}
+
+	.action:hover {
+		z-index: 10;
+		cursor: pointer;
+
+		filter: drop-shadow(10px 10px 10px var(--shadow-color));
+		-webkit-animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+		animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+	}
+
+	.action.lcselected {
+		border: 1px dotted red;
+	}
+
+	.action.rcselected {
+		border: 1px dotted blue;
+	}
+
 	.map-card-grid {
 		display: grid;
 		grid-gap: 2px;

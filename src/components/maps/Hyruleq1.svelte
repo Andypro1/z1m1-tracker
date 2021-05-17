@@ -1,8 +1,9 @@
 <script>
 	import { onMount } from 'svelte';
 	import { each } from 'svelte/internal';
-    import tilesheet from '../tilesheet.js';
-    import areamap from '../areamap.js'
+  import tilesheet from '../tilesheet.js';
+  import areamap from '../areamap.js'
+  import Overlay from '../Overlay.svelte';
 
     const mapTilesheet = new tilesheet(
         '/images/hyrule-q1-halfscale.png',
@@ -166,9 +167,17 @@
 		.join(';');
 
 	export let name;
+  export let action = '';
 
 	onMount(() => {
   });
+
+  const markRoom = (e, cell, index) => {
+    if(cell.active) {
+      mapState[index].marked = true;
+      mapState[index].action = action;
+    }
+  };
 </script>
 
 <div style="{cssVarStyles}">
@@ -177,7 +186,10 @@
 
   <div class="map-grid">
     {#each mapState as cell,index (mapTilesheet.sectionStartCell() + index)}
-        <p class="room" class:active={cell.active} class:oob={cell.outofbounds}></p>
+        <div class="room" class:active={cell.active} class:oob={cell.outofbounds}
+          on:click={(e) => markRoom(e, cell, index) }>
+          <Overlay action={cell.action} draw={cell.marked} />
+  </div>
     {/each}
   </div>
 </div>
