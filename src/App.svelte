@@ -85,8 +85,8 @@
 <style>
 	main {
 		margin: auto;
-		width: 100%;
-		height: 100vh;
+		width: 96%;
+		height: 96vh;
 		
 		display: flex;
 		flex-direction: column;

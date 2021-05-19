@@ -4,152 +4,22 @@
   import tilesheet from '../tilesheet.js';
   import areamap from '../areamap.js'
   import Overlay from '../Overlay.svelte';
+	import mapStore from '../mapStore.js';
+  import { mapState } from './Hyruleq1.mapdata.js';
 
     const mapTilesheet = new tilesheet(
         '/images/hyrule-q1-halfscale.png',
         2048, 704, 8, 16, 8, 16, 0
     );
 
-    const mapState = [
-        { active: false },
-        { active: true },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: true },
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-
-        { active: true },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: true },
-        { active: false },
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: true },
-
-        { active: false },
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: false },
-        { active: false },
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: false },
-
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: false },
-
-        { active: false },
-        { active: true },
-        { active: false },
-        { active: false },
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: false },
-        { active: false },
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: false },
-
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: true },
-        { active: false },
-        { active: true },
-
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: true },
-        { active: true },
-        { active: true },
-        { active: false },
-        { active: false }
-    ];
+    //  Initialize this map with the current data store
+    //  Um, dynamic mapState data seems to be persisted across component loads/unloads without the following!?!?:
+    
+    // let _store = mapStore;
+    // _store.init(mapState);
 
     const roomStates = ['cleared', 'warp', 'shop', 'potion-shop', 'locked-sword', 'equip', 'quest'];
-    const hyruleQ1Map = new areamap('Hyrule (Q1)', mapTilesheet, roomStates, mapState);
+    // const hyruleQ1Map = new areamap('Hyrule (Q1)', mapTilesheet, roomStates, mapState);
 
     //  Dynamic style vars
     let styles = {
