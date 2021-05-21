@@ -27,7 +27,7 @@
 	
 	const toolbars = [
 		{ name: 'dungeon', actions: ['cleared', 'warp', 'equip', 'quest'] },
-		{ name: 'overworld', actions: ['cleared', 'warp', 'shop', 'potion-shop', 'locked-sword', 'equip', 'quest'] }
+		{ name: 'overworld', actions: ['cleared', 'warp', 'shop', 'potionShop', 'lockedSword', 'equip', 'quest'] }
 	];
 
 	let curToolbars = toolbars;//.filter(tb => tb.name === 'overworld');

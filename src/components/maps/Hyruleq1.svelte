@@ -18,7 +18,7 @@
     // let _store = mapStore;
     // _store.init(mapState);
 
-    const roomStates = ['cleared', 'warp', 'shop', 'potion-shop', 'locked-sword', 'equip', 'quest'];
+    //const roomStates = ['cleared', 'warp', 'shop', 'potion-shop', 'locked-sword', 'equip', 'quest'];
     // const hyruleQ1Map = new areamap('Hyrule (Q1)', mapTilesheet, roomStates, mapState);
 
     //  Dynamic style vars
@@ -37,7 +37,7 @@
 		.join(';');
 
 	export let name;
-  export let action = '';
+  	export let action = '';
 
 	onMount(() => {
   });
