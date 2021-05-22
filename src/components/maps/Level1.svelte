@@ -1,55 +1,30 @@
 <script>
 	import { onMount } from 'svelte';
-	import { each } from 'svelte/internal';
-    import tilesheet from '../tilesheet.js';
-    import areamap from '../areamap.js'
+	//import { each } from 'svelte/internal';
+	import tilesheet from '../tilesheet.js';
+	//import areamap from '../areamap.js'
+	import Overlay from '../Overlay.svelte';
+	//import mapStore from '../mapStore.js';
+	import { mapState } from './Level1q1.mapdata.js';
+
+  //  Props
+	export let name;
+	export let action = '';
+	export let action2 = '';
+
+  //  Assign every dungeon room as active
+  mapState.forEach(r => r.active = true);
 
     const mapTilesheet = new tilesheet(
         '/images/dungeons-halfscale.png',
         2048, 1408, 16, 16, 6, 6, 33
     );
 
-    const mapState = [
-        { outofbounds: true },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: true },
-        { outofbounds: true },
-        { outofbounds: true },
-        { outofbounds: true },
-        { outofbounds: true },
-        { outofbounds: false },
-        { outofbounds: true },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: true },
-        { outofbounds: true },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: true },
-        { outofbounds: true },
-        { outofbounds: true },
-        { outofbounds: true },
-        { outofbounds: false },
-        { outofbounds: true },
-        { outofbounds: true },
-        { outofbounds: true },
-        { outofbounds: true },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: true },
-        { outofbounds: true }
-    ];
+    //  Initialize this map with the current data store
+    //  Um, dynamic mapState data seems to be persisted across component loads/unloads without the following!?!?:
 
-  const roomStates = ['cleared', 'warp', 'equip', 'quest'];
-  const levelQ1Map = new areamap('Level 1', mapTilesheet, roomStates, mapState);
+  //const roomStates = ['cleared', 'warp', 'equip', 'quest'];
+  //const levelQ1Map = new areamap('Level 1', mapTilesheet, roomStates, mapState);
 
     //  Dynamic style vars
     let styles = {
@@ -66,10 +41,14 @@
 		.map(([key, value]) => `--${key}:${value}`)
 		.join(';');
 
-	export let name;
+	onMount(() => { });
 
-	onMount(() => {
-    });
+  const markRoom = (e, cell, index, action) => {
+    if(cell.active) {
+      mapState[index].marked = true;
+      mapState[index].action = action;
+    }
+  };
 </script>
 
 <div style="{cssVarStyles}">
@@ -78,63 +57,44 @@
 
   <div class="map-grid">
     {#each mapState as cell,index (mapTilesheet.sectionStartCell() + index)}
-      <p class="active room" class:oob={cell.outofbounds}></p>
+        <div class="room" class:active={cell.active} class:oob={cell.outofbounds}
+          on:click={(e) => markRoom(e, cell, index, action) }
+		  on:contextmenu={(e) => markRoom(e, cell, index, action2) }>
+          <Overlay action={cell.action} draw={cell.marked} />
+  		</div>
     {/each}
   </div>
 </div>
 
-<style>
+<style type="scss">
+  //TODO: Any way to dynamically assign from css var()s?  emotion.js?
+  $maprows: 16;
+  $mapcols: 16;
+	$levelcols: 6;
+	$levelrows: 6;
+  $rowoffset: 2;
+  $coloffset: 1;
+
+	@mixin row-position {
+		@for $i from 0 through $levelrows {
+			&:nth-child(n+#{($i) * $levelcols + 1}):nth-child(-n+#{($i+1) * $levelcols}) {
+				background-position-y: calc(#{$i + $rowoffset} * 100% / #{$maprows - 1});
+			}
+		}
+	}
+
+	@mixin col-position {
+		@for $i from $levelcols through 1 {
+			&:nth-child(#{$levelcols}n-#{$i - 1}) {
+				background-position-x: calc(#{$levelcols + $coloffset - $i} * 100% / #{$mapcols - 1});
+			}
+		}
+	}
+
   .room {
     background-image: url('/images/dungeons-halfscale.png');
+
+		@include row-position;
+		@include col-position;
   }
-
-  /*  Rows  */
-	.room:nth-child(-n+6) {
-		background-position-y: calc(2 * 100% / (var(--map-cols) - 1));
-	}
-
-  .room:nth-child(n+7):nth-child(-n+12) {
-		background-position-y: calc(3 * 100% / (var(--map-cols) - 1));
-	}
-
-  .room:nth-child(n+13):nth-child(-n+18) {
-		background-position-y: calc(4 * 100% / (var(--map-cols) - 1));
-	}
-
-  .room:nth-child(n+19):nth-child(-n+24) {
-		background-position-y: calc(5 * 100% / (var(--map-cols) - 1));
-	}
-
-  .room:nth-child(n+25):nth-child(-n+30) {
-		background-position-y: calc(6 * 100% / (var(--map-cols) - 1));
-	}
-
-  .room:nth-child(n+31):nth-child(-n+36) {
-		background-position-y: calc(7 * 100% / (var(--map-cols) - 1));
-	}
-
-  /*  Columns  */
-	.room:nth-child(6n-5) {
-		background-position-x: calc(1 * 100% / (var(--map-rows) - 1));
-	}
-
-	.room:nth-child(6n-4) {
-		background-position-x: calc(2 * 100% / (var(--map-rows) - 1));
-	}
-
-  .room:nth-child(6n-3) {
-		background-position-x: calc(3 * 100% / (var(--map-rows) - 1));
-	}
-
-  .room:nth-child(6n-2) {
-		background-position-x: calc(4 * 100% / (var(--map-rows) - 1));
-	}
-
-  .room:nth-child(6n-1) {
-		background-position-x: calc(5 * 100% / (var(--map-rows) - 1));
-	}
-
-  .room:nth-child(6n) {
-		background-position-x: calc(6 * 100% / (var(--map-rows) - 1));
-	}
 </style>

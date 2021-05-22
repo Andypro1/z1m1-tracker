@@ -1,13 +1,18 @@
 <script>
 	import { onMount } from 'svelte';
-	import { each } from 'svelte/internal';
-  import tilesheet from '../tilesheet.js';
-  import areamap from '../areamap.js'
-  import Overlay from '../Overlay.svelte';
-	import mapStore from '../mapStore.js';
-  import { mapState } from './Hyruleq1.mapdata.js';
+	//import { each } from 'svelte/internal';
+	import tilesheet from '../tilesheet.js';
+	//import areamap from '../areamap.js'
+	import Overlay from '../Overlay.svelte';
+	//import mapStore from '../mapStore.js';
+	import { mapState } from './Hyruleq1.mapdata.js';
 
-    const mapTilesheet = new tilesheet(
+	//  Props
+	export let name;
+	export let action = '';
+	export let action2 = '';
+
+	const mapTilesheet = new tilesheet(
         '/images/hyrule-q1-halfscale.png',
         2048, 704, 8, 16, 8, 16, 0
     );
@@ -36,13 +41,9 @@
 		.map(([key, value]) => `--${key}:${value}`)
 		.join(';');
 
-	export let name;
-  	export let action = '';
+	onMount(() => {	});
 
-	onMount(() => {
-  });
-
-  const markRoom = (e, cell, index) => {
+  const markRoom = (e, cell, index, action) => {
     if(cell.active) {
       mapState[index].marked = true;
       mapState[index].action = action;
@@ -57,114 +58,43 @@
   <div class="map-grid">
     {#each mapState as cell,index (mapTilesheet.sectionStartCell() + index)}
         <div class="room" class:active={cell.active} class:oob={cell.outofbounds}
-          on:click={(e) => markRoom(e, cell, index) }>
+          on:click={(e) => markRoom(e, cell, index, action) }
+		  on:contextmenu={(e) => markRoom(e, cell, index, action2) }>
           <Overlay action={cell.action} draw={cell.marked} />
-  </div>
+  		</div>
     {/each}
   </div>
 </div>
 
-<style>
+<style type="scss">
+	//TODO: Any way to dynamically assign from css var()s?  emotion.js?
+	$maprows: 8;
+	$mapcols: 16;
+	$levelcols: 16;
+	$levelrows: 8;
+	$rowoffset: 0;
+	$coloffset: 0;
+
+	@mixin row-position {
+		@for $i from 0 through $levelrows {
+			&:nth-child(n+#{($i) * $levelcols + 1}):nth-child(-n+#{($i+1) * $levelcols}) {
+				background-position-y: calc(#{$i + $rowoffset} * 100% / #{$maprows - 1});
+			}
+		}
+	}
+
+	@mixin col-position {
+		@for $i from $levelcols through 1 {
+			&:nth-child(#{$levelcols}n-#{$i - 1}) {
+				background-position-x: calc(#{$levelcols + $coloffset - $i} * 100% / #{$mapcols - 1});
+			}
+		}
+	}
+
   .room {
-    background-image: url(/images/hyrule-q1-halfscale.png);
-  }
-
-	/*  Target row cells  */
-	.room:nth-child(-n+16) {
-		background-position-y: 0;
-	}
-
-	.room:nth-child(n+17):nth-child(-n+32) {
-		background-position-y: calc(1 * 100% / 7);
-	}
-
-	.room:nth-child(n+33):nth-child(-n+48) {
-		background-position-y: calc(2 * 100% / 7);
-	}
-
-	.room:nth-child(n+49):nth-child(-n+64) {
-		background-position-y: calc(3 * 100% / 7);
-	}
-
-	.room:nth-child(n+65):nth-child(-n+80) {
-		background-position-y: calc(4 * 100% / 7);
-	}
-
-	.room:nth-child(n+81):nth-child(-n+96) {
-		background-position-y: calc(5 * 100% / 7);
-	}
-
-	.room:nth-child(n+97):nth-child(-n+112) {
-		background-position-y: calc(6 * 100% / 7);
-	}
-
-	.room:nth-child(n+113):nth-child(-n+128) {
-		background-position-y: calc(7 * 100% / 7);
-	}
-
-
-	/*  Target column cells  */
-	.room:nth-child(16n-15) {
-		background-position-x: 0;
-	}
-
-	.room:nth-child(16n-14) {
-		background-position-x: calc(1 * 100% / 15);
-	}
-
-	.room:nth-child(16n-13) {
-		background-position-x: calc(2 * 100% / 15);
-	}
-
-	.room:nth-child(16n-12) {
-		background-position-x: calc(3 * 100% / 15);
-	}
-
-	.room:nth-child(16n-11) {
-		background-position-x: calc(4 * 100% / 15);
-	}
-
-	.room:nth-child(16n-10) {
-		background-position-x: calc(5 * 100% / 15);
-	}
-
-	.room:nth-child(16n-9) {
-		background-position-x: calc(6 * 100% / 15);
-	}
-
-	.room:nth-child(16n-8) {
-		background-position-x: calc(7 * 100% / 15);
-	}
-
-	.room:nth-child(16n-7) {
-		background-position-x: calc(8 * 100% / 15);
-	}
-
-	.room:nth-child(16n-6) {
-		background-position-x: calc(9 * 100% / 15);
-	}
-
-	.room:nth-child(16n-5) {
-		background-position-x: calc(10 * 100% / 15);
-	}
-
-	.room:nth-child(16n-4) {
-		background-position-x: calc(11 * 100% / 15);
-	}
-
-	.room:nth-child(16n-3) {
-		background-position-x: calc(12 * 100% / 15);
-	}
-
-	.room:nth-child(16n-2) {
-		background-position-x: calc(13 * 100% / 15);
-	}
-
-	.room:nth-child(16n-1) {
-		background-position-x: calc(14 * 100% / 15);
-	}
-
-	.room:nth-child(16n) {
-		background-position-x: calc(15 * 100% / 15);
+		background-image: url(/images/hyrule-q1-halfscale.png);
+		
+		@include row-position;
+		@include col-position;
 	}
 </style>

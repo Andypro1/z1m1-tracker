@@ -3,6 +3,13 @@
 	import Hyruleq1 from './components/maps/Hyruleq1.svelte';
 	import Level1 from './components/maps/Level1.svelte';
 	import Level2 from './components/maps/Level2.svelte';
+	import Level3 from './components/maps/Level3.svelte';
+	import Level4 from './components/maps/Level4.svelte';
+	import Level5 from './components/maps/Level5.svelte';
+	import Level6 from './components/maps/Level6.svelte';
+	import Level7 from './components/maps/Level7.svelte';
+	import Level8 from './components/maps/Level8.svelte';
+	import Level9 from './components/maps/Level9.svelte';
 	import Kraids from './components/maps/Kraids.svelte';
 	import '@fortawesome/fontawesome-free/css/all.css'
 	
@@ -10,13 +17,13 @@
 		{ name: 'Hyrule (Q1)', component: Hyruleq1},
 		{ name: 'Level 1 (Q1)', component: Level1},
 		{ name: 'Level 2 (Q1)', component: Level2},
-		{ name: 'Level 3 (Q1)', component: Hyruleq1},
-		{ name: 'Level 4 (Q1)', component: Hyruleq1},
-		{ name: 'Level 5 (Q1)', component: Hyruleq1},
-		{ name: 'Level 6 (Q1)', component: Hyruleq1},
-		{ name: 'Level 7 (Q1)', component: Hyruleq1},
-		{ name: 'Level 8 (Q1)', component: Hyruleq1},
-		{ name: 'Level 9 (Q1)', component: Hyruleq1},
+		{ name: 'Level 3 (Q1)', component: Level3},
+		{ name: 'Level 4 (Q1)', component: Level4},
+		{ name: 'Level 5 (Q1)', component: Level5},
+		{ name: 'Level 6 (Q1)', component: Level6},
+		{ name: 'Level 7 (Q1)', component: Level7},
+		{ name: 'Level 8 (Q1)', component: Level8},
+		{ name: 'Level 9 (Q1)', component: Level9},
 		{ name: 'Brinstar', component: Hyruleq1},
 		{ name: 'Norfair', component: Hyruleq1},
 		{ name: 'Kraid\'s Lair', component: Kraids},
@@ -71,7 +78,7 @@
 		</div>
 	</section>
 	<section style="flex: 0 0;">
-		<svelte:component this={curLevel.component} name={curLevel.name} bind:action={curLCAction} />
+		<svelte:component this={curLevel.component} name={curLevel.name} bind:action={curLCAction} bind:action2={curRCAction} />
 	</section>
 	<section style="flex: 0 0; margin-top: 1rem;">
 		<div class="map-card-grid">

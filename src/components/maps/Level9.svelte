@@ -5,7 +5,7 @@
 	//import areamap from '../areamap.js'
 	import Overlay from '../Overlay.svelte';
 	//import mapStore from '../mapStore.js';
-	import { mapState } from './Level2q1.mapdata.js';
+	import { mapState } from './Level9q1.mapdata.js';
 
   //  Props
 	export let name;
@@ -17,7 +17,7 @@
 
     const mapTilesheet = new tilesheet(
         '/images/dungeons-halfscale.png',
-        2048, 1408, 16, 16, 4, 8, 12
+        2048, 1408, 16, 16, 8, 8, 136
     );
 
   // const roomStates = ['cleared', 'warp', 'equip', 'quest'];
@@ -27,9 +27,9 @@
     let styles = {
       'map-cols': 16,
       'map-rows': 16,
-      'level-cols': 4,
+      'level-cols': 8,
       'level-rows': 8,
-      'shadow-color': 'rgb(32, 56, 236)',
+      'shadow-color': 'rgb(188, 188, 188)',
       'bg-uri': `url("${mapTilesheet.bguri()}")`,
       'aspect': `${mapTilesheet.pxWidth() / mapTilesheet.pxHeight()}`
     };
@@ -68,10 +68,10 @@
   //TODO: Any way to dynamically assign from css var()s?  emotion.js?
   $maprows: 16;
   $mapcols: 16;
-	$levelcols: 4;
+	$levelcols: 8;
 	$levelrows: 8;
-  $rowoffset: 0;
-  $coloffset: 12;
+  $rowoffset: 8;
+  $coloffset: 8;
 
 	@mixin row-position {
 		@for $i from 0 through $levelrows {
@@ -96,3 +96,69 @@
 		@include col-position;
   }
 </style>
+
+
+<!-- 
+<div style="{cssVarStyles}">
+  <h2>{name}</h2>
+  <p>xxx rooms.  16x16 tiles.  2048 x 1408 px total.</p>
+
+  <div class="map-grid">
+    {#each mapState as cell,index (mapTilesheet.sectionStartCell() + index)}
+      <p class="active room" class:oob={cell.outofbounds}></p>
+    {/each}
+  </div>
+</div>
+
+<style>
+  .room {
+    background-image: url(/images/dungeons-halfscale.png);
+  }
+
+  /*  Rows  */
+	.room:nth-child(-n+3) {
+		background-position-y: 0;
+	}
+
+  .room:nth-child(n+4):nth-child(-n+6) {
+		background-position-y: calc(1 * 100% / (var(--map-cols) - 1));
+	}
+
+  .room:nth-child(n+7):nth-child(-n+9) {
+		background-position-y: calc(2 * 100% / (var(--map-cols) - 1));
+	}
+
+  .room:nth-child(n+10):nth-child(-n+12) {
+		background-position-y: calc(3 * 100% / (var(--map-cols) - 1));
+	}
+
+  .room:nth-child(n+13):nth-child(-n+15) {
+		background-position-y: calc(4 * 100% / (var(--map-cols) - 1));
+	}
+
+  .room:nth-child(n+16):nth-child(-n+18) {
+		background-position-y: calc(5 * 100% / (var(--map-cols) - 1));
+	}
+
+  .room:nth-child(n+19):nth-child(-n+21) {
+		background-position-y: calc(6 * 100% / (var(--map-cols) - 1));
+	}
+
+  .room:nth-child(n+22):nth-child(-n+24) {
+		background-position-y: calc(7 * 100% / (var(--map-cols) - 1));
+	}
+
+
+  /*  Columns  */
+  .room:nth-child(3n-2) {
+		background-position-x: calc(12 * 100% / (var(--map-rows) - 1));
+	}
+
+  .room:nth-child(3n-1) {
+		background-position-x: calc(13 * 100% / (var(--map-rows) - 1));
+	}
+
+  .room:nth-child(3n) {
+		background-position-x: calc(14 * 100% / (var(--map-rows) - 1));
+	}
+</style> -->

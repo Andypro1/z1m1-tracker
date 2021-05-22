@@ -5,7 +5,7 @@
 	//import areamap from '../areamap.js'
 	import Overlay from '../Overlay.svelte';
 	//import mapStore from '../mapStore.js';
-	import { mapState } from './Level2q1.mapdata.js';
+	import { mapState } from './Level4q1.mapdata.js';
 
   //  Props
 	export let name;
@@ -17,7 +17,7 @@
 
     const mapTilesheet = new tilesheet(
         '/images/dungeons-halfscale.png',
-        2048, 1408, 16, 16, 4, 8, 12
+        2048, 1408, 16, 16, 4, 8, 0
     );
 
   // const roomStates = ['cleared', 'warp', 'equip', 'quest'];
@@ -29,7 +29,7 @@
       'map-rows': 16,
       'level-cols': 4,
       'level-rows': 8,
-      'shadow-color': 'rgb(32, 56, 236)',
+      'shadow-color': 'rgb(136, 112, 0)',
       'bg-uri': `url("${mapTilesheet.bguri()}")`,
       'aspect': `${mapTilesheet.pxWidth() / mapTilesheet.pxHeight()}`
     };
@@ -71,7 +71,7 @@
 	$levelcols: 4;
 	$levelrows: 8;
   $rowoffset: 0;
-  $coloffset: 12;
+  $coloffset: 0;
 
 	@mixin row-position {
 		@for $i from 0 through $levelrows {
