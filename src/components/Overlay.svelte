@@ -49,6 +49,11 @@
 		font-weight: 600;
   }
 
+  /*  Override content flipping if we're in a mirrored map  */
+  :global(.mirrored-h .overlay) {
+    transform: scaleX(-1);
+  }
+
   .icon {
     width: calc(100% - 0.5rem);
     height: calc(100% - 0.5rem);
@@ -85,6 +90,13 @@
       display: flex;
         justify-content: center; /* align horizontal */
         align-items: center; /* align vertical */
+  }
+
+  .label b {
+    height: 100%;
+    margin: auto;
+    overflow: hidden;
+    text-align: center;
   }
 
   .label b::first-letter {
@@ -134,10 +146,4 @@
 
     z-index: -1;
   }
-
-  /* .icon.shop img {
-    clip-path: inset(0 60px 0 0);
-    object-fit: cover;
-    margin: auto;
-  } */
 </style>

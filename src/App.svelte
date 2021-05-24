@@ -11,24 +11,32 @@
 	import Level8 from './components/maps/Level8.svelte';
 	import Level9 from './components/maps/Level9.svelte';
 	import Kraids from './components/maps/Kraids.svelte';
-	import '@fortawesome/fontawesome-free/css/all.css'
+	import '@fortawesome/fontawesome-free/css/all.css';
 	
 	const areaMaps = [
 		{ name: 'Hyrule (Q1)', component: Hyruleq1},
-		{ name: 'Level 1 (Q1)', component: Level1},
-		{ name: 'Level 2 (Q1)', component: Level2},
-		{ name: 'Level 3 (Q1)', component: Level3},
-		{ name: 'Level 4 (Q1)', component: Level4},
-		{ name: 'Level 5 (Q1)', component: Level5},
-		{ name: 'Level 6 (Q1)', component: Level6},
-		{ name: 'Level 7 (Q1)', component: Level7},
-		{ name: 'Level 8 (Q1)', component: Level8},
 		{ name: 'Level 9 (Q1)', component: Level9},
+		{ name: 'Shops', component: Level1},
+		{ name: 'Potion shops', component: Level2},
+		{ name: 'Level 1 (Q1)', component: Level1},
+		{ name: 'Level 5 (Q1)', component: Level5},
+		{ name: 'Level 2 (Q1)', component: Level2},
+		{ name: 'Level 6 (Q1)', component: Level6},
+		{ name: 'Level 3 (Q1)', component: Level3},
+		{ name: 'Level 7 (Q1)', component: Level7},
+		{ name: 'Level 4 (Q1)', component: Level4},
+		{ name: 'Level 8 (Q1)', component: Level8},
+		{ name: 'Kraid\'s', component: Kraids},
+		{ name: 'Ridley\'s', component: Hyruleq1},
 		{ name: 'Brinstar', component: Hyruleq1},
-		{ name: 'Norfair', component: Hyruleq1},
-		{ name: 'Kraid\'s Lair', component: Kraids},
-		{ name: 'Ridley\'s Hideout', component: Hyruleq1}
+		{ name: 'Norfair', component: Hyruleq1}
 	];
+
+	$: areaPairs = areaMaps.reduce((a,v,i,o) => {
+			if(i % 2 === 0)
+				a.push(o.slice(i, i+2));
+				return a;
+		}, []);
 	
 	let curLevel = areaMaps.filter(a => a.name === 'Hyrule (Q1)')[0];
 	
@@ -62,7 +70,7 @@
 </svelte:head>
 
 <main style="{cssVarStyles}">
-	<section style="flex: 0 0;">
+	<section class="top-bar">
 		<div class="toolbars">
 			{#each curToolbars as tb,index (index)}
 				<div class="toolbar">
@@ -77,28 +85,39 @@
 		 	 {/each}
 		</div>
 	</section>
-	<section style="flex: 0 0;">
+	<section class="map-section">
 		<svelte:component this={curLevel.component} name={curLevel.name} bind:action={curLCAction} bind:action2={curRCAction} />
 	</section>
-	<section style="flex: 0 0; margin-top: 1rem;">
-		<div class="map-card-grid">
-			{#each areaMaps as map,index (index)}
-				<div class="map-card" on:click={() => { curLevel = map; } }>{ map.name }</div>
-		 	 {/each}
-		</div>
+	<section class="area-cards" style="">
+		{#each areaPairs as map,index (index)}
+			<div class="area-card-column">
+				<div class="area-card" on:click={() => { curLevel = map[0]; } }>{ map[0].name }</div>
+				<div class="area-card" on:click={() => { curLevel = map[1]; } }>{ map[1].name }</div>
+			</div>
+		{/each}
 	</section>
 </main>
 
-<style>
+<style global lang="scss">
 	main {
 		margin: auto;
 		width: 96%;
 		height: 96vh;
-		
+		font-family: 'Baloo 2', cursive;
+		font-weight: 400;
+
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
 		align-content: space-around;
+	}
+
+	.top-bar {
+		flex: 0 0;
+
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-end;
 	}
 
 	.toolbars {
@@ -144,21 +163,31 @@
 		border: 1px dotted blue;
 	}
 
-	.map-card-grid {
-		display: grid;
-		grid-gap: 2px;
-		grid-template-columns: repeat(auto-fill, 10rem);
+	.map-section {
+		flex: 0 0;
+	}
 
-		font-family: 'Baloo 2', cursive;
+	.area-cards {
+		flex: 0 0; margin-top: 1rem;
+
+		display: flex;
+		flex-wrap: wrap;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: auto;
+		align-content: stretch;
+
 		font-weight: 600;
 	}
 
-	.map-card {
+	.area-card-column {
+		flex: 1 0 auto;
+		margin: 2px;
+	}
+
+	.area-card {
 		background-color: #ddd;
-		height: 5rem;
-		border-radius: 1rem;
 		cursor: pointer;
 		padding: 1rem;
-		text-align: center;
 	}
 </style>

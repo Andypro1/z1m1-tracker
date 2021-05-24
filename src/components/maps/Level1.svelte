@@ -12,6 +12,10 @@
 	export let action = '';
 	export let action2 = '';
 
+  //  My state
+  let flipH;
+  let flipV;
+
   //  Assign every dungeon room as active
   mapState.forEach(r => r.active = true);
 
@@ -52,10 +56,21 @@
 </script>
 
 <div style="{cssVarStyles}">
-  <h2>{name}</h2>
-  <p>xxx rooms.  16x16 tiles.  2048 x 1408 px total.</p>
-
-  <div class="map-grid">
+  <div class="map-options">
+    <div class="map-option">
+      <label>
+        <input type="checkbox" bind:checked={flipH} />
+        Flip horizontally
+      </label>
+    </div>
+    <div class="map-option">
+      <label>
+        <input type="checkbox" bind:checked={flipV} />
+        Flip vertically
+      </label>
+    </div>
+  </div>
+  <div class="map-grid" class:mirrored-h={flipH} class:mirrored-v={flipV}>
     {#each mapState as cell,index (mapTilesheet.sectionStartCell() + index)}
         <div class="room" class:active={cell.active} class:oob={cell.outofbounds}
           on:click={(e) => markRoom(e, cell, index, action) }
@@ -75,26 +90,9 @@
   $rowoffset: 2;
   $coloffset: 1;
 
-	@mixin row-position {
-		@for $i from 0 through $levelrows {
-			&:nth-child(n+#{($i) * $levelcols + 1}):nth-child(-n+#{($i+1) * $levelcols}) {
-				background-position-y: calc(#{$i + $rowoffset} * 100% / #{$maprows - 1});
-			}
-		}
-	}
-
-	@mixin col-position {
-		@for $i from $levelcols through 1 {
-			&:nth-child(#{$levelcols}n-#{$i - 1}) {
-				background-position-x: calc(#{$levelcols + $coloffset - $i} * 100% / #{$mapcols - 1});
-			}
-		}
-	}
+  @import "../../styles/map-grid.scss";
 
   .room {
     background-image: url('/images/dungeons-halfscale.png');
-
-		@include row-position;
-		@include col-position;
   }
 </style>

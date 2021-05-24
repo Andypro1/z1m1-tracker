@@ -1,0 +1,46 @@
+	@mixin row-position {
+		@for $i from 0 through $levelrows {
+			&:nth-child(n+#{($i) * $levelcols + 1}):nth-child(-n+#{($i+1) * $levelcols}) {
+				background-position-y: calc(#{$i + $rowoffset} * 100% / #{$maprows - 1});
+			}
+		}
+	}
+
+	@mixin mirrored-row-position {
+		@for $i from 0 through $levelrows {
+			&:nth-child(n+#{($i) * $levelcols + 1}):nth-child(-n+#{($i+1) * $levelcols}) {
+				background-position-y: calc(#{($levelrows - 1) - ($i + $rowoffset)} * 100% / #{$maprows - 1});
+			}
+		}
+	}
+
+	@mixin col-position {
+		@for $i from $levelcols through 1 {
+			&:nth-child(#{$levelcols}n-#{$i - 1}) {
+				background-position-x: calc(#{$levelcols + $coloffset - $i} * 100% / #{$mapcols - 1});
+			}
+		}
+	}
+
+	@mixin mirrored-col-position {
+		@for $i from $levelcols through 1 {
+			&:nth-child(#{$levelcols}n-#{$i - 1}) {
+				background-position-x: calc(#{($levelcols /*+ $rowoffset*/ - 1) - ($levelcols + $coloffset - $i)} * 100% / #{$mapcols - 1});
+			}
+		}
+	}
+
+  .room {
+		@include row-position;
+		@include col-position;
+	}
+
+  .map-grid.mirrored-v .room {
+	@include mirrored-row-position;
+  }
+
+  .map-grid.mirrored-h .room {
+	@include mirrored-col-position;
+
+	transform: scaleX(-1);
+  }
