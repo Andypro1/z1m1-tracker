@@ -19,7 +19,7 @@ html {
     padding: 0;
     font-weight: normal;
 
-    overflow: hidden;
+    /* overflow: hidden; */
   }
 
   ol, ul {
@@ -33,26 +33,53 @@ html {
 
 
   /*  Map rendering general styles  */
-  
+  .overworld .room {
+    background-image: url(/images/hyrule-q1-halfscale.png);
+  }
+
+  .dungeon .room {
+    background-image: url(/images/dungeons-halfscale.png);
+  }
+
+  .zebes .room {
+    background-image: url(/images/zebes-quarterscale.png);
+  }
+
+  .map-grid-container {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .map-grid {
+    width: 100%;
+
 		display: grid;
     grid-template-columns: repeat(var(--level-cols), calc(100% / var(--level-cols)));
 		grid-template-rows: repeat(var(--level-rows), calc(100% / var(--level-rows)));
 		gap: 1px;
 
+    justify-content: center;
+    align-items: center;
+
     padding: 0;
-    max-width: calc(var(--level-cols) * 100px);
-    max-height: calc(var(--level-rows) * 100px / var(--aspect) * var(--map-cols) / var(--map-rows));
-	}
+
+    /*  This prevents map rooms from exceeding ~110px regardless of window size  */
+    max-width: calc(var(--level-cols) * 7rem);
+  }
 
   .map-options {
+    flex: 1 0 auto;
+    
     display: flex;
     flex-direction: column;
+    justify-content: space-around;
     align-items: flex-end;
   }
 
   .map-option {
-    width: 15%;
+    width: 20rem;
     padding: 0.2rem;
     background-color: rgb(214, 214, 214);
     border-radius: 0.5rem;
@@ -65,9 +92,12 @@ html {
   .room {
 		background-size: calc(var(--map-cols) * 100%) calc(var(--map-rows) * 100%);
     
+    /* width: calc(var(--map-room-width) * 1px); */
+    padding-bottom: calc(var(--map-room-height) * 1px);
+
     /*  Aspect ratio hack for full browser support  */
     height: 0;
-    padding-bottom: calc(100% * 1 / var(--aspect) * var(--map-cols) / var(--map-rows));
+    /* padding-bottom: calc(100% * 1 / var(--aspect) * var(--map-cols) / var(--map-rows)); */
 
     position: relative;
 	}
