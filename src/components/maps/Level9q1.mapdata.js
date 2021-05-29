@@ -1,4 +1,14 @@
-export const mapState = [
+const map = {
+    class: 'level9 dungeon',
+    shadowColor: 'rgb(188, 188, 188)',
+    pixelWidth: 2048,
+    pixelHeight: 1408,
+    rows: 16,
+    cols: 16,
+    sectionRows: 8,
+    sectionCols: 8,
+    sectionStartCell: 136,
+    rooms: [
     { outofbounds: true },
     { outofbounds: false },
     { outofbounds: false },
@@ -70,4 +80,6 @@ export const mapState = [
     { outofbounds: true },
     { outofbounds: false },
     { outofbounds: true }
-];
+]};
+
+export default map;

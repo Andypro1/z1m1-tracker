@@ -1,4 +1,4 @@
-	@mixin row-position {
+	@mixin row-position($maprows, $levelrows, $levelcols, $rowoffset) {
 		@for $i from 0 through $levelrows {
 			&:nth-child(n+#{($i) * $levelcols + 1}):nth-child(-n+#{($i+1) * $levelcols}) {
 				background-position-y: calc(#{$i + $rowoffset} * 100% / #{$maprows - 1});
@@ -14,7 +14,7 @@
 		}
 	}
 
-	@mixin col-position {
+	@mixin col-position($mapcols, $levelcols, $coloffset) {
 		@for $i from $levelcols through 1 {
 			&:nth-child(#{$levelcols}n-#{$i - 1}) {
 				background-position-x: calc(#{$levelcols + $coloffset - $i} * 100% / #{$mapcols - 1});
@@ -30,9 +30,174 @@
 		}
 	}
 
-  .room {
-		@include row-position;
-		@include col-position;
+
+	//  Construct room layouts for all 14 maps
+	$maprows: 8;
+	$mapcols: 16;
+	$levelcols: 16;
+	$levelrows: 8;
+	$rowoffset: 0;
+	$coloffset: 0;
+
+	.overworld .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 16;
+	$mapcols: 16;
+	$levelcols: 6;
+	$levelrows: 6;
+	$rowoffset: 2;
+	$coloffset: 1;
+
+	.level1 .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 16;
+	$mapcols: 16;
+	$levelcols: 4;
+	$levelrows: 8;
+	$rowoffset: 0;
+	$coloffset: 12;
+
+	.level2 .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 16;
+	$mapcols: 16;
+	$levelcols: 5;
+	$levelrows: 6;
+	$rowoffset: 2;
+	$coloffset: 9;
+
+	.level3 .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 16;
+	$mapcols: 16;
+	$levelcols: 4;
+	$levelrows: 8;
+	$rowoffset: 0;
+	$coloffset: 0;
+
+	.level4 .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 16;
+	$mapcols: 16;
+	$levelcols: 4;
+	$levelrows: 8;
+	$rowoffset: 0;
+	$coloffset: 4;
+
+	.level5 .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 16;
+	$mapcols: 16;
+	$levelcols: 6;
+	$levelrows: 8;
+	$rowoffset: 0;
+	$coloffset: 8;
+
+	.level6 .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 16;
+	$mapcols: 16;
+	$levelcols: 6;
+	$levelrows: 8;
+	$rowoffset: 8;
+	$coloffset: 0;
+
+	.level7 .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 16;
+	$mapcols: 16;
+	$levelcols: 5;
+	$levelrows: 8;
+	$rowoffset: 8;
+	$coloffset: 3;
+
+	.level8 .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 16;
+	$mapcols: 16;
+	$levelcols: 8;
+	$levelrows: 8;
+	$rowoffset: 8;
+	$coloffset: 8;
+
+	.level9 .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 30;
+	$mapcols: 30;
+	$levelcols: 12;
+	$levelrows: 15;
+	$rowoffset: 15;
+	$coloffset: 0;
+
+	.kraids .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 30;
+	$mapcols: 30;
+	$levelcols: 12;
+	$levelrows: 15;
+	$rowoffset: 15;
+	$coloffset: 0;
+
+	.ridleys .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 30;
+	$mapcols: 30;
+	$levelcols: 12;
+	$levelrows: 15;
+	$rowoffset: 15;
+	$coloffset: 0;
+
+	.brinstar .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
+	}
+
+	$maprows: 30;
+	$mapcols: 30;
+	$levelcols: 12;
+	$levelrows: 15;
+	$rowoffset: 15;
+	$coloffset: 0;
+
+	.norfair .room {
+		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		@include col-position($mapcols, $levelcols, $coloffset);
 	}
 
   .map-grid.mirrored-v .room {

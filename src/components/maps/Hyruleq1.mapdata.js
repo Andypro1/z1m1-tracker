@@ -1,4 +1,14 @@
-export const mapState = [
+const map = {
+    class: 'overworld',
+    shadowColor: 'rgb(97, 97, 35)',
+    pixelWidth: 2048,
+    pixelHeight: 704,
+    rows: 8,
+    cols: 16,
+    sectionRows: 8,
+    sectionCols: 16,
+    sectionStartCell: 0,
+    rooms: [
     { active: false },
     { active: true },
     { active: false },
@@ -134,4 +144,6 @@ export const mapState = [
     { active: true },
     { active: false },
     { active: false }
-];
+]};
+
+export default map;
