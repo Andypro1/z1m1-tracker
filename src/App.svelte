@@ -109,6 +109,7 @@
 <svelte:window on:contextmenu="{(e) => e.preventDefault()}" />
 
 <svelte:head>
+	<!--  This isn't working.  -->
 	<link rel="prefetch" href="/images/hyrule-q1-halfscale.png">
 	<link rel="prefetch" href="/images/dungeons-halfscale.png">
 	<link rel="prefetch" href="/images/zebes-quarterscale.png">

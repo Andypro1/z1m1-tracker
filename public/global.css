@@ -45,6 +45,10 @@ html {
     background-image: url(/images/zebes-quarterscale.png);
   }
 
+  .mirrored-h .room {
+			transform: scaleX(-1);
+  }
+
   .map-grid-container {
     height: 100%;
     display: flex;

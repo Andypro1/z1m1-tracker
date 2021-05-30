@@ -6,10 +6,10 @@
 		}
 	}
 
-	@mixin mirrored-row-position {
+	@mixin mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset) {
 		@for $i from 0 through $levelrows {
 			&:nth-child(n+#{($i) * $levelcols + 1}):nth-child(-n+#{($i+1) * $levelcols}) {
-				background-position-y: calc(#{($levelrows - 1) - ($i + $rowoffset)} * 100% / #{$maprows - 1});
+				background-position-y: calc(#{($levelrows - $i - 1) + $rowoffset} * 100% / #{$maprows - 1});
 			}
 		}
 	}
@@ -22,14 +22,13 @@
 		}
 	}
 
-	@mixin mirrored-col-position {
-		@for $i from $levelcols through 1 {
-			&:nth-child(#{$levelcols}n-#{$i - 1}) {
-				background-position-x: calc(#{($levelcols /*+ $rowoffset*/ - 1) - ($levelcols + $coloffset - $i)} * 100% / #{$mapcols - 1});
+	@mixin mirrored-col-position($mapcols, $levelcols, $coloffset) {
+		@for $i from 1 through $levelcols {
+			&:nth-child(#{$levelcols}n-#{$levelcols - $i}) {
+				background-position-x: calc(#{$levelcols + $coloffset - $i} * 100% / #{$mapcols - 1});
 			}
 		}
 	}
-
 
 	//  Construct room layouts for all 14 maps
 	$maprows: 8;
@@ -39,10 +38,21 @@
 	$rowoffset: 0;
 	$coloffset: 0;
 
-	.overworld .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.overworld {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
+
 
 	$maprows: 16;
 	$mapcols: 16;
@@ -51,9 +61,19 @@
 	$rowoffset: 2;
 	$coloffset: 1;
 
-	.level1 .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.level1 {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 16;
@@ -63,9 +83,19 @@
 	$rowoffset: 0;
 	$coloffset: 12;
 
-	.level2 .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.level2 {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 16;
@@ -75,9 +105,19 @@
 	$rowoffset: 2;
 	$coloffset: 9;
 
-	.level3 .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.level3 {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 16;
@@ -87,9 +127,19 @@
 	$rowoffset: 0;
 	$coloffset: 0;
 
-	.level4 .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.level4 {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 16;
@@ -99,9 +149,19 @@
 	$rowoffset: 0;
 	$coloffset: 4;
 
-	.level5 .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.level5 {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 16;
@@ -111,9 +171,19 @@
 	$rowoffset: 0;
 	$coloffset: 8;
 
-	.level6 .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.level6 {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 16;
@@ -123,9 +193,19 @@
 	$rowoffset: 8;
 	$coloffset: 0;
 
-	.level7 .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.level7 {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 16;
@@ -135,9 +215,19 @@
 	$rowoffset: 8;
 	$coloffset: 3;
 
-	.level8 .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.level8 {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 16;
@@ -147,9 +237,19 @@
 	$rowoffset: 8;
 	$coloffset: 8;
 
-	.level9 .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.level9 {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 30;
@@ -159,21 +259,41 @@
 	$rowoffset: 15;
 	$coloffset: 0;
 
-	.kraids .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.kraids {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 30;
 	$mapcols: 30;
-	$levelcols: 12;
-	$levelrows: 15;
-	$rowoffset: 15;
-	$coloffset: 0;
+	$levelcols: 17;
+	$levelrows: 8;
+	$rowoffset: 22;
+	$coloffset: 13;
 
-	.ridleys .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.ridleys {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 30;
@@ -183,29 +303,39 @@
 	$rowoffset: 1;
 	$coloffset: 0;
 
-	.brinstar .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.brinstar {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
 
 	$maprows: 30;
 	$mapcols: 30;
-	$levelcols: 12;
+	$levelcols: 18;
 	$levelrows: 15;
-	$rowoffset: 15;
-	$coloffset: 0;
+	$rowoffset: 8;
+	$coloffset: 12;
 
-	.norfair .room {
-		@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
-		@include col-position($mapcols, $levelcols, $coloffset);
+	.norfair {
+		.room {
+			@include row-position($maprows, $levelrows, $levelcols, $rowoffset);
+			@include col-position($mapcols, $levelcols, $coloffset);
+		}
+
+		&.mirrored-v .room {
+			@include mirrored-row-position($maprows, $levelrows, $levelcols, $rowoffset);
+		}
+
+		&.mirrored-h .room {
+			@include mirrored-col-position($mapcols, $levelcols, $coloffset);
+		}
 	}
-
-  .map-grid.mirrored-v .room {
-	@include mirrored-row-position;
-  }
-
-  .map-grid.mirrored-h .room {
-	@include mirrored-col-position;
-
-	transform: scaleX(-1);
-  }

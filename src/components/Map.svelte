@@ -14,8 +14,12 @@
     export let flipH = false;
     export let flipV = false;
   
-    //  Assign every dungeon room as active
+    //  Assign every dungeon and zebes room as active
     $: data.class.match(/(?:dungeon)|(?:zebes)/) && data.rooms.forEach(r => r.active = true);
+
+    //  todo: find a way for the child map data attributes to control the parent component checkbox
+    $: data.isHflipped = flipH;
+    $: data.isVflipped = flipV;
 
     //  My state
     let initialLoad = false;
@@ -62,10 +66,23 @@
       .map(([key, value]) => `--${key}:${value}`)
       .join(";");
 
+    //  Refactor in to mapdata object method
     const markRoom = (e, cell, index, action) => {
+      //  Calculate rooms index based on map state and where we clicked
+      let realIndex = index;
+
+      if(data.isVflipped) {
+        realIndex = (Math.abs(data.sectionRows * data.sectionCols - realIndex - 1));
+
+        if(!data.isHflipped)
+          realIndex = ((data.sectionCols * Math.floor(realIndex / data.sectionCols)) + data.sectionCols - 1) - (realIndex % data.sectionCols);
+      }
+      else if(data.isHflipped)
+        realIndex = ((data.sectionCols * Math.floor(realIndex / data.sectionCols)) + data.sectionCols - 1) - (realIndex % data.sectionCols);
+
       if (cell.active) {
-        data.rooms[index].marked = true;
-        data.rooms[index].action = action;
+        data.rooms[realIndex].marked = true;
+        data.rooms[realIndex].action = action;
       }
     };
 
@@ -107,7 +124,7 @@
   
   <div class="map-grid-container" style={cssVarStyles}>
     <div class="map-grid {data.class}" class:mirrored-h={flipH} class:mirrored-v={flipV}>
-      {#each data.rooms as cell, index (mapTilesheet.sectionStartCell() + index)}
+      {#each data.getRooms() as cell, index (mapTilesheet.sectionStartCell() + index)}
         <div
           class="room"
           class:active={cell.active}
