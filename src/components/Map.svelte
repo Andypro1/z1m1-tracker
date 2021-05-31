@@ -54,8 +54,8 @@
       data.sectionStartCell
     );
   
-    $: rMap = (mapTilesheet.pxWidth() + (mapTilesheet.sectionCols() - 1)) /
-           (mapTilesheet.pxHeight() + (mapTilesheet.sectionRows() - 1));
+    $: rMap = (mapTilesheet.pxWidth() * (mapTilesheet.sectionCols() / mapTilesheet.tileCols()) + (mapTilesheet.sectionCols() - 1)) /
+           (mapTilesheet.pxHeight() * (mapTilesheet.sectionRows() / mapTilesheet.tileRows()) + (mapTilesheet.sectionRows() - 1));
 
     onMount(() => {
         sizeMapGrid();
@@ -87,6 +87,7 @@
     };
 
     const sizeMapGrid = () => {
+      console.log(`rMap: ${rMap}`);
       const [wWin, hWin, hTopBar] = [window.innerWidth, window.innerHeight, document.querySelector('.top-bar').clientHeight];
       const ASSUMED_CARD_PAIR_SIZE = 240;
   

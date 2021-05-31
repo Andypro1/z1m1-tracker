@@ -28,14 +28,12 @@ const map = {
             .map((r, i) => {
                 const newSpot = (Math.abs(map.sectionRows * map.sectionCols - i - 1));
                     //  30 --> 0.  0 --> 30.  35 --> 5.  26 --> 8.
-                console.log(newSpot);
-                return map.rooms[newSpot];
+                                return map.rooms[newSpot];
             });
 
             return tmp.map((r, i, a) => {
                 const newSpot = ((map.sectionCols * Math.floor(i / map.sectionCols)) + map.sectionCols - 1) - (i % map.sectionCols);
-                console.log(newSpot);
-                return a[newSpot];
+                                return a[newSpot];
             });
         }
 
@@ -44,8 +42,7 @@ const map = {
             .map((r, i) => {
                 const newSpot = (Math.abs(map.sectionRows * map.sectionCols - i - 1));
                     //  30 --> 0.  0 --> 30.  35 --> 5.  26 --> 8.
-                console.log(newSpot);
-                return map.rooms[newSpot];
+                                return map.rooms[newSpot];
             });
         }
 

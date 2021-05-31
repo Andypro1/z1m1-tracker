@@ -57,7 +57,7 @@ html {
   }
 
   .map-grid {
-    width: 100%;
+    /* width: 100%; */
 
 		display: grid;
     grid-template-columns: repeat(var(--level-cols), calc(100% / var(--level-cols)));
@@ -70,7 +70,7 @@ html {
     padding: 0;
 
     /*  This prevents map rooms from exceeding ~110px regardless of window size  */
-    max-width: calc(var(--level-cols) * 7rem);
+    /* max-width: calc(var(--level-cols) * 7rem); */
   }
 
   .map-options {
@@ -96,7 +96,7 @@ html {
   .room {
 		background-size: calc(var(--map-cols) * 100%) calc(var(--map-rows) * 100%);
     
-    /* width: calc(var(--map-room-width) * 1px); */
+    width: calc(var(--map-room-width) * 1px);
     padding-bottom: calc(var(--map-room-height) * 1px);
 
     /*  Aspect ratio hack for full browser support  */
