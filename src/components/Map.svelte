@@ -8,18 +8,13 @@
 
     //  Props
     export let data = {};
-    export let action = "";
-    export let action2 = "";
+    export let actions = [];
     export let layout;
-    export let flipH = false;
-    export let flipV = false;
+    export let mapUpdated;
+    export let globalOptions = {};
   
     //  Assign every dungeon and zebes room as active
     $: data.class.match(/(?:dungeon)|(?:zebes)/) && data.rooms.forEach(r => r.active = true);
-
-    //  todo: find a way for the child map data attributes to control the parent component checkbox
-    $: data.isHflipped = flipH;
-    $: data.isVflipped = flipV;
 
     //  My state
     let initialLoad = false;
@@ -84,10 +79,11 @@
         data.rooms[realIndex].marked = true;
         data.rooms[realIndex].action = action;
       }
+
+      mapUpdated();
     };
 
     const sizeMapGrid = () => {
-      console.log(`rMap: ${rMap}`);
       const [wWin, hWin, hTopBar] = [window.innerWidth, window.innerHeight, document.querySelector('.top-bar').clientHeight];
       const ASSUMED_CARD_PAIR_SIZE = 240;
   
@@ -124,14 +120,19 @@
   <svelte:window on:resize={sizeMapGrid} />
   
   <div class="map-grid-container" style={cssVarStyles}>
-    <div class="map-grid {data.class}" class:mirrored-h={flipH} class:mirrored-v={flipV}>
+    <div class="map-grid {data.class}" class:mirrored-h={data.isHflipped} class:mirrored-v={data.isVflipped}>
       {#each data.getRooms() as cell, index (mapTilesheet.sectionStartCell() + index)}
         <div
           class="room"
           class:active={cell.active}
           class:oob={cell.outofbounds}
-          on:click={(e) => markRoom(e, cell, index, action)}
-          on:contextmenu={(e) => markRoom(e, cell, index, action2)}
+          on:mousedown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if((e.button >= 0) && actions[e.button])
+              markRoom(e, cell, index, actions[e.button]);
+          }}
         >
           <Overlay action={cell.action} draw={cell.marked} />
         </div>
