@@ -34,7 +34,11 @@ const storage = () => {
             return;
         }
 
-        return await decompressFromUTF16(localStorage[`${storageKeyPrefix}${sessionTimestamp}`]);
+        return JSON.parse(
+            await decompressFromUTF16(
+                localStorage[`${storageKeyPrefix}${sessionTimestamp}`]
+            )
+        );
     };
 
     const deleteData = (sessionTimestamp) => {

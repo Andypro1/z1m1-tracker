@@ -92,4 +92,4 @@ const map = {
     { outofbounds: true }
 ]};
 
-export default map;
+export default { data: map };

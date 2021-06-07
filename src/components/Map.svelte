@@ -16,6 +16,7 @@
     //  My state
     let initialLoad = false;
     let rMap;  //  Map display ratio for calculating layout
+
     $: styles = {
         "map-cols": data.cols,
         "map-rows": data.rows,
@@ -60,6 +61,42 @@
     $: cssVarStyles = Object.entries(styles)
       .map(([key, value]) => `--${key}:${value}`)
       .join(";");
+
+    const getRooms = () => {
+        if(!data.isHflipped && !data.isVflipped)
+            return data.rooms;
+
+        if(data.isHflipped && !data.isVflipped) {
+            return data.rooms.map((r, i) => {
+                const newSpot = ((data.sectionCols * Math.floor(i / data.sectionCols)) + data.sectionCols - 1) - (i % data.sectionCols);
+
+                return data.rooms[newSpot];
+            });
+        }
+
+        if(data.isVflipped && !data.isHflipped) {
+            const tmp = data.rooms
+            .map((r, i) => {
+                const newSpot = (Math.abs(data.sectionRows * data.sectionCols - i - 1));
+                return data.rooms[newSpot];
+            });
+
+            return tmp.map((r, i, a) => {
+                const newSpot = ((data.sectionCols * Math.floor(i / data.sectionCols)) + data.sectionCols - 1) - (i % data.sectionCols);
+                return a[newSpot];
+            });
+        }
+
+        if(data.isVflipped && data.isHflipped) {
+            return data.rooms
+            .map((r, i) => {
+                const newSpot = (Math.abs(data.sectionRows * data.sectionCols - i - 1));
+                return data.rooms[newSpot];
+            });
+        }
+
+        return data.rooms;
+    };
 
     //  Refactor in to mapdata object method
     const markRoom = (e, cell, index, action) => {
@@ -121,7 +158,8 @@
   
   <div class="map-grid-container" style={cssVarStyles}>
     <div class="map-grid {data.class}" class:mirrored-h={data.isHflipped} class:mirrored-v={data.isVflipped}>
-      {#each data.getRooms() as cell, index (mapTilesheet.sectionStartCell() + index)}
+      <!-- {#each getRooms() as cell, index (mapTilesheet.sectionStartCell() + index)} -->
+      {#each getRooms() as cell, index (cell)}
         <div
           class="room"
           class:active={cell.active}

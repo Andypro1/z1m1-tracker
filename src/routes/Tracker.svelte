@@ -1,15 +1,17 @@
 <script>
 	import { onMount } from 'svelte';
 	import '@fortawesome/fontawesome-free/css/all.css';
+	import { tracker, areaPairs, mapUpdated, loadState, toolbars } from '../services/tracker.js';
 	import Map from "../components/Map.svelte";
-	import { optNumMouseButtons, sessionTimestamp, areaMaps, areaPairs,
-		toolbars, mapUpdated, curMap } from '../services/tracker.js';
 
 	//  Route props
 	export let coopGuid = '';
 
+	//  Reactive definitons for child components
+	// $: curMapArea = curMap.area;
+
 	const doLayout = (m) => {
-		curMap.layout = m.name;
+		// curMap.layout = m.name;
 
 		styles['map-room-width'] = m.width;
 		styles['map-room-height'] = m.height;
@@ -25,8 +27,17 @@
 		.map(([key, value]) => `--${key}:${value}`)
 		.join(';');
 
-	onMount(() => {
-		console.log(`Mounted: ${curMap.area.class}`);
+	onMount(async () => {
+		//  Load the tracking session if passed in
+		if(history && history.state && history.state.track) {
+			const state = await loadState(history.state.track);
+
+			tracker.sessionTimestamp = state.sessionTimestamp;
+			tracker.curAreaMapIndex = state.curAreaMapIndex;
+			tracker.layout = state.layout;
+			tracker.actions = [...state.actions];
+			tracker.areaMaps = [...state.areaMaps];
+		}
     });
 
 	$: tbActionClass = (action) => {
@@ -38,7 +49,8 @@
 			4: '>C'
 		};
 
-		const i = curMap.actions.findIndex(e => e === action);
+		// const i = curMap.actions.findIndex(e => e === action);
+		const i = tracker.actions.findIndex(e => e === action);
 
 		return {
 			name: i >= 0 ? `button${i}` : '',
@@ -47,12 +59,13 @@
 	};
 
 	const selectMap = (name) => {
-		curMap.area = areaMaps.filter(a => a.name === name)[0].map;
+		// curMap.area = areaMaps.filter(a => a.name === name)[0].map;
+		tracker.curAreaMapIndex = tracker.areaMaps.findIndex(e => e.name === name);
 	};
 
-	if(!curMap.area) {
-		selectMap(areaMaps[0].name);
-	}
+	// if(!curMap.area) {
+	// 	selectMap(areaMaps[0].name);
+	// }
 </script>
 
 <svelte:window on:contextmenu="{(e) => e.preventDefault()}" />
@@ -68,7 +81,7 @@
 <main style="{cssVarStyles}">
 	<section class="top-bar">
 		<div class="toolbars">
-			{#each curMap.toolbars as tb,index (index)}
+			{#each toolbars as tb, index (index)}
 				<div class="toolbar">
 					{#each tb.actions as action}
 						<div class="action {tbActionClass(action).name}"
@@ -76,9 +89,12 @@
 								e.preventDefault();
 								e.stopPropagation();
 
-								if(e.button >= 0 && e.button <= optNumMouseButtons) {
-									curMap.actions = curMap.actions.map(a => a === action ? '' : a);
-									curMap.actions[e.button] = action;
+								if(e.button >= 0) {
+									// curMap.actions = curMap.actions.map(a => a === action ? '' : a);
+									// curMap.actions[e.button] = action;
+
+									tracker.actions = tracker.actions.map(a => a === action ? '' : a);
+									tracker.actions[e.button] = action;
 								}
 							}}
 						>{ action }
@@ -103,21 +119,25 @@
 			</div>
 			<div class="map-option">
 			  <label>
-				<input type="checkbox" bind:checked={curMap.area.isHflipped} />
+				<!-- <input type="checkbox" bind:checked={curMap.area.isHflipped} /> -->
+				<input type="checkbox" bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isHflipped} />
 				Flip horizontally
 			  </label>
 			</div>
 			<div class="map-option">
 			  <label>
-				<input type="checkbox" bind:checked={curMap.area.isVflipped} />
+				<!-- <input type="checkbox" bind:checked={curMap.area.isVflipped} /> -->
+				<input type="checkbox" bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isVflipped} />
 				Flip vertically
 			  </label>
 			</div>
 		  </div>
 	</section>
-	<div class:bottom-cards-layout={curMap.layout === 'bottom'} class:side-cards-layout={curMap.layout === 'side'}>
+	<!-- <div class:bottom-cards-layout={curMap.layout === 'bottom'} class:side-cards-layout={curMap.layout === 'side'}> -->
+	<div class:bottom-cards-layout={tracker.layout === 'bottom'} class:side-cards-layout={tracker.layout === 'side'}>
 		<section class="map-section">
-			<Map layout={doLayout} mapUpdated={mapUpdated} data={curMap.area} actions={curMap.actions}/>
+			<!-- <Map layout={doLayout} mapUpdated={mapUpdated} data={curMap.area} actions={curMap.actions}/> -->
+			<Map layout={doLayout} mapUpdated={mapUpdated} data={tracker.areaMaps[tracker.curAreaMapIndex].map} actions={tracker.actions}/>
 		</section>
 		<section class="area-cards">
 			{#each areaPairs as area }

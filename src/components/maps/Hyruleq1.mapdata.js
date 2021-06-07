@@ -186,4 +186,4 @@ const map = {
     { active: false }
 ]};
 
-export default map;
+export default { data: map };

@@ -27,7 +27,8 @@
 				{#each storage.listSaves() as item, index }
 					<tr>
 						<td>
-							Resume tracking
+							<Link to="solo" state={{ track: item.key }}>Resume solo</Link>
+							<Link to="coop/{generateCoopGuid()}" state={{ track: item.key }}>Resume coop</Link>
 							Trash
 						</td>
 						<td>
