@@ -15,7 +15,6 @@ const storage = () => {
                 display: `${r.display.toLocaleDateString()} ${r.display.toLocaleTimeString()}`,
                 label: localStorage[`${labelKeyPrefix}${r.key}`]
             }; });
-        console.table(saves);
 
         return saves;
     };

@@ -2,115 +2,18 @@
 	import { onMount } from 'svelte';
 	import '@fortawesome/fontawesome-free/css/all.css';
 	import Map from "../components/Map.svelte";
-    import storage from '../services/storage.js';
-
-	import Hyruleq1 from "../components/maps/Hyruleq1.mapdata.js";
-	import Level1 from "../components/maps/Level1q1.mapdata.js";
-	import Level2 from "../components/maps/Level2q1.mapdata.js";
-	import Level3 from "../components/maps/Level3q1.mapdata.js";
-	import Level4 from "../components/maps/Level4q1.mapdata.js";
-	import Level5 from "../components/maps/Level5q1.mapdata.js";
-	import Level6 from "../components/maps/Level6q1.mapdata.js";
-	import Level7 from "../components/maps/Level7q1.mapdata.js";
-	import Level8 from "../components/maps/Level8q1.mapdata.js";
-	import Level9 from "../components/maps/Level9q1.mapdata.js";
-	import Brinstar from "../components/maps/Brinstar.mapdata.js";
-	import Norfair from "../components/maps/Norfair.mapdata.js";
-	import Kraids from "../components/maps/Kraids.mapdata.js";
-	import Ridleys from "../components/maps/Ridleys.mapdata.js";
+	import { optNumMouseButtons, sessionTimestamp, areaMaps, areaPairs,
+		toolbars, mapUpdated, curMap } from '../services/tracker.js';
 
 	//  Route props
 	export let coopGuid = '';
 
-	//  Global and session options
-	let optNumMouseButtons = 5;
-	let sessionTimestamp = + new Date();
-
-	const areaMaps = [
-		{ name: 'Hyrule (Q1)', map: Hyruleq1},
-		{ name: 'Level 9 (Q1)', map: Level9},
-		{ name: 'Shops', map: Level1},
-		{ name: 'Potion shops', map: Level2},
-		{ name: 'Level 1 (Q1)', map: Level1},
-		{ name: 'Level 5 (Q1)', map: Level5},
-		{ name: 'Level 2 (Q1)', map: Level2},
-		{ name: 'Level 6 (Q1)', map: Level6},
-		{ name: 'Level 3 (Q1)', map: Level3},
-		{ name: 'Level 7 (Q1)', map: Level7},
-		{ name: 'Level 4 (Q1)', map: Level4},
-		{ name: 'Level 8 (Q1)', map: Level8},
-		{ name: 'Kraid\'s', map: Kraids},
-		{ name: 'Ridley\'s', map: Ridleys},
-		{ name: 'Brinstar', map: Brinstar},
-		{ name: 'Norfair', map: Norfair}
-	];
-
-	const areaPairs = areaMaps.reduce((a,v,i,o) => {
-			if(i % 2 === 0)
-				a.push(o.slice(i, i+2));
-				return a;
-		}, []);
-	
-	let curMap = areaMaps.filter(a => a.name === 'Hyrule (Q1)')[0].map;
-	
-	const toolbars = [
-		{ name: 'dungeon', actions: ['cleared', 'warp', 'equip', 'quest'] },
-		{ name: 'overworld', actions: ['cleared', 'warp', 'shop', 'potionShop', 'lockedSword', 'equip', 'quest'] }
-	];
-
 	const doLayout = (m) => {
-		curMapLayout = m.name;
+		curMap.layout = m.name;
 
 		styles['map-room-width'] = m.width;
 		styles['map-room-height'] = m.height;
 		styles['map-padding'] = m.pad;
-	};
-
-	const mapUpdated = () => {
-		const combinedData = {
-			sessionTimestamp: sessionTimestamp,
-			optNumMouseButtons: optNumMouseButtons,
-			Hyruleq1,
-			Level1,
-			Level2, 
-			Level3, 
-			Level4, 
-			Level5, 
-			Level6, 
-			Level7, 
-			Level8, 
-			Level9, 
-			Brinstar, 
-			Norfair, 
-			Kraids, 
-			Ridleys 
-		};
-
-		storage.saveData(combinedData);
-		
-		console.log(coopGuid);
-	};
-
-	let curToolbars = toolbars;//.filter(tb => tb.name === 'overworld');
-	let curActions = [
-			'cleared',
-			'warp',
-			'equip',
-			'quest',
-			'shop'
-		];//.filter((a, i) => i < optNumMouseButtons);
-
-	let curLCAction = 'cleared';
-	let curRCAction = 'warp';
-	let curMapLayout = 'bottom';
-	let curMapComponent = Hyruleq1;
-
-	$: curMapProps = { 
-		data: curMap,
-		actions: curActions,
-		layout: doLayout,
-		mapUpdated: mapUpdated,
-		globalOptions: { optNumMouseButtons: optNumMouseButtons }
 	};
 
     //  Dynamic style vars
@@ -123,6 +26,7 @@
 		.join(';');
 
 	onMount(() => {
+		console.log(`Mounted: ${curMap.area.class}`);
     });
 
 	$: tbActionClass = (action) => {
@@ -134,7 +38,7 @@
 			4: '>C'
 		};
 
-		const i = curActions.findIndex(e => e === action);
+		const i = curMap.actions.findIndex(e => e === action);
 
 		return {
 			name: i >= 0 ? `button${i}` : '',
@@ -143,17 +47,12 @@
 	};
 
 	const selectMap = (name) => {
-		curMap = areaMaps.filter(a => a.name === name)[0].map;
-		curMapProps = { 
-			data: curMap,
-			actions: curActions,
-			layout: doLayout,
-			globalOptions: { optNumMouseButtons: optNumMouseButtons }
-		};
-		curMapComponent = Map;
+		curMap.area = areaMaps.filter(a => a.name === name)[0].map;
 	};
 
-	selectMap(areaMaps[0].name);
+	if(!curMap.area) {
+		selectMap(areaMaps[0].name);
+	}
 </script>
 
 <svelte:window on:contextmenu="{(e) => e.preventDefault()}" />
@@ -169,17 +68,17 @@
 <main style="{cssVarStyles}">
 	<section class="top-bar">
 		<div class="toolbars">
-			{#each curToolbars as tb,index (index)}
+			{#each curMap.toolbars as tb,index (index)}
 				<div class="toolbar">
 					{#each tb.actions as action}
 						<div class="action {tbActionClass(action).name}"
 							on:mousedown={(e) => {
 								e.preventDefault();
 								e.stopPropagation();
-								
+
 								if(e.button >= 0 && e.button <= optNumMouseButtons) {
-									curActions = curActions.map(a => a === action ? '' : a);
-									curActions[e.button] = action;
+									curMap.actions = curMap.actions.map(a => a === action ? '' : a);
+									curMap.actions[e.button] = action;
 								}
 							}}
 						>{ action }
@@ -191,7 +90,7 @@
 		</div>
 		<div class="map-options">
 			<div class="map-option">
-			  <label>
+			  <!-- <label>
 				<select bind:value={optNumMouseButtons}>
 					<option value="1">1</option>
 					<option value="2">2</option>
@@ -200,25 +99,25 @@
 					<option value="5">5</option>
 				</select>
 				# of mouse buttons
-			  </label>
+			  </label> -->
 			</div>
 			<div class="map-option">
 			  <label>
-				<input type="checkbox" bind:checked={curMapProps.data.isHflipped} />
+				<input type="checkbox" bind:checked={curMap.area.isHflipped} />
 				Flip horizontally
 			  </label>
 			</div>
 			<div class="map-option">
 			  <label>
-				<input type="checkbox" bind:checked={curMapProps.data.isVflipped} />
+				<input type="checkbox" bind:checked={curMap.area.isVflipped} />
 				Flip vertically
 			  </label>
 			</div>
 		  </div>
 	</section>
-	<div class:bottom-cards-layout={curMapLayout === 'bottom'} class:side-cards-layout={curMapLayout === 'side'}>
+	<div class:bottom-cards-layout={curMap.layout === 'bottom'} class:side-cards-layout={curMap.layout === 'side'}>
 		<section class="map-section">
-			<svelte:component this={curMapComponent} {...curMapProps} />
+			<Map layout={doLayout} mapUpdated={mapUpdated} data={curMap.area} actions={curMap.actions}/>
 		</section>
 		<section class="area-cards">
 			{#each areaPairs as area }
@@ -291,7 +190,7 @@
 		font-size: 1rem;
 		font-weight: 600;
 		overflow: hidden;
-		
+
 
 		&.button0:before,
 		&.button1:before,
@@ -446,7 +345,7 @@
 		font-weight: bold;
 		color: black;
 		background: conic-gradient(white 0%, white 5%, silver 16%, white 23%, white 24%, silver 28%, gray 34%, #666 50%, gray 65%, white 75%) transparent;
-		
+
 		&.hide-overlay {
 			display: none;
 		}

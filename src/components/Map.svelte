@@ -13,9 +13,6 @@
     export let mapUpdated;
     export let globalOptions = {};
   
-    //  Assign every dungeon and zebes room as active
-    $: data.class.match(/(?:dungeon)|(?:zebes)/) && data.rooms.forEach(r => r.active = true);
-
     //  My state
     let initialLoad = false;
     let rMap;  //  Map display ratio for calculating layout
@@ -27,6 +24,9 @@
         "shadow-color": data.shadowColor,
         aspect: `${mapTilesheet.pxWidth() / mapTilesheet.pxHeight()}`,
     };
+
+    //  Assign every dungeon and zebes room as active
+    $: data.class.match(/(?:dungeon)|(?:zebes)/) && data.rooms.forEach(r => r.active = true);
 
     //  This hack ensures that methods can be run when the
     //  <svelte:component>'s "this" binding changes in App.svelte
