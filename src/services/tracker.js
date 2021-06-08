@@ -73,26 +73,7 @@ export const toolbars = [
 // 	]
 // };
 
-export const mapUpdated = () => {
-	// const combinedData = {
-	// 	sessionTimestamp: sessionTimestamp,
-	// 	Hyruleq1,
-	// 	Level1,
-	// 	Level2, 
-	// 	Level3, 
-	// 	Level4, 
-	// 	Level5, 
-	// 	Level6, 
-	// 	Level7, 
-	// 	Level8, 
-	// 	Level9, 
-	// 	Brinstar, 
-	// 	Norfair, 
-	// 	Kraids, 
-	// 	Ridleys 
-	// };
-
-	// storage.saveData(combinedData);
+export const trackerUpdated = () => {
 	storage.saveData(tracker);
 };
 

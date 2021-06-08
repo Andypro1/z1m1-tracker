@@ -1,17 +1,14 @@
 <script>
 	import { onMount } from 'svelte';
 	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, areaPairs, mapUpdated, loadState, toolbars } from '../services/tracker.js';
+	import { tracker, areaPairs, trackerUpdated, loadState, toolbars } from '../services/tracker.js';
 	import Map from "../components/Map.svelte";
 
 	//  Route props
 	export let coopGuid = '';
 
-	//  Reactive definitons for child components
-	// $: curMapArea = curMap.area;
-
 	const doLayout = (m) => {
-		// curMap.layout = m.name;
+		tracker.layout = m.name;
 
 		styles['map-room-width'] = m.width;
 		styles['map-room-height'] = m.height;
@@ -49,7 +46,6 @@
 			4: '>C'
 		};
 
-		// const i = curMap.actions.findIndex(e => e === action);
 		const i = tracker.actions.findIndex(e => e === action);
 
 		return {
@@ -59,13 +55,8 @@
 	};
 
 	const selectMap = (name) => {
-		// curMap.area = areaMaps.filter(a => a.name === name)[0].map;
 		tracker.curAreaMapIndex = tracker.areaMaps.findIndex(e => e.name === name);
 	};
-
-	// if(!curMap.area) {
-	// 	selectMap(areaMaps[0].name);
-	// }
 </script>
 
 <svelte:window on:contextmenu="{(e) => e.preventDefault()}" />
@@ -90,11 +81,10 @@
 								e.stopPropagation();
 
 								if(e.button >= 0) {
-									// curMap.actions = curMap.actions.map(a => a === action ? '' : a);
-									// curMap.actions[e.button] = action;
-
 									tracker.actions = tracker.actions.map(a => a === action ? '' : a);
 									tracker.actions[e.button] = action;
+
+									trackerUpdated();
 								}
 							}}
 						>{ action }
@@ -106,44 +96,30 @@
 		</div>
 		<div class="map-options">
 			<div class="map-option">
-			  <!-- <label>
-				<select bind:value={optNumMouseButtons}>
-					<option value="1">1</option>
-					<option value="2">2</option>
-					<option value="3">3</option>
-					<option value="4">4</option>
-					<option value="5">5</option>
-				</select>
-				# of mouse buttons
-			  </label> -->
-			</div>
-			<div class="map-option">
 			  <label>
-				<!-- <input type="checkbox" bind:checked={curMap.area.isHflipped} /> -->
-				<input type="checkbox" bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isHflipped} />
+				<input type="checkbox" on:click={() => trackerUpdated()}
+					bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isHflipped} />
 				Flip horizontally
 			  </label>
 			</div>
 			<div class="map-option">
 			  <label>
-				<!-- <input type="checkbox" bind:checked={curMap.area.isVflipped} /> -->
-				<input type="checkbox" bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isVflipped} />
+				<input type="checkbox" on:click={() => trackerUpdated()}
+					bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isVflipped} />
 				Flip vertically
 			  </label>
 			</div>
 		  </div>
 	</section>
-	<!-- <div class:bottom-cards-layout={curMap.layout === 'bottom'} class:side-cards-layout={curMap.layout === 'side'}> -->
 	<div class:bottom-cards-layout={tracker.layout === 'bottom'} class:side-cards-layout={tracker.layout === 'side'}>
 		<section class="map-section">
-			<!-- <Map layout={doLayout} mapUpdated={mapUpdated} data={curMap.area} actions={curMap.actions}/> -->
-			<Map layout={doLayout} mapUpdated={mapUpdated} data={tracker.areaMaps[tracker.curAreaMapIndex].map} actions={tracker.actions}/>
+			<Map layout={doLayout} trackerUpdated={trackerUpdated} data={tracker.areaMaps[tracker.curAreaMapIndex].map} actions={tracker.actions}/>
 		</section>
 		<section class="area-cards">
 			{#each areaPairs as area }
 				<div class="area-card-column">
-					<div class="area-card" on:click={() => { selectMap(area[0].name); } }>{ area[0].name }</div>
-					<div class="area-card" on:click={() => { selectMap(area[1].name); } }>{ area[1].name }</div>
+					<div class="area-card" on:click={() => { selectMap(area[0].name); trackerUpdated(); } }>{ area[0].name }</div>
+					<div class="area-card" on:click={() => { selectMap(area[1].name); trackerUpdated(); } }>{ area[1].name }</div>
 				</div>
 			{/each}
 		</section>

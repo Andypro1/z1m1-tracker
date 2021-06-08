@@ -10,7 +10,7 @@
     export let data = {};
     export let actions = [];
     export let layout;
-    export let mapUpdated;
+    export let trackerUpdated;
     export let globalOptions = {};
   
     //  My state
@@ -62,7 +62,7 @@
       .map(([key, value]) => `--${key}:${value}`)
       .join(";");
 
-    const getRooms = () => {
+    $: getRooms = () => {
         if(!data.isHflipped && !data.isVflipped)
             return data.rooms;
 
@@ -117,7 +117,7 @@
         data.rooms[realIndex].action = action;
       }
 
-      mapUpdated();
+      trackerUpdated();
     };
 
     const sizeMapGrid = () => {
@@ -158,7 +158,6 @@
   
   <div class="map-grid-container" style={cssVarStyles}>
     <div class="map-grid {data.class}" class:mirrored-h={data.isHflipped} class:mirrored-v={data.isVflipped}>
-      <!-- {#each getRooms() as cell, index (mapTilesheet.sectionStartCell() + index)} -->
       {#each getRooms() as cell, index (cell)}
         <div
           class="room"
