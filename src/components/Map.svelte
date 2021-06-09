@@ -112,8 +112,8 @@
       else if(data.isHflipped)
         realIndex = ((data.sectionCols * Math.floor(realIndex / data.sectionCols)) + data.sectionCols - 1) - (realIndex % data.sectionCols);
 
-      if (cell.active) {
-        data.rooms[realIndex].marked = true;
+      if(cell.active) {
+        data.rooms[realIndex].marked = !data.rooms[realIndex].marked;
         data.rooms[realIndex].action = action;
       }
 

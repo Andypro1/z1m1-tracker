@@ -26,8 +26,7 @@ export const tracker = {
 		'cleared',
 		'warp',
 		'equip',
-		'quest',
-		'shop'
+		'quest'
 	],
 	areaMaps: [
 		{ name: 'Hyrule (Q1)', map: Hyruleq1.data},
@@ -55,23 +54,9 @@ export const areaPairs = tracker.areaMaps.reduce((a,v,i,o) => {
 			return a;
 	}, []);
 
-export const toolbars = [
-	{ name: 'dungeon', actions: ['cleared', 'warp', 'equip', 'quest'] },
-	{ name: 'overworld', actions: ['cleared', 'warp', 'shop', 'potionShop', 'lockedSword', 'equip', 'quest'] }
-];
-
-// export let curMap = {
-// 	area: areaMaps.filter(a => a.name === 'Hyrule (Q1)')[0].map,
-// 	layout: 'bottom',
-// 	toolbars: toolbars,
-// 	actions: [
-// 		'cleared',
-// 		'warp',
-// 		'equip',
-// 		'quest',
-// 		'shop'
-// 	]
-// };
+export const setActions = (newActions) => {
+	tracker.actions = newActions;
+};
 
 export const trackerUpdated = () => {
 	storage.saveData(tracker);

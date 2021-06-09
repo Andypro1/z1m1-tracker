@@ -1,7 +1,8 @@
 <script>
 	import { onMount } from 'svelte';
 	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, areaPairs, trackerUpdated, loadState, toolbars } from '../services/tracker.js';
+	import { tracker, areaPairs, trackerUpdated, setActions, loadState } from '../services/tracker.js';
+	import Toolbars from "../components/Toolbars.svelte";
 	import Map from "../components/Map.svelte";
 
 	//  Route props
@@ -14,6 +15,10 @@
 		styles['map-room-height'] = m.height;
 		styles['map-padding'] = m.pad;
 	};
+
+	// const setActions = (newActions) => {
+	// 	tracker.actions = newActions;
+	// };
 
     //  Dynamic style vars
     let styles = {
@@ -37,23 +42,6 @@
 		}
     });
 
-	$: tbActionClass = (action) => {
-		const keycaps = {
-			0: 'LC',
-			1: 'MC',
-			2: 'RC',
-			3: '<C',
-			4: '>C'
-		};
-
-		const i = tracker.actions.findIndex(e => e === action);
-
-		return {
-			name: i >= 0 ? `button${i}` : '',
-			keycap: keycaps[i]
-		};
-	};
-
 	const selectMap = (name) => {
 		tracker.curAreaMapIndex = tracker.areaMaps.findIndex(e => e.name === name);
 	};
@@ -71,29 +59,8 @@
 
 <main style="{cssVarStyles}">
 	<section class="top-bar">
-		<div class="toolbars">
-			{#each toolbars as tb, index (index)}
-				<div class="toolbar">
-					{#each tb.actions as action}
-						<div class="action {tbActionClass(action).name}"
-							on:mousedown={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-
-								if(e.button >= 0) {
-									tracker.actions = tracker.actions.map(a => a === action ? '' : a);
-									tracker.actions[e.button] = action;
-
-									trackerUpdated();
-								}
-							}}
-						>{ action }
-						<aside class="key-overlay" class:hide-overlay={!tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
-					</div>
-					{/each}
-				</div>
-		 	 {/each}
-		</div>
+		<Toolbars actions={tracker.actions} set={tracker.areaMaps[tracker.curAreaMapIndex].map.class}
+			trackerUpdated={trackerUpdated} setActions={setActions} />
 		<div class="map-options">
 			<div class="map-option">
 			  <label>
@@ -127,6 +94,8 @@
 </main>
 
 <style global lang="scss">
+	@import "../styles/overlays.scss";
+
 	:global(body) {
 		height: 100vh;
 	}
@@ -148,94 +117,6 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: stretch;
-	}
-
-	.toolbars {
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-		align-content: space-around;
-	}
-
-	.toolbar {
-		flex: 1 0 auto;
-
-		display: flex;
-		align-content: center;
-		align-items: center;
-
-		margin: 0.2rem;
-	}
-
-	.toolbar .action {
-		margin: 0.1rem;
-		background-color: hsl(197, 38%, 76%);
-		padding: 1rem;
-		width: 8rem;
-		height: 4.4rem;
-		border-radius: 0.5rem;
-
-		display: flex;
-		justify-content: center;
-		align-items: flex-end;
-	}
-
-	.action {
-		position: relative;
-		text-align: center;
-		font-size: 1rem;
-		font-weight: 600;
-		overflow: hidden;
-
-
-		&.button0:before,
-		&.button1:before,
-		&.button2:before,
-		&.button3:before,
-		&.button4:before {
-			border: 1rem solid hsl(197, 38%, 30%);
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			padding: 0;
-		}
-
-		&:hover {
-		z-index: 10;
-		cursor: pointer;
-
-		filter: drop-shadow(10px 10px 10px var(--shadow-color));
-		-webkit-animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-		animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-	}
-
-		&.button0 {
-			//border: 1rem solid hsl(197, 38%, 30%);
-			filter: drop-shadow(4px 4px 4px hsla(244, 100%, 30%, 50%));
-		}
-
-		&.button1 {
-			border: 2px solid hsl(244, 100%, 30%);
-			filter: drop-shadow(4px 4px 4px hsla(244, 100%, 30%, 50%));
-		}
-
-		&.button2 {
-			border: 2px solid hsl(244, 100%, 30%);
-			filter: drop-shadow(4px 4px 4px hsla(244, 100%, 30%, 50%));
-		}
-
-		&.button3 {
-			border: 2px solid hsl(244, 100%, 30%);
-			filter: drop-shadow(4px 4px 4px hsla(244, 100%, 30%, 50%));
-		}
-
-		&.button4 {
-			border: 2px solid hsl(244, 100%, 30%);
-			filter: drop-shadow(4px 4px 4px hsla(244, 100%, 30%, 50%));
-		}
 	}
 
 	.bottom-cards-layout {
@@ -318,60 +199,5 @@
 		background-color: #ddd;
 		cursor: pointer;
 		padding: 1rem;
-	}
-
-
-	//  Keyboard shortcut overlay styles
-	.key-overlay {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100px;
-		width: 1rem;
-		height: 100px;
-		height: 1rem;
-
-		position: absolute;
-		top: 0; left: 0;
-		border-radius: 16px;
-		border-radius: 0.16rem;
-		border: 0px;
-		font-size: 20px;
-		font-size: 0.20rem;
-		font-weight: bold;
-		color: black;
-		background: conic-gradient(white 0%, white 5%, silver 16%, white 23%, white 24%, silver 28%, gray 34%, #666 50%, gray 65%, white 75%) transparent;
-
-		&.hide-overlay {
-			display: none;
-		}
-
-		&:before {
-			content: attr(data-before);
-			position: absolute;
-			display: block;
-			top: 5px;
-			top: 0.05rem;
-			left: 10px;
-			left: 0.10rem;
-			width: 80px;
-			width: 0.80rem;
-			height: 80px;
-			height: 0.80rem;
-			border-radius: 16px;
-			border-radius: 0.16rem;
-			box-sizing: border-box;
-			padding: 16px;
-			padding: 0rem;
-			font-size: 35px;
-			font-size: 0.8rem;
-			font-family: Arial;
-			font-weight: normal;
-			box-shadow: inset 0 0 13px #fff, 0 0 13px #fff,
-						rgb(124, 124, 124) 0px 0px 43px inset;
-			box-shadow: inset 0 0 0.13rem #fff, 0 0 0.13rem #fff,
-						rgb(124, 124, 124) 0px 0px 0.43rem inset;
-			background: linear-gradient(180deg, rgb(255, 255, 255) 16%, rgb(206, 206, 206) 92%, transparent 95%, rgb(206, 206, 206) 99%, rgb(206, 206, 206) 102%, rgb(206, 206, 206) 106%, rgb(206, 206, 206) 110%, rgb(206, 206, 206) 113%), linear-gradient(24.75deg, rgb(255, 255, 255) 33%, rgb(206, 206, 206) 37%, transparent 41%, rgb(206, 206, 206) 44%, rgb(206, 206, 206) 48%, rgb(206, 206, 206) 51%, rgb(206, 206, 206) 55%, rgb(206, 206, 206) 59%) transparent;
-		}
 	}
 </style>
