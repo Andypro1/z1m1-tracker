@@ -1,3 +1,4 @@
+import { writable } from 'svelte/store';
 
 const Toolbars = () => {
 	const _toolbars = [
@@ -25,4 +26,4 @@ const Toolbars = () => {
 	});
 };
 
-export default Toolbars();
+export default writable(Toolbars());

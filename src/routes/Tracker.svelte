@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, areaPairs, trackerUpdated, setActions, loadState } from '../services/tracker.js';
+	import { tracker, areaPairs, trackerUpdated, actions, loadState } from '../services/tracker.js';
 	import Toolbars from "../components/Toolbars.svelte";
 	import Map from "../components/Map.svelte";
 
@@ -15,10 +15,6 @@
 		styles['map-room-height'] = m.height;
 		styles['map-padding'] = m.pad;
 	};
-
-	// const setActions = (newActions) => {
-	// 	tracker.actions = newActions;
-	// };
 
     //  Dynamic style vars
     let styles = {
@@ -39,6 +35,9 @@
 			tracker.layout = state.layout;
 			tracker.actions = [...state.actions];
 			tracker.areaMaps = [...state.areaMaps];
+
+			//  Also set stores used by components
+			actions.set([...state.actions]);
 		}
     });
 
@@ -59,8 +58,7 @@
 
 <main style="{cssVarStyles}">
 	<section class="top-bar">
-		<Toolbars actions={tracker.actions} set={tracker.areaMaps[tracker.curAreaMapIndex].map.class}
-			trackerUpdated={trackerUpdated} setActions={setActions} />
+		<Toolbars set={tracker.areaMaps[tracker.curAreaMapIndex].map.class} />
 		<div class="map-options">
 			<div class="map-option">
 			  <label>

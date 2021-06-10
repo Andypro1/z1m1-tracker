@@ -1,3 +1,4 @@
+import { writable } from 'svelte/store';
 import storage from '../services/storage.js';
 
 import Hyruleq1 from "../components/maps/Hyruleq1.mapdata.js";
@@ -15,9 +16,7 @@ import Norfair from "../components/maps/Norfair.mapdata.js";
 import Kraids from "../components/maps/Kraids.mapdata.js";
 import Ridleys from "../components/maps/Ridleys.mapdata.js";
 
-//  Global and session options
-// export let sessionTimestamp = + new Date();
-
+//  Must contain only JSON-serializable data (no functions, dates, js constants, etc.)
 export const tracker = {
 	sessionTimestamp: +new Date(),
 	curAreaMapIndex: 0,
@@ -54,9 +53,31 @@ export const areaPairs = tracker.areaMaps.reduce((a,v,i,o) => {
 			return a;
 	}, []);
 
-export const setActions = (newActions) => {
-	tracker.actions = newActions;
+function actionsStore() {
+	const { subscribe, set, update } = writable(tracker.actions);
+
+	return Object.freeze({
+		subscribe,
+		set,
+		setPosition: (a, i) => {
+			update(arr => {
+				//  Remove incoming action from all other slots
+				let newActions = arr.map(e => e === a ? '' : e);
+
+				//  Set incoming action to desired slot
+				newActions[i] = a;
+
+				//  Save list to original object and trigger a state save
+				tracker.actions = newActions;
+				trackerUpdated();
+
+				return newActions;
+			});
+		}
+	});
 };
+
+export const actions = actionsStore();
 
 export const trackerUpdated = () => {
 	storage.saveData(tracker);
@@ -67,4 +88,3 @@ export const loadState = async (storageKey) => {
 	
 	return data;
 };
-

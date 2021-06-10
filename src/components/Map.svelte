@@ -5,13 +5,12 @@
     //import areamap from '../areamap.js'
     import Overlay from "./Overlay.svelte";
     //import mapStore from '../mapStore.js';
+    import { actions } from '../services/tracker.js';
 
     //  Props
     export let data = {};
-    export let actions = [];
     export let layout;
     export let trackerUpdated;
-    export let globalOptions = {};
   
     //  My state
     let initialLoad = false;
@@ -35,9 +34,9 @@
     //  just changing "this" and all the props.
     //  The reactive rMap variable triggers the framework to call sizeMapGrid
     //  when all the props change by virtue of it being marked as reactive with $: rMap.
-	$: if(initialLoad) {
-		sizeMapGrid(rMap);
-	}
+    $: if(initialLoad) {
+      sizeMapGrid(rMap);
+    }
 
     $: mapTilesheet = new tilesheet(
       '',
@@ -167,8 +166,8 @@
             e.preventDefault();
             e.stopPropagation();
 
-            if((e.button >= 0) && actions[e.button])
-              markRoom(e, cell, index, actions[e.button]);
+            if((e.button >= 0) && $actions[e.button])
+              markRoom(e, cell, index, $actions[e.button]);
           }}
         >
           <Overlay action={cell.action} draw={cell.marked} />

@@ -1,18 +1,9 @@
 <script>
+	import { actions } from '../services/tracker.js';
    	import toolbars from './toolbars.js';
 
     //  Props
-    export let actions = [];
     export let set = 'overworld';
-    export let trackerUpdated;
-    export let setActions;
-
-    //  Reactive to set prop change
-    $: {
-        const newActions = toolbars.getMainToolbar(set)[0].actions;
-        const carryoverActions = actions.map(a => newActions.includes(a) ? a : undefined);
-        setActions(carryoverActions);
-    }
 
     $: tbActionClass = (action) => {
         const keycaps = {
@@ -22,7 +13,7 @@
             4: '>C'
         };
 
-        const i = actions.findIndex(e => e === action);
+        const i = $actions.findIndex(e => e === action);
 
         return {
             name: i >= 0 ? `button${i}` : '',
@@ -32,7 +23,7 @@
 </script>
 
 <div class="toolbars">
-    {#each toolbars.getMainToolbar(set) as tb, index (index)}
+    {#each $toolbars.getMainToolbar(set) as tb, index (index)}
         <div class="toolbar">
             {#each tb.actions as action}
                 <div class="action {tbActionClass(action).name}"
@@ -41,13 +32,8 @@
                         e.stopPropagation();
 
                         //  Use left, middle, right, and forward buttons if available (not back)
-                        if(e.button >= 0 && e.button !== 3) {
-                            actions = actions.map(a => a === action ? '' : a);
-                            actions[e.button] = action;
-
-                            setActions(actions);
-                            trackerUpdated();
-                        }
+                        if(e.button >= 0 && e.button !== 3)
+							actions.setPosition(action, e.button);
                     }}
                 >{ action }
                 <aside class="key-overlay" class:hide-overlay={!tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
