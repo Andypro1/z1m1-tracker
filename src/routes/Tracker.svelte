@@ -96,6 +96,7 @@
 
 	:global(body) {
 		height: 100vh;
+		background-color: #333;
 	}
 
 	main {

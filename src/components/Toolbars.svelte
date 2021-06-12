@@ -5,6 +5,7 @@
     //  Props
     export let set = 'overworld';
 
+	//  TODO: move.
     $: tbActionClass = (action) => {
         const keycaps = {
             0: 'LC',
@@ -13,7 +14,7 @@
             4: '>C'
         };
 
-        const i = $actions.findIndex(e => e === action);
+        const i = $actions.findIndex(e => e === action.name);
 
         return {
             name: i >= 0 ? `button${i}` : '',
@@ -33,10 +34,11 @@
 
                         //  Use left, middle, right, and forward buttons if available (not back)
                         if(e.button >= 0 && e.button !== 3)
-							actions.setPosition(action, e.button);
+							actions.setPosition(action.name, e.button);
                     }}
-                >{ action }
-                <aside class="key-overlay" class:hide-overlay={!tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
+                >{ action.display }
+                <aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
+				<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys[0]}></aside>
             </div>
             {/each}
         </div>
@@ -64,16 +66,23 @@
 	}
 
 	.toolbar .action {
-		margin: 0.1rem;
-		background-color: hsl(197, 38%, 76%);
+		margin: 0.3rem;
+		background-color: hsl(0, 0%, 0%);
+
+		background:
+			linear-gradient(217deg, rgba(32,32,32, 0.8), rgba(255,0,0,0) 70.71%),
+			linear-gradient(127deg, rgba(160,160,160, 0.8), rgba(0,255,0,0) 70.71%),
+			linear-gradient(336deg, rgba(0,0,100, 0.5), rgba(0,0,255,0) 70.71%);
+
+		color: white;
 		padding: 1rem;
-		width: 8rem;
-		height: 4.4rem;
+		width: 6rem;
+		height: 6rem;
 		border-radius: 0.5rem;
 
 		display: flex;
 		justify-content: center;
-		align-items: flex-end;
+		align-items: center;
 	}
 
 	.action {
@@ -81,56 +90,44 @@
 		text-align: center;
 		font-size: 1rem;
 		font-weight: 600;
-		overflow: hidden;
 
+		&.button0,
+		&.button1,
+		&.button2,
+		&.button4 {
+			// border: 1rem solid hsl(197, 38%, 30%);
+			// content: '';
+			// position: absolute;
+			// top: 0;
+			// left: 0;
+			// width: 100%;
+			// height: 100%;
+			// padding: 0;
 
-		&.button0:before,
-		&.button1:before,
-		&.button2:before,
-		&.button3:before,
-		&.button4:before {
-			border: 1rem solid hsl(197, 38%, 30%);
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			padding: 0;
+			position: relative;
+
+			&:before {
+				// border: 1rem solid hsl(197, 38%, 30%);
+				content: '';
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				box-shadow: 0 0 17px 3px #ffff01,0 0 4px 2px #ffff01;
+				// z-index: -1;
+				z-index: 9999;
+				border-radius: 5px;
+			}
 		}
 
 		&:hover {
-		z-index: 10;
-		cursor: pointer;
+			z-index: 10;
+			cursor: pointer;
 
-		filter: drop-shadow(10px 10px 10px var(--shadow-color));
-		-webkit-animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-		animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-	}
-
-		&.button0 {
-			//border: 1rem solid hsl(197, 38%, 30%);
-			filter: drop-shadow(4px 4px 4px hsla(244, 100%, 30%, 50%));
-		}
-
-		&.button1 {
-			border: 2px solid hsl(244, 100%, 30%);
-			filter: drop-shadow(4px 4px 4px hsla(244, 100%, 30%, 50%));
-		}
-
-		&.button2 {
-			border: 2px solid hsl(244, 100%, 30%);
-			filter: drop-shadow(4px 4px 4px hsla(244, 100%, 30%, 50%));
-		}
-
-		&.button3 {
-			border: 2px solid hsl(244, 100%, 30%);
-			filter: drop-shadow(4px 4px 4px hsla(244, 100%, 30%, 50%));
-		}
-
-		&.button4 {
-			border: 2px solid hsl(244, 100%, 30%);
-			filter: drop-shadow(4px 4px 4px hsla(244, 100%, 30%, 50%));
+			filter: drop-shadow(8px 8px 8px var(--shadow-color));
+			-webkit-animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+			animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
 		}
 	}
 </style>
