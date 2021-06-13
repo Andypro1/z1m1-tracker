@@ -37,12 +37,32 @@
 							actions.setPosition(action.name, e.button);
                     }}
                 >{ action.display }
-                <aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
-				<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys[0]}></aside>
-            </div>
+					<aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
+					<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys[0]}></aside>
+				</div>
             {/each}
         </div>
-      {/each}
+	{/each}
+	
+	{#each $toolbars.getSubToolbar() as stb}
+		<div class="sub toolbar">
+            {#each stb.actions as action}
+                <div class="action {tbActionClass(action).name}"
+                    on:mousedown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        //  Use left, middle, right, and forward buttons if available (not back)
+                        if(e.button >= 0 && e.button !== 3)
+							actions.setPosition(action.name, e.button);
+                    }}
+                >{ action.display }
+					<aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
+					<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys}></aside>
+				</div>
+            {/each}
+		</div>
+	{/each}
 </div>
 
 <style type="scss">
@@ -128,6 +148,25 @@
 			filter: drop-shadow(8px 8px 8px var(--shadow-color));
 			-webkit-animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
 			animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+		}
+	}
+
+	//  Override toolbar styles for subtoolbars
+	.sub.toolbar {
+		
+		& .action {
+			margin: 0.15rem;
+		//background-color: hsl(0, 0%, 0%);
+
+		// color: white;
+		padding: 1rem;
+		width: 4rem;
+		height: 4rem;
+		// border-radius: 0.5rem;
+
+		// display: flex;
+		// justify-content: center;
+		// align-items: center;
 		}
 	}
 </style>

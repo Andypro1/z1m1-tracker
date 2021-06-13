@@ -6,6 +6,7 @@
     import Overlay from "./Overlay.svelte";
     //import mapStore from '../mapStore.js';
     import { actions } from '../services/tracker.js';
+    import toolbars from './toolbars.js';
 
     //  Props
     export let data = {};
@@ -116,6 +117,9 @@
         data.rooms[realIndex].action = action;
       }
 
+      $toolbars.setSubToolbar(action);
+      $toolbars = $toolbars;
+      
       trackerUpdated();
     };
 

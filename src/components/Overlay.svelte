@@ -1,16 +1,11 @@
 <script>
+    import toolbars from './toolbars.js';
+
+    //  Props
     export let action;
     export let draw = false;
 
-    const actionIcons = {
-        cleared: { classes: 'fas fa-check-circle' },
-        quest: { classes: 'fas fa-trophy', text: 'quest' },
-        warp: { classes: 'fas fa-door-open', text: 'warp' },
-        equip: { classes: 'fas fa-gavel', text: 'equip' },
-        shop: { image: true, text: 'shop' },
-        potionShop: { text: 'p.shop' },
-        lockedSword: { text: 'sword' }
-    };
+    const actList = $toolbars.allActions();
 
     //  Dynamic style vars
     let ovstyles = {
@@ -25,11 +20,11 @@
 
 {#if draw}
     <div class="overlay" style={cssOvStyles}>
-        <i class="icon {action} {actionIcons[action].classes}"></i>
-        {#if actionIcons[action].text }
-          <div class="label"><b>{actionIcons[action].text}</b></div>
+        <i class="icon {action} {actList[action] && actList[action].mapClass}"></i>
+        {#if actList[action] && actList[action].mapText }
+          <div class="label"><b>{actList[action] && actList[action].mapText}</b></div>
         {/if}
-        {#if actionIcons[action].image }
+        {#if actList[action] && actList[action].image }
           <div class="iconimage"></div>
         {/if}
     </div>
@@ -38,7 +33,6 @@
 <style>
   /*  Marked map action styles  */
   .overlay {
-    /* filter: brightness(15%); */
     width: 100%;
     padding-bottom: calc(100% * 1 / var(--aspect) * var(--map-cols) / var(--map-rows));
     /*  needs to be done on the parent in order to affect the background-image.  Not important for now  */
