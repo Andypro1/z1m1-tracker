@@ -33,8 +33,12 @@
                         e.stopPropagation();
 
                         //  Use left, middle, right, and forward buttons if available (not back)
-                        if(e.button >= 0 && e.button !== 3)
+                        if(e.button >= 0 && e.button !== 3) {
 							actions.setPosition(action.name, e.button);
+							
+							$toolbars.setSubToolbar(action.name);
+							$toolbars = $toolbars;
+						}
                     }}
                 >{ action.display }
 					<aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
