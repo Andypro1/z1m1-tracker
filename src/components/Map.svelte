@@ -12,10 +12,13 @@
     export let data = {};
     export let layout;
     export let trackerUpdated;
+    export let handleHotkey;
   
     //  My state
     let initialLoad = false;
     let rMap;  //  Map display ratio for calculating layout
+    let mouseInMap = false;
+    let [mouseX, mouseY] = [0, 0];
 
     $: styles = {
         "map-cols": data.cols,
@@ -64,13 +67,13 @@
 
     $: getRooms = () => {
         if(!data.isHflipped && !data.isVflipped)
-            return data.rooms;
+            return data.rooms.map((r, i) => ({...r, roomIndex: i}));
 
         if(data.isHflipped && !data.isVflipped) {
             return data.rooms.map((r, i) => {
                 const newSpot = ((data.sectionCols * Math.floor(i / data.sectionCols)) + data.sectionCols - 1) - (i % data.sectionCols);
 
-                return data.rooms[newSpot];
+                return {...data.rooms[newSpot], roomIndex: newSpot };
             });
         }
 
@@ -78,7 +81,7 @@
             const tmp = data.rooms
             .map((r, i) => {
                 const newSpot = (Math.abs(data.sectionRows * data.sectionCols - i - 1));
-                return data.rooms[newSpot];
+                return {...data.rooms[newSpot], roomIndex: newSpot };
             });
 
             return tmp.map((r, i, a) => {
@@ -91,16 +94,17 @@
             return data.rooms
             .map((r, i) => {
                 const newSpot = (Math.abs(data.sectionRows * data.sectionCols - i - 1));
-                return data.rooms[newSpot];
+                return {...data.rooms[newSpot], roomIndex: newSpot };
             });
         }
 
-        return data.rooms;
+        return data.rooms.map((r, i) => ({...r, roomIndex: i}));
     };
 
     //  Refactor in to mapdata object method
     const markRoom = (e, cell, index, action) => {
       //  Calculate rooms index based on map state and where we clicked
+      //  TODO: we can scrap this logic now that we're marking cells with data-room-index.
       let realIndex = index;
 
       if(data.isVflipped) {
@@ -119,7 +123,7 @@
 
       $toolbars.setSubToolbar(action);
       $toolbars = $toolbars;
-      
+
       trackerUpdated();
     };
 
@@ -157,20 +161,23 @@
     };
   </script>
   
-  <svelte:window on:resize={sizeMapGrid} />
+  <svelte:window on:resize={sizeMapGrid} on:keydown="{(e) => handleHotkey(e, mouseInMap, mouseX, mouseY)}" />
   
   <div class="map-grid-container" style={cssVarStyles}>
-    <div class="map-grid {data.class}" class:mirrored-h={data.isHflipped} class:mirrored-v={data.isVflipped}>
+    <div class="map-grid {data.class}"
+      on:mousemove={(e) => { mouseX = e.pageX; mouseY = e.pageY; }} on:mouseenter={() => mouseInMap = true } on:mouseleave={() => mouseInMap = false }
+      class:mirrored-h={data.isHflipped} class:mirrored-v={data.isVflipped}>
       {#each getRooms() as cell, index (cell)}
         <div
           class="room"
           class:active={cell.active}
           class:oob={cell.outofbounds}
+          data-room-index={cell.roomIndex}
           on:mousedown={(e) => {
             e.preventDefault();
             e.stopPropagation();
 
-            if((e.button >= 0) && $actions[e.button])
+            if((e.button >= 0 && e.button !== 3) && $actions[e.button])
               markRoom(e, cell, index, $actions[e.button]);
           }}
         >
