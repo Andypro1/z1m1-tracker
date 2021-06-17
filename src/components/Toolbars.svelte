@@ -75,7 +75,7 @@
     .toolbars {
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
+		justify-content: flex-start;
 		align-content: space-around;
 	}
 
@@ -83,8 +83,7 @@
 		flex: 1 0 auto;
 
 		display: flex;
-		align-content: center;
-		align-items: center;
+		align-items: flex-start;
 
 		margin: 0.2rem;
 	}
@@ -100,8 +99,8 @@
 
 		color: white;
 		padding: 1rem;
-		width: 6rem;
-		height: 6rem;
+		width: 4.8rem;
+		height: 4.8rem;
 		border-radius: 0.5rem;
 
 		display: flex;
@@ -157,20 +156,12 @@
 
 	//  Override toolbar styles for subtoolbars
 	.sub.toolbar {
-		
 		& .action {
 			margin: 0.15rem;
-		//background-color: hsl(0, 0%, 0%);
 
-		// color: white;
-		padding: 1rem;
-		width: 4rem;
-		height: 4rem;
-		// border-radius: 0.5rem;
-
-		// display: flex;
-		// justify-content: center;
-		// align-items: center;
+			padding: 1rem;
+			width: 3.5rem;
+			height: 3.5rem;
 		}
 	}
 </style>
