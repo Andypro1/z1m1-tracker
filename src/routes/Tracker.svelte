@@ -65,6 +65,17 @@
 		return -1;
 	};
 
+
+	const handleMouseMark = (roomIndex, cell, action, mouseX, mouseY) => {
+		const isToolbarAction = $toolbars.isAToolbarAction(action);
+
+		if(isToolbarAction) {
+			activeHotkeySequence  = $toolbars.getAction(action).hotkeys[0];
+			activeHotkeyRoomIndex = getRoomIndexUnderCursor(mouseX, mouseY);
+		}
+	}
+
+
 	const handleHotkey = (e, mouseInMap, mouseX, mouseY) => {
 		if(['w', 'e', 'q'].includes(e.key)) {
 			const subTb = e.key === 'w' ? 'warp' : (
@@ -96,21 +107,22 @@
 
 			activeHotkeyRoomIndex = curRoomIndex;
 
-			console.log(`prev room: ${activeHotkeyRoomIndex}.  cur room: ${curRoomIndex}.  active seq.: ${activeHotkeySequence}`);
+			//console.log(`prev room: ${activeHotkeyRoomIndex}.  cur room: ${curRoomIndex}.  active seq.: ${activeHotkeySequence}`);
 
 			const actions = $toolbars.allActions();
 			const actionsArray = [...Object.keys(actions).map(k => actions[k])];
 			const curKeySeq = activeHotkeySequence;
-			
-			// while(curKeySeq.length > 0) {
-
-			const matchingActions = actionsArray.filter(a => a.hotkeys.includes(activeHotkeySequence));
-			const partialSequences = actionsArray.filter(a => a.hotkeys.filter(h => (h.length > activeHotkeySequence.length) && h.startsWith(activeHotkeySequence)).length > 0);
-
-			//console.log(`matching: ${matchingActions.length}; partial: ${partialSequences.length}`);
+			let matchingActions = actionsArray.filter(a => a.hotkeys.includes(activeHotkeySequence));
+			let partialSequences = actionsArray.filter(a => a.hotkeys.filter(h => (h.length > activeHotkeySequence.length) && h.startsWith(activeHotkeySequence)).length > 0);
 
 			//TODO: fix algorithm for handling key sequences in the proper order
-			//TODO: *some* actions aren't getting saved (probably using wrong reference)
+
+			//  If not a valid sequence, reset to just the incoming key and check again
+			if(matchingActions.length === 0) {
+				activeHotkeySequence = e.key;
+				matchingActions = actionsArray.filter(a => a.hotkeys.includes(activeHotkeySequence));
+				partialSequences = actionsArray.filter(a => a.hotkeys.filter(h => (h.length > activeHotkeySequence.length) && h.startsWith(activeHotkeySequence)).length > 0);
+			}
 
 			if(matchingActions.length) {
 				if(curRoomIndex !== -1) {
@@ -132,6 +144,7 @@
 		//  If outside of map, do:
 		//  - reset the active key combination
 		//  - Check for matching "outside map" keys (area cards, settings shortcuts (alt+h, alt+v, etc.)) and take action
+		//  Don't forget ESC to clear current tile
 	};
 </script>
 
@@ -167,7 +180,7 @@
 	</section>
 	<div class:bottom-cards-layout={tracker.layout === 'bottom'} class:side-cards-layout={tracker.layout === 'side'}>
 		<section class="map-section">
-			<Map layout={doLayout} trackerUpdated={trackerUpdated} handleHotkey={handleHotkey}
+			<Map layout={doLayout} trackerUpdated={trackerUpdated} handleHotkey={handleHotkey} handleMouseMark={handleMouseMark}
 				data={tracker.areaMaps[tracker.curAreaMapIndex].map} actions={tracker.actions}/>
 		</section>
 		<section class="area-cards">

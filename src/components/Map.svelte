@@ -13,6 +13,7 @@
     export let layout;
     export let trackerUpdated;
     export let handleHotkey;
+    export let handleMouseMark;
   
     //  My state
     let initialLoad = false;
@@ -101,30 +102,23 @@
         return data.rooms.map((r, i) => ({...r, roomIndex: i}));
     };
 
-    //  Refactor in to mapdata object method
-    const markRoom = (e, cell, index, action) => {
-      //  Calculate rooms index based on map state and where we clicked
-      //  TODO: we can scrap this logic now that we're marking cells with data-room-index.
-      let realIndex = index;
+    
+    const markRoom = (roomIndex, cell, action) => {
+      if(!cell.active || cell.outofbounds)
+        return;
 
-      if(data.isVflipped) {
-        realIndex = (Math.abs(data.sectionRows * data.sectionCols - realIndex - 1));
+      const wasMarked = data.rooms[roomIndex].marked;
 
-        if(!data.isHflipped)
-          realIndex = ((data.sectionCols * Math.floor(realIndex / data.sectionCols)) + data.sectionCols - 1) - (realIndex % data.sectionCols);
-      }
-      else if(data.isHflipped)
-        realIndex = ((data.sectionCols * Math.floor(realIndex / data.sectionCols)) + data.sectionCols - 1) - (realIndex % data.sectionCols);
-
-      if(cell.active) {
-        data.rooms[realIndex].marked = !data.rooms[realIndex].marked;
-        data.rooms[realIndex].action = action;
-      }
+      data.rooms[roomIndex].marked = !wasMarked;
+      data.rooms[roomIndex].action = action;
 
       $toolbars.setSubToolbar(action);
       $toolbars = $toolbars;
 
       trackerUpdated();
+
+      if(!wasMarked)
+        handleMouseMark(roomIndex, cell, action, mouseX, mouseY);
     };
 
     const sizeMapGrid = () => {
@@ -167,7 +161,7 @@
     <div class="map-grid {data.class}"
       on:mousemove={(e) => { mouseX = e.pageX; mouseY = e.pageY; }} on:mouseenter={() => mouseInMap = true } on:mouseleave={() => mouseInMap = false }
       class:mirrored-h={data.isHflipped} class:mirrored-v={data.isVflipped}>
-      {#each getRooms() as cell, index (cell)}
+      {#each getRooms() as cell}
         <div
           class="room"
           class:active={cell.active}
@@ -178,7 +172,7 @@
             e.stopPropagation();
 
             if((e.button >= 0 && e.button !== 3) && $actions[e.button])
-              markRoom(e, cell, index, $actions[e.button]);
+              markRoom(cell.roomIndex, cell, $actions[e.button]);
           }}
         >
           <Overlay action={cell.action} draw={cell.marked} />

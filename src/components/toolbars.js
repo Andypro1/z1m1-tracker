@@ -13,7 +13,7 @@ const Action = {
 		toHyrule: { display: 'Hyrule', hotkeys: ['wh'], name: 'toHyrule', mapText: 'Hyrule' },
 		toBrinstar: { display: 'Brinstar', hotkeys: ['wb'], name: 'toBrinstar', mapText: 'Brinstar' },
 		toNorfair: { display: 'Norfair', hotkeys: ['wn'], name: 'toNorfair', mapText: 'Norfair' },
-		toKraids: { display: 'Kraid\'s', hotkeys: ['wk'], name: 'toKlraids', mapText: 'Kraid\'s' },
+		toKraids: { display: 'Kraid\'s', hotkeys: ['wk'], name: 'toKraids', mapText: 'Kraid\'s' },
 		toRidleys: { display: 'Ridley\'s', hotkeys: ['wr'], name: 'toRidleys', mapText: 'Ridley\'s' },
 		toLevel1: { display: 'Level 1', hotkeys: ['w1'], name: 'toLevel1', mapText: 'Level 1' },
 		toLevel2: { display: 'Level 2', hotkeys: ['w2'], name: 'toLevel2', mapText: 'Level 2' },
@@ -102,6 +102,10 @@ const Toolbars = () => {
 		return _toolbars.filter(t => t.name === currentSubBar);
 	};
 
+	const isAToolbarAction = (action) => {
+		return ['warp', 'equip', 'quest'].includes(action);
+	};
+
 	const setSubToolbar = (action) => {
 		if(['warp', 'equip', 'quest'].includes(action)) {
 			currentSubBar = action;
@@ -126,6 +130,10 @@ const Toolbars = () => {
 		currentSubBar = '';
 	};
 
+	const getAction = (name) => {
+		return Action[name];
+	};
+
 	const allActions = () => {
 		return flattenObject(Action);
 	}
@@ -134,6 +142,8 @@ const Toolbars = () => {
 		getMainToolbar,
 		getSubToolbar,
 		setSubToolbar,
+		isAToolbarAction,
+		getAction,
 		allActions
 	});
 };
