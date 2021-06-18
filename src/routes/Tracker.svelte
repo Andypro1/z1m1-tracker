@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, areaPairs, trackerUpdated, actions, loadState } from '../services/tracker.js';
+	import { tracker, areaPairs, trackerUpdated, actions, loadState, GlobalAction } from '../services/tracker.js';
 	import Toolbars from "../components/Toolbars.svelte";
 	import toolbars from '../components/toolbars.js';
 	import Map from "../components/Map.svelte";
@@ -49,6 +49,15 @@
 		tracker.curAreaMapIndex = tracker.areaMaps.findIndex(e => e.name === name);
 	};
 
+	const getAreaCardHotkey = (name) => {
+		const match = Object.values(GlobalAction).filter(ga => ga.name === name);
+		
+		if(match && match[0])
+			return match[0].hotkeys[0];
+
+		return '';
+	};
+
 	let mouseInMap = false;
 	let [mouseX, mouseY] = [0, 0];
 
@@ -77,6 +86,9 @@
 
 
 	const handleHotkey = (e, mouseInMap, mouseX, mouseY) => {
+		e.preventDefault();
+    	e.stopPropagation();
+
 		if(['w', 'e', 'q'].includes(e.key)) {
 			const subTb = e.key === 'w' ? 'warp' : (
 				e.key === 'e' ? 'equip' : (
@@ -133,6 +145,22 @@
 						tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curRoomIndex].action = matchingActions[0].name;
 
 						trackerUpdated();
+						return;
+					}
+				}
+			}
+			else if(e.key === 'Escape') {
+				//  Special case handling (ESC should unmark but doesn't have a corresponding toolbar action).
+				//  If this needs to be expanded for multiple special cases I'll refactor
+				if(curRoomIndex !== -1) {
+					const curRoom = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curRoomIndex];
+	
+					if(curRoom.active && !curRoom.outofbounds) {
+						tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curRoomIndex].marked = false;
+						tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curRoomIndex].action = '';
+
+						trackerUpdated();
+						return;
 					}
 				}
 			}
@@ -140,11 +168,19 @@
 			if(partialSequences.length === 0)
 				activeHotkeySequence = '';
 		}
-
-		//  If outside of map, do:
-		//  - reset the active key combination
+		else { //outside of map
+			//  - reset the active key combination
+			activeHotkeySequence = '';
+		}
+			
 		//  - Check for matching "outside map" keys (area cards, settings shortcuts (alt+h, alt+v, etc.)) and take action
-		//  Don't forget ESC to clear current tile
+		const globalAction = [...Object.keys(GlobalAction).map(k => GlobalAction[k])].filter(ga => ga.hotkeys.includes(e.key));
+		
+		if(globalAction && globalAction[0]) {
+			//  TODO: Flesh out handling once non-area cards are added to global actions like tracker settings, etc.
+			selectMap(globalAction[0].name);
+			return;
+		}
 	};
 </script>
 
@@ -186,8 +222,15 @@
 		<section class="area-cards">
 			{#each areaPairs as area }
 				<div class="area-card-column">
-					<div class="area-card" on:click={() => { selectMap(area[0].name); trackerUpdated(); } }>{ area[0].name }</div>
-					<div class="area-card" on:click={() => { selectMap(area[1].name); trackerUpdated(); } }>{ area[1].name }</div>
+					<div class="area-card" on:click={() => { selectMap(area[0].name); trackerUpdated(); } }>
+						<aside class="key-overlay" data-before={ getAreaCardHotkey(area[0].name) }></aside>
+						{ area[0].name }
+					</div>
+					<!-- hyrule: { display: 'Hyrule', hotkeys: ['h'], name: 'Hyrule (Q1)' }, -->
+					<div class="area-card" on:click={() => { selectMap(area[1].name); trackerUpdated(); } }>
+						<aside class="key-overlay" data-before={ getAreaCardHotkey(area[1].name) }></aside>
+						{ area[1].name }
+					</div>
 				</div>
 			{/each}
 		</section>
@@ -297,6 +340,7 @@
 
 	.area-card {
 		flex: 1 0 auto;
+		position: relative;
 
 		background-color: #ddd;
 		cursor: pointer;
