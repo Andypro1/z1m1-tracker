@@ -55,7 +55,7 @@
            (mapTilesheet.pxHeight() * (mapTilesheet.sectionRows() / mapTilesheet.tileRows()) + (mapTilesheet.sectionRows() - 1));
 
     onMount(() => {
-        sizeMapGrid();
+        setTimeout(sizeMapGrid, 0);
         initialLoad = true;
     });
 

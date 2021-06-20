@@ -154,6 +154,64 @@ const map = {
         { outofbounds: false },
         { outofbounds: false },
         { outofbounds: false }
-    ]};
+    ],
+    gridRegions: [
+        { name: 'varia-hall',
+          rowStart: 2, rowEnd: 2, colStart: 5, colEnd: 10,
+          bgSize: 'calc(var(--map-cols) * 100% / 5) calc(var(--map-rows) * 100%)',
+          //bgPosX: 'calc((var(--map-cols) - var(--level-cols) - 1 + 5) * 100% / (var(--map-cols) - 1))',
+          bgPosX: '68.0%',
+          bgPosY: 'calc(23 * 100% / 29)'
+        },
+        { name: 'top-left-connector',
+          rowStart: 3, rowEnd: 3, colStart: 2, colEnd: 4,
+          bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
+          bgPosX: '50.0%',
+          bgPosY: 'calc(24 * 100% / 29)'
+        },
+        { name: 'mid-left-connector',
+          rowStart: 5, rowEnd: 5, colStart: 2, colEnd: 4,
+          bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
+          bgPosX: '50.0%',
+          bgPosY: 'calc(26 * 100% / 29)'
+        },
+        { name: 'ridleys-booty',
+          rowStart: 7, rowEnd: 7, colStart: 2, colEnd: 4,
+          bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
+          bgPosX: '50.0%',
+          bgPosY: 'calc(28 * 100% / 29)'
+        },
+        { name: 'ridleys-hall',
+          rowStart: 7, rowEnd: 7, colStart: 5, colEnd: 9,
+          bgSize: 'calc(var(--map-cols) * 100% / 4) calc(var(--map-rows) * 100%)',
+          bgPosX: '65.4%',
+          bgPosY: 'calc(28 * 100% / 29)'
+        },
+        { name: 'mid-left-hall',
+          rowStart: 5, rowEnd: 5, colStart: 5, colEnd: 9,
+          bgSize: 'calc(var(--map-cols) * 100% / 4) calc(var(--map-rows) * 100%)',
+          bgPosX: '65.4%',
+          bgPosY: 'calc(26 * 100% / 29)'
+        },
+        { name: 'the-yump',
+          rowStart: 5, rowEnd: 5, colStart: 10, colEnd: 12,
+          bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
+          bgPosX: '78.5%',
+          bgPosY: 'calc(26 * 100% / 29)'
+        },
+        { name: 'knowledge-hall',
+          rowStart: 5, rowEnd: 5, colStart: 12, colEnd: 17,
+          bgSize: 'calc(var(--map-cols) * 100% / 5) calc(var(--map-rows) * 100%)',
+          bgPosX: '96.0%',
+          bgPosY: 'calc(26 * 100% / 29)'
+        },
+        { name: 'intro-hall',
+          rowStart: 3, rowEnd: 3, colStart: 13, colEnd: 17,
+          bgSize: 'calc(var(--map-cols) * 100% / 4) calc(var(--map-rows) * 100%)',
+          bgPosX: '96.1%',
+          bgPosY: 'calc(24 * 100% / 29)'
+        }
+    ]
+};
 
 export default { data: map };

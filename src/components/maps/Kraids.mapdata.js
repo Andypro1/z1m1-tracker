@@ -205,6 +205,81 @@ const map = {
         { outofbounds: true },
         { outofbounds: true },
         { outofbounds: false }
-    ]};
+    ],
+    gridRegions: [
+        { name: 'door-1-left',
+          rowStart: 6, rowEnd: 6, colStart: 2, colEnd: 7,
+          bgSize: 'calc(var(--map-cols) * 100% / 5) calc(var(--map-rows) * 100%)',
+          bgPosX: '4%',
+          bgPosY: 'calc(20 * 100% / 29)'
+        },
+        { name: 'door-2-left',
+          rowStart: 7, rowEnd: 7, colStart: 2, colEnd: 7,
+          bgSize: 'calc(var(--map-cols) * 100% / 5) calc(var(--map-rows) * 100%)',
+          bgPosX: '4%',
+          bgPosY: 'calc(21 * 100% / 29)'
+        },
+        { name: 'door-1-right',
+          rowStart: 6, rowEnd: 6, colStart: 8, colEnd: 11,
+          bgSize: 'calc(var(--map-cols) * 100% / 3) calc(var(--map-rows) * 100%)',
+          bgPosX: '25.9%',
+          bgPosY: 'calc(20 * 100% / 29)'
+        },
+        { name: 'door-2-right',
+          rowStart: 7, rowEnd: 7, colStart: 8, colEnd: 11,
+          bgSize: 'calc(var(--map-cols) * 100% / 3) calc(var(--map-rows) * 100%)',
+          bgPosX: '25.9%',
+          bgPosY: 'calc(21 * 100% / 29)'
+        },
+        { name: 'door-3-left',
+          rowStart: 9, rowEnd: 9, colStart: 5, colEnd: 7,
+          bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
+          bgPosX: '14.3%',
+          bgPosY: 'calc(23 * 100% / 29)'
+        },
+        { name: 'door-3-right',
+          rowStart: 9, rowEnd: 9, colStart: 8, colEnd: 12,
+          bgSize: 'calc(var(--map-cols) * 100% / 4) calc(var(--map-rows) * 100%)',
+          bgPosX: '26.9%',
+          bgPosY: 'calc(23 * 100% / 29)'
+        },
+        { name: 'door-4-left',
+          rowStart: 11, rowEnd: 11, colStart: 5, colEnd: 7,
+          bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
+          bgPosX: '14.3%',
+          bgPosY: 'calc(25 * 100% / 29)'
+        },
+        { name: 'attic-1',
+          rowStart: 2, rowEnd: 2, colStart: 9, colEnd: 11,
+          bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
+          bgPosX: '28.6%',
+          bgPosY: 'calc(16 * 100% / 29)'
+        },
+        { name: 'attic-2',
+          rowStart: 3, rowEnd: 3, colStart: 9, colEnd: 11,
+          bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
+          bgPosX: '28.6%',
+          bgPosY: 'calc(17 * 100% / 29)'
+        },
+        { name: 'attic-3',
+          rowStart: 4, rowEnd: 4, colStart: 9, colEnd: 11,
+          bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
+          bgPosX: '28.6%',
+          bgPosY: 'calc(18 * 100% / 29)'
+        },
+        { name: 'top-basement',
+          rowStart: 12, rowEnd: 12, colStart: 4, colEnd: 9,
+          bgSize: 'calc(var(--map-cols) * 100% / 5) calc(var(--map-rows) * 100%)',
+          bgPosX: '12.0%',
+          bgPosY: 'calc(26 * 100% / 29)'
+        },
+        { name: 'kraid-pit-stop',
+          rowStart: 10, rowEnd: 10, colStart: 10, colEnd: 12,
+          bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
+          bgPosX: '32.1%',
+          bgPosY: 'calc(24 * 100% / 29)'
+        }
+    ]
+};
 
 export default { data: map };

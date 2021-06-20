@@ -202,6 +202,8 @@
 		if(globalAction && globalAction[0]) {
 			//  TODO: Flesh out handling once non-area cards are added to global actions like tracker settings, etc.
 			selectMap(globalAction[0].name);
+			trackerUpdated();
+
 			return;
 		}
 	};
@@ -223,14 +225,14 @@
 		<div class="map-options">
 			<div class="map-option">
 			  <label>
-				<input type="checkbox" on:click={() => trackerUpdated()}
+				<input type="checkbox" on:change={() => setTimeout(trackerUpdated, 0)}
 					bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isHflipped} />
 				Flip horizontally
 			  </label>
 			</div>
 			<div class="map-option">
 			  <label>
-				<input type="checkbox" on:click={() => trackerUpdated()}
+				<input type="checkbox" on:change={() => setTimeout(trackerUpdated, 0)}
 					bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isVflipped} />
 				Flip vertically
 			  </label>
