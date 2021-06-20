@@ -10,7 +10,7 @@
 	export let coopGuid = '';
 
 	let activeHotkeySequence = '';
-	let activeHotkeyRoomIndex = -1;
+	let activeHotkeyAreaId = -1;
 
 	const doLayout = (m) => {
 		tracker.layout = m.name;
@@ -61,12 +61,12 @@
 	let mouseInMap = false;
 	let [mouseX, mouseY] = [0, 0];
 
-	const getRoomIndexUnderCursor = (x, y) => {
+	const getAreaUnderCursor = (x, y) => {
 		let elem = document.elementFromPoint(x, y);
 
 		while(elem.parentElement && !elem.classList.contains('map-grid')) {
-			if(elem.classList.contains('room'))
-				return elem.dataset.roomIndex;
+			if(elem.classList.contains('room') || elem.classList.contains('grid-region'))
+				return elem.dataset.areaId;
 
 			elem = elem.parentElement;
 		}
@@ -75,12 +75,12 @@
 	};
 
 
-	const handleMouseMark = (roomIndex, cell, action, mouseX, mouseY) => {
+	const handleMouseMark = (areaId, cell, action, mouseX, mouseY) => {
 		const isToolbarAction = $toolbars.isAToolbarAction(action);
 
 		if(isToolbarAction) {
 			activeHotkeySequence  = $toolbars.getAction(action).hotkeys[0];
-			activeHotkeyRoomIndex = getRoomIndexUnderCursor(mouseX, mouseY);
+			activeHotkeyAreaId = getAreaUnderCursor(mouseX, mouseY);
 		}
 	}
 
@@ -109,18 +109,19 @@
 		//	- If the active key combination is valid for a matching Action, do the map action on the current tile/grid region.
 		//	- If the active key combination is not a partial sequence, reset the active key combination
 		if(mouseInMap) {
-			//  First, find the current room and update activeHotkeySequence nad activeHotkeyRoomIndex appropriately
-			const curRoomIndex = getRoomIndexUnderCursor(mouseX, mouseY);
+			//  First, find the current room and update activeHotkeySequence and activeHotkeyAreaId appropriately
+			const curAreaId = getAreaUnderCursor(mouseX, mouseY);
 
-			if(curRoomIndex === activeHotkeyRoomIndex) //hotkey sequence may continue
+			if(curAreaId === activeHotkeyAreaId) //hotkey sequence may continue
 				activeHotkeySequence += e.key;
 			else //changed rooms; start a new sequence
 				activeHotkeySequence = e.key;
 
-			activeHotkeyRoomIndex = curRoomIndex;
+			activeHotkeyAreaId = curAreaId;
 
-			//console.log(`prev room: ${activeHotkeyRoomIndex}.  cur room: ${curRoomIndex}.  active seq.: ${activeHotkeySequence}`);
+			//console.log(`prev room: ${activeHotkeyAreaId}.  cur room: ${curAreaId}.  active seq.: ${activeHotkeySequence}`);
 
+			const cutoverAreaIndex = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
 			const actions = $toolbars.allActions();
 			const actionsArray = [...Object.keys(actions).map(k => actions[k])];
 			const curKeySeq = activeHotkeySequence;
@@ -137,30 +138,52 @@
 			}
 
 			if(matchingActions.length) {
-				if(curRoomIndex !== -1) {
-					const curRoom = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curRoomIndex];
-	
-					if(curRoom.active && !curRoom.outofbounds) {
-						tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curRoomIndex].marked = true;
-						tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curRoomIndex].action = matchingActions[0].name;
+				if(curAreaId !== -1) {
+					if(curAreaId >= cutoverAreaIndex) { //region
+						const region = tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex];
+
+						tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex].marked = true;
+						tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex].action = matchingActions[0].name;
 
 						trackerUpdated();
 						return;
+					}
+					else { //room
+						const room = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId];
+					
+						if(room.active && !room.outofbounds) {
+							tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId].marked = true;
+							tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId].action = matchingActions[0].name;
+	
+							trackerUpdated();
+							return;
+						}
 					}
 				}
 			}
 			else if(e.key === 'Escape') {
 				//  Special case handling (ESC should unmark but doesn't have a corresponding toolbar action).
 				//  If this needs to be expanded for multiple special cases I'll refactor
-				if(curRoomIndex !== -1) {
-					const curRoom = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curRoomIndex];
-	
-					if(curRoom.active && !curRoom.outofbounds) {
-						tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curRoomIndex].marked = false;
-						tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curRoomIndex].action = '';
+				if(curAreaId !== -1) {
+					if(curAreaId >= cutoverAreaIndex) { //region
+						const region = tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex];
+
+						tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex].marked = false;
+						tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex].action = '';
 
 						trackerUpdated();
 						return;
+					}
+					else { //room
+						const room = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId];
+					
+						if(room.active && !room.outofbounds) {
+							tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId].marked = false;
+							tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId].action = '';
+	
+							trackerUpdated();
+							return;
+						}
 					}
 				}
 			}

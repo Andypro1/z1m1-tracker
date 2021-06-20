@@ -3,23 +3,24 @@
 
     //  Props
     export let action;
-    export let draw = false;
+    export let draw     = false;
+    export let isRegion = false;
 
     const actList = $toolbars.allActions();
 
     //  Dynamic style vars
-    let ovstyles = {
-      'cols': 13,
-      'rows': 1
-    };
+    // let ovstyles = {
+    //   'cols': 13,
+    //   'rows': 1
+    // };
 
-    $: cssOvStyles = Object.entries(ovstyles)
-		.map(([key, value]) => `--${key}:${value}`)
-		.join(';');
+    // $: cssOvStyles = Object.entries(ovstyles)
+		// .map(([key, value]) => `--${key}:${value}`)
+		// .join(';');
 </script>
 
 {#if draw}
-    <div class="overlay" style={cssOvStyles}>
+    <div class="overlay" class:region={isRegion}>
         <i class="icon {action} {actList[action] && actList[action].mapClass}"></i>
         {#if actList[action] && actList[action].mapText }
           <div class="label"><b>{actList[action] && actList[action].mapText}</b></div>
@@ -30,7 +31,7 @@
     </div>
 {/if}
 
-<style>
+<style type="scss">
   /*  Marked map action styles  */
   .overlay {
     width: 100%;
@@ -43,16 +44,35 @@
 		font-weight: 600;
   }
 
+  //  Overrides for grid regions
+  .overlay.region {
+    padding-bottom: 0;
+    height: 100%;
+
+    .zebes & .icon {
+      background: rgb(216, 216, 216);
+      border-radius: 0.7rem;
+
+      width: 95%;
+      height: 90%;
+    }
+  }
+
   /*  Override content flipping if we're in a mirrored map  */
   :global(.mirrored-h .overlay) {
     transform: scaleX(-1);
   }
 
+  .zebes .overlay .icon {
+      background-color: rgb(216, 216, 216);
+  }
+
   .icon {
-    width: calc(100% - 0.5rem);
-    height: calc(100% - 0.5rem);
+    width: 95%;
+    height: 90%;
+    
     background: black;
-    border-radius: 50%;
+    border-radius: 2rem;
     position: absolute;
     top: 0;
     left: 0;

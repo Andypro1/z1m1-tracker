@@ -537,6 +537,53 @@ const map = {
         { outofbounds: true },
         { outofbounds: true },
         { outofbounds: true }
-    ]};
+    ],
+    gridRegions: [
+        { name: 'tourian-hall',
+          rowStart: 1, rowEnd: 1, colStart: 4, colEnd: 11,
+          bgSize: 'calc(var(--map-cols) * 100% / 7) calc(var(--map-rows) * 100%)',
+          //bgPosX: 'calc(100% / 29 * 3.78)',   /// WHYYY?????????
+          bgPosX: '13%',   /// WHYYY?????????
+        // background-position: 0 calc(100% / 61 * 2) (61 because 62 images, 2 because 3rd image)
+        //  Is room ratio important here?  It's 1.0666666666666667.
+          bgPosY: 'calc(1 * 100% / 29)'
+        },
+        { name: 'long-beam',
+          rowStart: 4, rowEnd: 4, colStart: 6, colEnd: 11,
+          bgSize: 'calc(var(--map-cols) * 100% / 5) calc(var(--map-rows) * 100%)',
+        //   bgPosX: 'calc(5 * 100% / 29)',
+          bgPosX: '20%',
+          bgPosY: 'calc(4 * 100% / 29)'
+        },
+        { name: 'varia',
+          rowStart: 1, rowEnd: 1, colStart: 14, colEnd: 20,
+          bgSize: 'calc(var(--map-cols) * 100% / 6) calc(var(--map-rows) * 100%)',
+        //   bgPosX: 'calc(13 * 100% / 29)',
+          bgPosX: '54.1%',
+          bgPosY: 'calc(1 * 100% / 29)'
+        },
+        { name: 'morph-bombs',
+          rowStart: 4, rowEnd: 4, colStart: 24, colEnd: 30,
+          bgSize: 'calc(var(--map-cols) * 100% / 6) calc(var(--map-rows) * 100%)',
+        //   bgPosX: 'calc(23 * 100% / 29)',
+          bgPosX: '95.8%',
+          bgPosY: 'calc(4 * 100% / 29)'
+        },
+        { name: 'ice-beam',
+          rowStart: 8, rowEnd: 8, colStart: 19, colEnd: 22,
+          bgSize: 'calc(var(--map-cols) * 100% / 3) calc(var(--map-rows) * 100%)',
+        //   bgPosX: 'calc(23 * 100% / 29)',
+          bgPosX: '66.7%',
+          bgPosY: 'calc(8 * 100% / 29)'
+        },
+        { name: 'norfair-hall',
+          rowStart: 10, rowEnd: 10, colStart: 14, colEnd: 22,
+          bgSize: 'calc(var(--map-cols) * 100% / 8) calc(var(--map-rows) * 100%)',
+        //   bgPosX: 'calc(23 * 100% / 29)',
+          bgPosX: '59.1%',
+          bgPosY: 'calc(10 * 100% / 29)'
+        },
+    ]
+};
 
 export default { data: map };

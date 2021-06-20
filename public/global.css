@@ -96,13 +96,11 @@ html {
   .room {
 		background-size: calc(var(--map-cols) * 100%) calc(var(--map-rows) * 100%);
     
+    /*  Aspect ratio hack for full browser support  */
     width: calc(var(--map-room-width) * 1px);
     padding-bottom: calc(var(--map-room-height) * 1px);
 
-    /*  Aspect ratio hack for full browser support  */
     height: 0;
-    /* padding-bottom: calc(100% * 1 / var(--aspect) * var(--map-cols) / var(--map-rows)); */
-
     position: relative;
 	}
 

@@ -1,10 +1,7 @@
 <script>
     import { onMount } from "svelte";
-    //import { each } from 'svelte/internal';
     import tilesheet from "./tilesheet.js";
-    //import areamap from '../areamap.js'
     import Overlay from "./Overlay.svelte";
-    //import mapStore from '../mapStore.js';
     import { actions } from '../services/tracker.js';
     import toolbars from './toolbars.js';
 
@@ -62,19 +59,31 @@
         initialLoad = true;
     });
 
+
     $: cssVarStyles = Object.entries(styles)
       .map(([key, value]) => `--${key}:${value}`)
       .join(";");
 
+
+    $: getGridPosStyles = (pos) => {
+      const row = Math.floor(pos / data.sectionCols);
+      const col = pos - (row * data.sectionCols);
+
+      return `
+        grid-row: ${row+1};
+        grid-column: ${col+1};
+      `;
+    };
+
     $: getRooms = () => {
         if(!data.isHflipped && !data.isVflipped)
-            return data.rooms.map((r, i) => ({...r, roomIndex: i}));
+            return data.rooms.map((r, i) => ({...r, areaId: i}));
 
         if(data.isHflipped && !data.isVflipped) {
             return data.rooms.map((r, i) => {
                 const newSpot = ((data.sectionCols * Math.floor(i / data.sectionCols)) + data.sectionCols - 1) - (i % data.sectionCols);
 
-                return {...data.rooms[newSpot], roomIndex: newSpot };
+                return {...data.rooms[newSpot], areaId: newSpot };
             });
         }
 
@@ -82,7 +91,7 @@
             const tmp = data.rooms
             .map((r, i) => {
                 const newSpot = (Math.abs(data.sectionRows * data.sectionCols - i - 1));
-                return {...data.rooms[newSpot], roomIndex: newSpot };
+                return {...data.rooms[newSpot], areaId: newSpot };
             });
 
             return tmp.map((r, i, a) => {
@@ -95,31 +104,49 @@
             return data.rooms
             .map((r, i) => {
                 const newSpot = (Math.abs(data.sectionRows * data.sectionCols - i - 1));
-                return {...data.rooms[newSpot], roomIndex: newSpot };
+                return {...data.rooms[newSpot], areaId: newSpot };
             });
         }
 
-        return data.rooms.map((r, i) => ({...r, roomIndex: i}));
+        return data.rooms.map((r, i) => ({...r, areaId: i}));
     };
 
-    
-    const markRoom = (roomIndex, cell, action) => {
-      if(!cell.active || cell.outofbounds)
+
+    const areaClick = (e, area, areaId) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      //  Guard clause
+      if(!(e.button >= 0 && e.button !== 3) || !$actions[e.button])
         return;
 
-      const wasMarked = data.rooms[roomIndex].marked;
+      const areaType = area.rowStart ? 'region' : 'room';
+      const arrIndex = areaType === 'room' ? areaId : areaId - data.rooms.length;
 
-      data.rooms[roomIndex].marked = !wasMarked;
-      data.rooms[roomIndex].action = action;
+      // markRoom(cell.areaId, cell, $actions[e.button]);
+      if(areaType === 'room' && (!area.active || area.outofbounds))
+        return;
 
-      $toolbars.setSubToolbar(action);
+      const wasMarked = areaType === 'region' ? data.gridRegions[arrIndex].marked : data.rooms[arrIndex].marked;
+
+      if(areaType === 'room') {
+        data.rooms[arrIndex].marked = !wasMarked;
+        data.rooms[arrIndex].action = $actions[e.button];
+      }
+      else {
+        data.gridRegions[arrIndex].marked = !wasMarked;
+        data.gridRegions[arrIndex].action = $actions[e.button];
+      }
+
+      $toolbars.setSubToolbar($actions[e.button]);
       $toolbars = $toolbars;
 
       trackerUpdated();
 
       if(!wasMarked)
-        handleMouseMark(roomIndex, cell, action, mouseX, mouseY);
+        handleMouseMark(areaId, area, $actions[e.button], mouseX, mouseY);
     };
+
 
     const sizeMapGrid = () => {
       const [wWin, hWin, hTopBar] = [window.innerWidth, window.innerHeight, document.querySelector('.top-bar').clientHeight];
@@ -161,26 +188,99 @@
     <div class="map-grid {data.class}"
       on:mousemove={(e) => { mouseX = e.pageX; mouseY = e.pageY; }} on:mouseenter={() => mouseInMap = true } on:mouseleave={() => mouseInMap = false }
       class:mirrored-h={data.isHflipped} class:mirrored-v={data.isVflipped}>
-      {#each getRooms() as cell}
-        <div
-          class="room"
-          class:active={cell.active}
-          class:oob={cell.outofbounds}
-          data-room-index={cell.roomIndex}
-          on:mousedown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            if((e.button >= 0 && e.button !== 3) && $actions[e.button])
-              markRoom(cell.roomIndex, cell, $actions[e.button]);
-          }}
-        >
-          <Overlay action={cell.action} draw={cell.marked} />
-        </div>
+      {#each getRooms() as cell, pos}
+        {#if !cell.outofbounds}
+          <div
+            class="room"
+            class:active={cell.active}
+            class:oob={cell.outofbounds}
+            data-area-id={cell.areaId}
+            style={getGridPosStyles(pos)}
+            on:mousedown={(e) => areaClick(e, cell, cell.areaId)}
+          >
+            <Overlay action={cell.action} draw={cell.marked} />
+          </div>
+        {:else}
+          <div></div>
+        {/if}
       {/each}
+      {#if data.gridRegions}
+        {#each data.gridRegions as region, pos}
+        <!--  TODO: refactor me pleeeeeeeeeeeeeease  -->
+        {#if data.isHflipped && data.isVflipped}
+        <div
+          class="grid-region"
+          data-area-id={data.rooms.length + pos}
+          style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {data.sectionRows - region.rowStart + 1} / {data.sectionRows - region.rowEnd + 1}; grid-column: {data.sectionCols - region.colEnd + 2} / {data.sectionCols - region.colStart + 2};"
+          on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
+          >
+          <Overlay action={region.action} draw={region.marked} isRegion="true" />
+        </div>
+          {:else if data.isVflipped}
+            <div
+              class="grid-region"
+              data-area-id={data.rooms.length + pos}
+              style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {data.sectionRows - region.rowStart + 1} / {data.sectionRows - region.rowEnd + 1}; grid-column: {region.colStart} / {region.colEnd};"
+              on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
+              >
+              <Overlay action={region.action} draw={region.marked} isRegion="true" />
+            </div>
+          {:else if data.isHflipped}
+            <div
+              class="grid-region"
+              data-area-id={data.rooms.length + pos}
+              style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {region.rowStart} / {region.rowEnd}; grid-column: {data.sectionCols - region.colEnd + 2} / {data.sectionCols - region.colStart + 2};"
+              on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
+              >
+              <Overlay action={region.action} draw={region.marked} isRegion="true" />
+            </div>
+          {:else}
+            <div
+              class="grid-region"
+              data-area-id={data.rooms.length + pos}
+              style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {region.rowStart} / {region.rowEnd}; grid-column: {region.colStart} / {region.colEnd};"
+              on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
+              >
+              <Overlay action={region.action} draw={region.marked} isRegion="true" />
+            </div>
+          {/if}
+        {/each}
+      {/if}
     </div>
   </div>
   
   <style type="scss">
-      @import "../styles/map-grid.scss";
+    @import "../styles/map-grid.scss";
+
+    .grid-region {
+      position: relative;
+      align-self: stretch;
+      z-index: 2;
+
+      .zebes & {
+        background-image: url(/images/zebes-quarterscale.png);
+      }
+
+      &:hover {
+        z-index: 10;
+        cursor: pointer;
+
+        filter: drop-shadow(10px 10px 10px var(--shadow-color));
+        -webkit-animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+        animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+      }
+
+      &.active {
+		    filter: saturate(120%);
+      }
+    }
+
+    .mirrored-h .grid-region {
+      transform: scaleX(-1);
+
+      &:hover {
+        -webkit-animation: mirrored-scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+        animation: mirrored-scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+      }
+    }
   </style>
