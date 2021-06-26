@@ -2,6 +2,7 @@
 	import { Router, Route } from "svelte-routing";
 	import Tracker from "./routes/Tracker.svelte";
 	import Start from "./routes/Start.svelte";
+	import WarpAnimation from "./components/warp-animation.svelte";
 	// import Blog from "./routes/Options.svelte";
   
 	export let url = '';
@@ -12,4 +13,5 @@
 	<Route path="coop/:coopGuid" component="{Tracker}" />
 	<!-- <Route path="options" component="{Options}" /> -->
 	<Route path="/"><Start /></Route>
+	<Route path="/warp"><WarpAnimation/></Route>
   </Router>

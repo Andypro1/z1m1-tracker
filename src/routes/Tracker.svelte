@@ -63,7 +63,7 @@
 
 	const getAreaUnderCursor = (x, y) => {
 		let elem = document.elementFromPoint(x, y);
-
+		
 		while(elem.parentElement && !elem.classList.contains('map-grid')) {
 			if(elem.classList.contains('room') || elem.classList.contains('grid-region'))
 				return elem.dataset.areaId;

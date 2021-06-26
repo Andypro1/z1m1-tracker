@@ -186,7 +186,7 @@
   
   <div class="map-grid-container" style={cssVarStyles}>
     <div class="map-grid {data.class}"
-      on:mousemove={(e) => { mouseX = e.pageX; mouseY = e.pageY; }} on:mouseenter={() => mouseInMap = true } on:mouseleave={() => mouseInMap = false }
+      on:mousemove={(e) => { mouseX = e.clientX; mouseY = e.clientY; }} on:mouseenter={() => mouseInMap = true } on:mouseleave={() => mouseInMap = false }
       class:mirrored-h={data.isHflipped} class:mirrored-v={data.isVflipped}>
       {#each getRooms() as cell, pos}
         {#if !cell.outofbounds}
