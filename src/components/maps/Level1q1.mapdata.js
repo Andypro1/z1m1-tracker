@@ -12,7 +12,7 @@ const map = {
     isVflipped: false,
     rooms: [
     { outofbounds: true },
-    { outofbounds: false },
+    { outofbounds: false, premark: 'E' },
     { outofbounds: false },
     { outofbounds: true },
     { outofbounds: true },
@@ -22,13 +22,13 @@ const map = {
     { outofbounds: true },
     { outofbounds: false },
     { outofbounds: true },
-    { outofbounds: false },
-    { outofbounds: false },
+    { outofbounds: false, premark: 'U' },
+    { outofbounds: false, premark: 'Q' },
 
     { outofbounds: false },
     { outofbounds: false },
     { outofbounds: false },
-    { outofbounds: false },
+    { outofbounds: false, premark: 'E' },
     { outofbounds: false },
     { outofbounds: true },
 

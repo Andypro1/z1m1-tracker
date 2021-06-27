@@ -49,7 +49,7 @@ export const tracker = {
 
 
 export const GlobalAction = {
-	hyrule: { display: 'Hyrule', hotkeys: ['h'], name: 'Hyrule (Q1)' },
+	hyrule: { display: 'Hyrule', hotkeys: ['h', 'o'], name: 'Hyrule (Q1)' },
 	brinstar: { display: 'Brinstar', hotkeys: ['b'], name: 'Brinstar' },
 	norfair: { display: 'Norfair', hotkeys: ['n'], name: 'Norfair' },
 	kraids: { display: 'Kraid\'s', hotkeys: ['k'], name: 'Kraid\'s' },

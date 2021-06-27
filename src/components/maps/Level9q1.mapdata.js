@@ -18,9 +18,9 @@ const map = {
     { outofbounds: false },
     { outofbounds: false },
     { outofbounds: false },
-    { outofbounds: false },
+    { outofbounds: false, premark: 'E' },
 
-    { outofbounds: false },
+    { outofbounds: false, premark: 'E' },
     { outofbounds: false },
     { outofbounds: false },
     { outofbounds: false },

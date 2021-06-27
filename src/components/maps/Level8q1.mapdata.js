@@ -21,16 +21,16 @@ const map = {
     { outofbounds: true },
     { outofbounds: false },
     { outofbounds: false },
-    { outofbounds: false },
+    { outofbounds: false, premark: 'E' },
 
     { outofbounds: true },
-    { outofbounds: false },
+    { outofbounds: false, premark: 'Q' },
     { outofbounds: false },
     { outofbounds: false },
     { outofbounds: true },
 
     { outofbounds: false },
-    { outofbounds: false },
+    { outofbounds: false, premark: 'U' },
     { outofbounds: false },
     { outofbounds: false },
     { outofbounds: false },
@@ -54,7 +54,7 @@ const map = {
     { outofbounds: true },
 
     { outofbounds: true },
-    { outofbounds: false },
+    { outofbounds: false, premark: 'E' },
     { outofbounds: false },
     { outofbounds: false },
     { outofbounds: false }

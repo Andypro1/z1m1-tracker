@@ -10,7 +10,7 @@ const Action = {
 	lockedSword: { display: 'locked sword', hotkeys: ['l'], name: 'lockedSword', mapText: 'sword' },
 
 	Warp: {
-		toHyrule: { display: 'Hyrule', hotkeys: ['wh'], name: 'toHyrule', warpText: 'Hyrule' },
+		toHyrule: { display: 'Hyrule', hotkeys: ['wh', 'wo'], name: 'toHyrule', warpText: 'Hyrule' },
 		toBrinstar: { display: 'Brinstar', hotkeys: ['wb'], name: 'toBrinstar', warpText: 'Brinstar' },
 		toNorfair: { display: 'Norfair', hotkeys: ['wn'], name: 'toNorfair', warpText: 'Norfair' },
 		toKraids: { display: 'Kraid\'s', hotkeys: ['wk'], name: 'toKraids', warpText: 'Kraid\'s' },

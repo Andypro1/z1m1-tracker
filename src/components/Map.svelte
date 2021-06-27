@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import tilesheet from "./tilesheet.js";
     import Overlay from "./Overlay.svelte";
+    import Premark from "./Premark.svelte";
     import { actions } from '../services/tracker.js';
     import toolbars from './toolbars.js';
 
@@ -198,6 +199,10 @@
             style={getGridPosStyles(pos)}
             on:mousedown={(e) => areaClick(e, cell, cell.areaId)}
           >
+            {#if !cell.marked && cell.premark}
+              <Premark text={cell.premark} />
+            {/if}
+
             <Overlay action={cell.action} draw={cell.marked} />
           </div>
         {:else}
@@ -214,6 +219,10 @@
           style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {data.sectionRows - region.rowStart + 1} / {data.sectionRows - region.rowEnd + 1}; grid-column: {data.sectionCols - region.colEnd + 2} / {data.sectionCols - region.colStart + 2};"
           on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
           >
+          {#if !region.marked && region.premark}
+            <Premark text={region.premark} />
+          {/if}
+
           <Overlay action={region.action} draw={region.marked} isRegion="true" />
         </div>
           {:else if data.isVflipped}
@@ -223,6 +232,10 @@
               style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {data.sectionRows - region.rowStart + 1} / {data.sectionRows - region.rowEnd + 1}; grid-column: {region.colStart} / {region.colEnd};"
               on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
               >
+              {#if !region.marked && region.premark}
+                <Premark text={region.premark} />
+              {/if}
+
               <Overlay action={region.action} draw={region.marked} isRegion="true" />
             </div>
           {:else if data.isHflipped}
@@ -232,6 +245,10 @@
               style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {region.rowStart} / {region.rowEnd}; grid-column: {data.sectionCols - region.colEnd + 2} / {data.sectionCols - region.colStart + 2};"
               on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
               >
+              {#if !region.marked && region.premark}
+                <Premark text={region.premark} />
+              {/if}
+
               <Overlay action={region.action} draw={region.marked} isRegion="true" />
             </div>
           {:else}
@@ -241,6 +258,10 @@
               style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {region.rowStart} / {region.rowEnd}; grid-column: {region.colStart} / {region.colEnd};"
               on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
               >
+              {#if !region.marked && region.premark}
+                <Premark text={region.premark} />
+              {/if}
+              
               <Overlay action={region.action} draw={region.marked} isRegion="true" />
             </div>
           {/if}

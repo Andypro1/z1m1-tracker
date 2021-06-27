@@ -156,11 +156,11 @@ const map = {
 
         { outofbounds: false },
         { outofbounds: true },
+        { outofbounds: false, premark: 'M' },
         { outofbounds: false },
+        { outofbounds: false, premark: 'M' },
         { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: false },
-        { outofbounds: false },
+        { outofbounds: false, premark: 'U' },
         { outofbounds: false },
         { outofbounds: false },
         { outofbounds: false },
@@ -173,7 +173,7 @@ const map = {
         { outofbounds: true },
         { outofbounds: true },
         { outofbounds: true },
-        { outofbounds: true },
+        { outofbounds: false, premark: 'Q' },
         { outofbounds: false },
         { outofbounds: false },
         { outofbounds: false },
@@ -185,7 +185,8 @@ const map = {
           rowStart: 5, rowEnd: 5, colStart: 2, colEnd: 7,
           bgSize: 'calc(var(--map-cols) * 100% / 5) calc(var(--map-rows) * 100%)',
           bgPosX: '4%',
-          bgPosY: 'calc(20 * 100% / 29)'
+          bgPosY: 'calc(20 * 100% / 29)',
+          premark: 'U'
         },
         { name: 'door-2-left',
           rowStart: 6, rowEnd: 6, colStart: 2, colEnd: 7,
@@ -197,19 +198,22 @@ const map = {
           rowStart: 5, rowEnd: 5, colStart: 8, colEnd: 11,
           bgSize: 'calc(var(--map-cols) * 100% / 3) calc(var(--map-rows) * 100%)',
           bgPosX: '25.9%',
-          bgPosY: 'calc(20 * 100% / 29)'
+          bgPosY: 'calc(20 * 100% / 29)',
+          premark: 'U'
         },
         { name: 'door-2-right',
           rowStart: 6, rowEnd: 6, colStart: 8, colEnd: 11,
           bgSize: 'calc(var(--map-cols) * 100% / 3) calc(var(--map-rows) * 100%)',
           bgPosX: '25.9%',
-          bgPosY: 'calc(21 * 100% / 29)'
+          bgPosY: 'calc(21 * 100% / 29)',
+          premark: 'U'          
         },
         { name: 'door-3-left',
           rowStart: 8, rowEnd: 8, colStart: 5, colEnd: 7,
           bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
           bgPosX: '14.3%',
-          bgPosY: 'calc(23 * 100% / 29)'
+          bgPosY: 'calc(23 * 100% / 29)',
+          premark: 'M'
         },
         { name: 'door-3-right',
           rowStart: 8, rowEnd: 8, colStart: 8, colEnd: 12,
@@ -221,37 +225,43 @@ const map = {
           rowStart: 10, rowEnd: 10, colStart: 5, colEnd: 7,
           bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
           bgPosX: '14.3%',
-          bgPosY: 'calc(25 * 100% / 29)'
+          bgPosY: 'calc(25 * 100% / 29)',
+          premark: 'M'
         },
         { name: 'attic-1',
           rowStart: 1, rowEnd: 1, colStart: 9, colEnd: 11,
           bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
           bgPosX: '28.6%',
-          bgPosY: 'calc(16 * 100% / 29)'
+          bgPosY: 'calc(16 * 100% / 29)',
+          premark: 'M'
         },
         { name: 'attic-2',
           rowStart: 2, rowEnd: 2, colStart: 9, colEnd: 11,
           bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
           bgPosX: '28.6%',
-          bgPosY: 'calc(17 * 100% / 29)'
+          bgPosY: 'calc(17 * 100% / 29)',
+          premark: 'M'
         },
         { name: 'attic-3',
           rowStart: 3, rowEnd: 3, colStart: 9, colEnd: 11,
           bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
           bgPosX: '28.6%',
-          bgPosY: 'calc(18 * 100% / 29)'
+          bgPosY: 'calc(18 * 100% / 29)',
+          premark: 'M'
         },
         { name: 'top-basement',
           rowStart: 11, rowEnd: 11, colStart: 4, colEnd: 9,
           bgSize: 'calc(var(--map-cols) * 100% / 5) calc(var(--map-rows) * 100%)',
           bgPosX: '12.0%',
-          bgPosY: 'calc(26 * 100% / 29)'
+          bgPosY: 'calc(26 * 100% / 29)',
+          premark: 'U'
         },
         { name: 'kraid-pit-stop',
           rowStart: 9, rowEnd: 9, colStart: 10, colEnd: 12,
           bgSize: 'calc(var(--map-cols) * 100% / 2) calc(var(--map-rows) * 100%)',
           bgPosX: '32.1%',
-          bgPosY: 'calc(24 * 100% / 29)'
+          bgPosY: 'calc(24 * 100% / 29)',
+          premark: 'U'
         }
     ]
 };
