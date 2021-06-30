@@ -232,7 +232,6 @@
   //  Icon art for each equipment type  \\
   .icon {
     position: absolute;
-    //width: calc(var(--map-room-height) * 0.8px);
 	width: 80%;
     height: 80%;
     z-index: 10;
@@ -261,7 +260,7 @@
 	  padding-top: 0.25rem;
 
       color: rgb(255, 255, 255);
-      font-size: 4.5rem;
+      font-size: 2.5rem;
       white-space: nowrap;
       overflow: hidden;
 	  opacity: 1;
@@ -269,20 +268,5 @@
       display: flex;
       justify-content: center; /* align horizontal */
       align-items: center; /* align vertical */
-  }
-
-  .warp-label {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-
-    color: rgb(255, 255, 255);
-    font-size: calc(var(--map-room-height) * 0.20px);
-    white-space: nowrap;
-    overflow: hidden;
-
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
   }
 </style>
