@@ -15,13 +15,13 @@
         {#if actList[action].mapClass}
           <i class="backdrop-icon {action} {actList[action] && actList[action].mapClass}"></i>
         {/if}
+        {#if actList[action] && actList[action].spriteIndex }
+          <div class="icon {action} sprite-index{actList[action].spriteIndex}"></div>
+        {/if}
         {#if actList[action] && (actList[action].mapText || actList[action].warpText) }
           <div class:label={actList[action].mapText} class:warp-label={actList[action].warpText}>
             <b>{actList[action].mapText || actList[action].warpText}</b>
           </div>
-        {/if}
-        {#if actList[action] && actList[action].spriteIndex }
-          <div class="icon {action} sprite-index{actList[action].spriteIndex}"></div>
         {/if}
     </div>
 {/if}
@@ -88,9 +88,11 @@
       width: 100%;
       height: 100%;
       position: absolute;
+      z-index: 20;
 
       color: rgb(255, 255, 255);
       font-size: calc(var(--map-room-height) * 1px);
+      padding-top: calc(var(--map-room-height) * 0.005rem);
       white-space: nowrap;
       overflow: hidden;
 
