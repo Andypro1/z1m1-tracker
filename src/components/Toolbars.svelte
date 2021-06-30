@@ -5,6 +5,8 @@
     //  Props
     export let set = 'overworld';
 
+	$: curSubTb = $toolbars.getCurrentSubBarName();
+
 	//  TODO: move.
     $: tbActionClass = (action) => {
         const keycaps = {
@@ -21,26 +23,42 @@
             keycap: keycaps[i]
         };
     };
+
+	const tbclick = (e, action) => {
+		e.preventDefault();
+		e.stopPropagation();
+
+		//  Use left, middle, right, and forward buttons if available (not back)
+		if(e.button >= 0 && e.button !== 3) {
+			actions.setPosition(action.name, e.button);
+			
+			$toolbars.setSubToolbar(action.name);
+			$toolbars = $toolbars;
+		}
+	};
+
+	const tbhover = (e, action) => {
+		$toolbars.setSubToolbar(action.name);
+		curSubTb = curSubTb;
+	};
 </script>
 
 <div class="toolbars">
     {#each $toolbars.getMainToolbar(set) as tb, index (index)}
         <div class="toolbar">
             {#each tb.actions as action}
-                <div class="action {tbActionClass(action).name}"
-                    on:mousedown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        //  Use left, middle, right, and forward buttons if available (not back)
-                        if(e.button >= 0 && e.button !== 3) {
-							actions.setPosition(action.name, e.button);
-							
-							$toolbars.setSubToolbar(action.name);
-							$toolbars = $toolbars;
-						}
-                    }}
-                >{ action.display }
+                <div class="action {action.name} {tbActionClass(action).name}"
+					class:active-tb={curSubTb === action.name}
+                    on:mousedown={(e) => tbclick(e, action)}
+					on:mouseover={(e) => tbhover(e, action)}
+                >
+					{#if action.spriteIndex }
+						<div class="icon {action} sprite-index{action.spriteIndex}"></div>
+					{:else}
+						{ action.display }
+					{/if}
+					
+					<div class="tb-backdrop"></div>
 					<aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
 					<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys[0]}></aside>
 				</div>
@@ -49,7 +67,7 @@
 	{/each}
 	
 	{#each $toolbars.getSubToolbar() as stb}
-		<div class="sub toolbar">
+		<div class="sub toolbar {curSubTb}">
             {#each stb.actions as action}
                 <div class="action {tbActionClass(action).name}"
                     on:mousedown={(e) => {
@@ -60,7 +78,20 @@
                         if(e.button >= 0 && e.button !== 3)
 							actions.setPosition(action.name, e.button);
                     }}
-                >{ action.display }
+                >
+					{#if action.spriteIndex }
+						<div class="icon sprite-index{action.spriteIndex}"></div>
+					{:else}
+						{ action.display }
+					{/if}
+
+					{#if action.mapText }
+						<div class:label={action.mapText}>
+							<b>{action.mapText}</b>
+						</div>
+					{/if}
+
+					<div class="tb-backdrop"></div>
 					<aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
 					<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys}></aside>
 				</div>
@@ -97,6 +128,10 @@
 			linear-gradient(127deg, rgba(160,160,160, 0.8), rgba(0,255,0,0) 70.71%),
 			linear-gradient(336deg, rgba(0,0,100, 0.5), rgba(0,0,255,0) 70.71%);
 
+		&.active-tb {
+			background: none;
+		}
+
 		color: white;
 		padding: 1rem;
 		width: 4.8rem;
@@ -118,19 +153,9 @@
 		&.button1,
 		&.button2,
 		&.button4 {
-			// border: 1rem solid hsl(197, 38%, 30%);
-			// content: '';
-			// position: absolute;
-			// top: 0;
-			// left: 0;
-			// width: 100%;
-			// height: 100%;
-			// padding: 0;
-
 			position: relative;
 
 			&:before {
-				// border: 1rem solid hsl(197, 38%, 30%);
 				content: '';
 				position: absolute;
 				left: 0;
@@ -138,7 +163,6 @@
 				width: 100%;
 				height: 100%;
 				box-shadow: 0 0 17px 3px #ffff01,0 0 4px 2px #ffff01;
-				// z-index: -1;
 				z-index: 9999;
 				border-radius: 5px;
 			}
@@ -154,6 +178,45 @@
 		}
 	}
 
+	//  Undue subdued filters on the background when hovering
+	.action:hover .tb-backdrop, .active-tb.action .tb-backdrop {
+		filter: none;
+		// filter: drop-shadow(8px 8px 8px var(--shadow-color));
+	}
+
+	.tb-backdrop {
+		position: absolute;
+		left: 0; right: 0; top: 0; bottom: 0;
+		width: 100%;
+		height: 100%;
+		z-index: -10;
+
+		border-radius: 0.5rem;
+
+		.warp & {
+			background-image: url("/images/tb.action.warp.png");
+			background-size: contain;
+
+			filter: contrast(35%) grayscale(60%);
+		}
+
+		.equip & {
+			background-image: url("/images/tb.action.equip.png"), linear-gradient(rgba(185, 174, 110, 0.329),rgba(185, 174, 110, 0.329));
+			background-blend-mode: overlay;
+			background-size: contain;
+
+			filter: contrast(35%) grayscale(25%);
+		}
+
+		.quest & {
+			background-image: url("/images/tb.action.quest.png"), linear-gradient(rgba(214, 178, 20, 0.329),rgba(214, 179, 20, 0.329));
+    		background-blend-mode: overlay;
+			background-size: contain;
+
+			filter: brightness(75%);
+		}
+	}
+
 	//  Override toolbar styles for subtoolbars
 	.sub.toolbar {
 		& .action {
@@ -164,4 +227,62 @@
 			height: 3.5rem;
 		}
 	}
+
+  //  TODO: Below are dupes with Overlay - draw out and refactor
+  //  Icon art for each equipment type  \\
+  .icon {
+    position: absolute;
+    //width: calc(var(--map-room-height) * 0.8px);
+	width: 80%;
+    height: 80%;
+    z-index: 10;
+
+    top: 0; left: 0; right: 0; bottom: 0;
+    margin: auto;
+
+    background: url(/images/sprites-16px.png) no-repeat;
+    background-size: auto 100%;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+
+    //  Class rules for each sprite in sprites-16px.png
+	@for $i from 0 through 39 {
+		&.sprite-index#{$i} {
+			background-position: calc(#{$i} * 100% / 61.5);
+		}
+	}
+  }
+
+  .label {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+	  z-index: 20;
+	  padding-top: 0.25rem;
+
+      color: rgb(255, 255, 255);
+      font-size: 4.5rem;
+      white-space: nowrap;
+      overflow: hidden;
+	  opacity: 1;
+
+      display: flex;
+      justify-content: center; /* align horizontal */
+      align-items: center; /* align vertical */
+  }
+
+  .warp-label {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+
+    color: rgb(255, 255, 255);
+    font-size: calc(var(--map-room-height) * 0.20px);
+    white-space: nowrap;
+    overflow: hidden;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+  }
 </style>

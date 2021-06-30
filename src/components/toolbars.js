@@ -99,7 +99,7 @@ const Toolbars = () => {
 
 	const _toolbars = [
 		{ name: 'dungeon', actions: [Action.cleared, Action.warp, Action.equip, Action.quest] },
-		{ name: 'overworld', actions: [Action.cleared, Action.warp, Action.equip, Action.quest, Action.shop, Action.potionShop, Action.lockedSword] },
+		{ name: 'overworld', actions: [Action.cleared, Action.warp, Action.equip, Action.quest, Action.shop] },
 		{ name: 'warp', actions: [...Object.keys(Action.Warp).map(k => Action.Warp[k])] },
 		{ name: 'equip', actions: [...Object.keys(Action.Equip).map(k => Action.Equip[k])] },
 		{ name: 'quest', actions: [...Object.keys(Action.Quest).map(k => Action.Quest[k])] }
@@ -115,6 +115,10 @@ const Toolbars = () => {
 		if(set.indexOf('zebes') >= 0)
 			return _toolbars.filter(t => t.name === 'dungeon');
 	};
+
+	const getCurrentSubBarName = () => {
+		return currentSubBar;
+	}
 
 	const getSubToolbar = () => {
 		return _toolbars.filter(t => t.name === currentSubBar);
@@ -162,7 +166,8 @@ const Toolbars = () => {
 		setSubToolbar,
 		isAToolbarAction,
 		getAction,
-		allActions
+		allActions,
+		getCurrentSubBarName
 	});
 };
 
