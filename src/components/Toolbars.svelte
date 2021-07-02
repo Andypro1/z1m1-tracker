@@ -43,7 +43,7 @@
 	};
 </script>
 
-<div class="toolbars">
+<!-- <div class="toolbars"> -->
     {#each $toolbars.getMainToolbar(set) as tb, index (index)}
         <div class="toolbar">
             {#each tb.actions as action}
@@ -64,59 +64,69 @@
 				</div>
             {/each}
         </div>
-	{/each}
+
+		{#each $toolbars.getSubToolbar() as stb}
+			<div class="sub toolbar {curSubTb}">
+				{#each stb.actions as action}
+					<div class="action {tbActionClass(action).name}"
+						on:mousedown={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
 	
-	{#each $toolbars.getSubToolbar() as stb}
-		<div class="sub toolbar {curSubTb}">
-            {#each stb.actions as action}
-                <div class="action {tbActionClass(action).name}"
-                    on:mousedown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        //  Use left, middle, right, and forward buttons if available (not back)
-                        if(e.button >= 0 && e.button !== 3)
-							actions.setPosition(action.name, e.button);
-                    }}
-                >
-					{#if action.spriteIndex }
-						<div class="icon sprite-index{action.spriteIndex}"></div>
-					{:else}
-						{ action.display }
-					{/if}
-
-					{#if action.mapText }
-						<div class:label={action.mapText}>
-							<b>{action.mapText}</b>
-						</div>
-					{/if}
-
-					<div class="tb-backdrop"></div>
-					<aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
-					<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys}></aside>
-				</div>
-            {/each}
-		</div>
+							//  Use left, middle, right, and forward buttons if available (not back)
+							if(e.button >= 0 && e.button !== 3)
+								actions.setPosition(action.name, e.button);
+						}}
+					>
+						{#if action.spriteIndex }
+							<div class="icon sprite-index{action.spriteIndex}"></div>
+						{:else}
+							{ action.display }
+						{/if}
+	
+						{#if action.mapText }
+							<div class:label={action.mapText}>
+								<b>{action.mapText}</b>
+							</div>
+						{/if}
+	
+						<div class="tb-backdrop"></div>
+						<aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
+						<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys}></aside>
+					</div>
+				{/each}
+			</div>
+		{/each}
 	{/each}
-</div>
+<!-- </div> -->
 
 <style type="scss">
     @import "../styles/overlays.scss";
 
-    .toolbars {
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-start;
-		align-content: space-around;
-	}
+    // .toolbars {
+	// 	display: flex;
+	// 	flex-direction: column;
+	// 	justify-content: flex-start;
+	// 	align-content: space-around;
+	// }
 
 	.toolbar {
-		flex: 1 0 auto;
+		flex: 0 0 auto;
 
-		display: flex;
+		display: grid;
+		grid-template-rows: 1fr 1fr;
+		grid-template-columns: 1fr 1fr 1fr;
+		justify-content: flex-start;
 		align-items: flex-start;
 
 		margin: 0.2rem;
+
+		& .action.cleared { grid-area: 1 / 1; }
+		& .action.notYetAcquired { grid-area: 1 / 2; }
+		& .action.shop { grid-area: 1 / 3; }
+		& .action.warp { grid-area: 2 / 1; }
+		& .action.equip { grid-area: 2 / 2; }
+		& .action.quest { grid-area: 2 / 3; }
 	}
 
 	.toolbar .action {
@@ -181,7 +191,6 @@
 	//  Undue subdued filters on the background when hovering
 	.action:hover .tb-backdrop, .active-tb.action .tb-backdrop {
 		filter: none;
-		// filter: drop-shadow(8px 8px 8px var(--shadow-color));
 	}
 
 	.tb-backdrop {
@@ -219,6 +228,22 @@
 
 	//  Override toolbar styles for subtoolbars
 	.sub.toolbar {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		// height: 100%;
+		max-width: calc(100vw - 20rem - 24rem);
+		max-height: 10rem;
+
+		justify-content: stretch;
+		align-items: stretch;
+
+		& .action:before {
+			content: '';
+			// float: left;
+			padding-top: 100%;
+		}
+
 		& .action {
 			margin: 0.15rem;
 
@@ -227,6 +252,39 @@
 			height: 3.5rem;
 		}
 	}
+
+// 	.flex-container {
+//     padding: 0;
+//     margin: 0;
+//     list-style: none;
+//     display: -webkit-box;
+//     display: -moz-box;
+//     display: -ms-flexbox;
+//     display: -webkit-flex;
+//     display: flex;
+//     -webkit-flex-flow: row;
+//     justify-content: space-around;
+   
+//     line-height:30px;
+// }
+// 	.flex-item {
+//     background: tomato;
+//     margin: 5px;
+//     color: white;
+//     font-weight: bold;
+//     font-size: 1.5em;
+//     text-align: center;
+//     flex: 1 0 auto;
+//     height:auto;
+// }
+// .flex-item:before {
+//     content:'';
+//     float:left;
+//     padding-top:100%;
+// }
+
+
+
 
   //  TODO: Below are dupes with Overlay - draw out and refactor
   //  Icon art for each equipment type  \\

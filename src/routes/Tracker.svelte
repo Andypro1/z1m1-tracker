@@ -1,7 +1,7 @@
 <script>
 	import { onMount } from 'svelte';
 	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, areaPairs, trackerUpdated, actions, loadState, GlobalAction } from '../services/tracker.js';
+	import { tracker, areaPairs, updateMapData, trackerUpdated, actions, loadState, GlobalAction } from '../services/tracker.js';
 	import Toolbars from "../components/Toolbars.svelte";
 	import toolbars from '../components/toolbars.js';
 	import Map from "../components/Map.svelte";
@@ -74,21 +74,23 @@
 		return -1;
 	};
 
-
+	//  Affect the activeHotkey vars with mouse clicks for
+	//  combined mouse-keyboard sequences
 	const handleMouseMark = (areaId, cell, action, mouseX, mouseY) => {
-		const isToolbarAction = $toolbars.isAToolbarAction(action);
+		const mouseMarkAreaId = getAreaUnderCursor(mouseX, mouseY);
 
-		if(isToolbarAction) {
+		if(mouseMarkAreaId > -1) {
 			activeHotkeySequence  = $toolbars.getAction(action).hotkeys[0];
-			activeHotkeyAreaId = getAreaUnderCursor(mouseX, mouseY);
+			activeHotkeyAreaId    = mouseMarkAreaId;
 		}
-	}
+	};
 
 
 	const handleHotkey = (e, mouseInMap, mouseX, mouseY) => {
 		e.preventDefault();
     	e.stopPropagation();
 
+		//  Update sub-toolbar as needed
 		if(['w', 'e', 'q'].includes(e.key)) {
 			const subTb = e.key === 'w' ? 'warp' : (
 				e.key === 'e' ? 'equip' : (
@@ -119,16 +121,12 @@
 
 			activeHotkeyAreaId = curAreaId;
 
-			//console.log(`prev room: ${activeHotkeyAreaId}.  cur room: ${curAreaId}.  active seq.: ${activeHotkeySequence}`);
-
 			const cutoverAreaIndex = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
 			const actions = $toolbars.allActions();
 			const actionsArray = [...Object.keys(actions).map(k => actions[k])];
 			const curKeySeq = activeHotkeySequence;
 			let matchingActions = actionsArray.filter(a => a.hotkeys.includes(activeHotkeySequence));
 			let partialSequences = actionsArray.filter(a => a.hotkeys.filter(h => (h.length > activeHotkeySequence.length) && h.startsWith(activeHotkeySequence)).length > 0);
-
-			//TODO: fix algorithm for handling key sequences in the proper order
 
 			//  If not a valid sequence, reset to just the incoming key and check again
 			if(matchingActions.length === 0) {
@@ -139,52 +137,18 @@
 
 			if(matchingActions.length) {
 				if(curAreaId !== -1) {
-					if(curAreaId >= cutoverAreaIndex) { //region
-						const region = tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex];
-
-						tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex].marked = true;
-						tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex].action = matchingActions[0].name;
-
-						trackerUpdated();
-						return;
-					}
-					else { //room
-						const room = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId];
-					
-						if(room.active && !room.outofbounds) {
-							tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId].marked = true;
-							tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId].action = matchingActions[0].name;
-	
-							trackerUpdated();
-							return;
-						}
-					}
+					updateMapData(curAreaId, true, matchingActions[0].name);
+					tracker = tracker;
+					return;
 				}
 			}
 			else if(e.key === 'Escape') {
 				//  Special case handling (ESC should unmark but doesn't have a corresponding toolbar action).
 				//  If this needs to be expanded for multiple special cases I'll refactor
 				if(curAreaId !== -1) {
-					if(curAreaId >= cutoverAreaIndex) { //region
-						const region = tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex];
-
-						tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex].marked = false;
-						tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[curAreaId - cutoverAreaIndex].action = '';
-
-						trackerUpdated();
-						return;
-					}
-					else { //room
-						const room = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId];
-					
-						if(room.active && !room.outofbounds) {
-							tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId].marked = false;
-							tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[curAreaId].action = '';
-	
-							trackerUpdated();
-							return;
-						}
-					}
+					updateMapData(curAreaId, false, '');
+					tracker = tracker;
+					return;
 				}
 			}
 
@@ -283,8 +247,11 @@
 
 	.top-bar {
 		flex: 0 0 10rem;
+		height: 10rem;
+		max-height: 10rem;
 
 		display: flex;
+		flex-direction: row;
 		justify-content: space-between;
 		align-items: stretch;
 	}

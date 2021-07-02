@@ -2,15 +2,14 @@ import { writable } from 'svelte/store';
 
 const Action = {
 	cleared: { display: 'cleared', hotkeys: [' ', 'c'], name: 'cleared', mapClass: 'fas fa-check-circle' },
+	notYetAcquired: { display: 'not yet acquired', hotkeys: ['n'], name: 'notYetAcquired', mapClass: 'fas fa-asterisk' },
 	warp: { display: 'warp', hotkeys: ['w'], name: 'warp', mapClass: 'fas fa-door-open', mapText: 'W' },
 	equip: { display: 'equip', hotkeys: ['e'], name: 'equip', mapClass: 'fas fa-gavel', mapText: 'E' },
 	quest: { display: 'quest', hotkeys: ['q'], name: 'quest', mapClass: 'fas fa-trophy', mapText: 'Q' },
 	shop: { display: 'shop', hotkeys: ['s'], name: 'shop', image: true, mapText: 'shop' },
-	potionShop: { display: 'potion shop', hotkeys: ['p'], name: 'potionShop', mapText: 'p.shop' },
-	lockedSword: { display: 'locked sword', hotkeys: ['l'], name: 'lockedSword', mapText: 'sword' },
 
 	Warp: {
-		toHyrule: { display: 'Hyrule', hotkeys: ['wh', 'wo'], name: 'toHyrule', warpText: 'Hyrule' },
+		toHyrule: { display: 'Hyrule', hotkeys: ['wh', 'wo', 'w`'], name: 'toHyrule', warpText: 'Hyrule' },
 		toBrinstar: { display: 'Brinstar', hotkeys: ['wb'], name: 'toBrinstar', warpText: 'Brinstar' },
 		toNorfair: { display: 'Norfair', hotkeys: ['wn'], name: 'toNorfair', warpText: 'Norfair' },
 		toKraids: { display: 'Kraid\'s', hotkeys: ['wk'], name: 'toKraids', warpText: 'Kraid\'s' },
@@ -98,8 +97,8 @@ const Toolbars = () => {
 	let currentSubBar = 'warp';
 
 	const _toolbars = [
-		{ name: 'dungeon', actions: [Action.cleared, Action.warp, Action.equip, Action.quest] },
-		{ name: 'overworld', actions: [Action.cleared, Action.warp, Action.equip, Action.quest, Action.shop] },
+		{ name: 'dungeon', actions: [Action.cleared, Action.notYetAcquired, Action.warp, Action.equip, Action.quest] },
+		{ name: 'overworld', actions: [Action.cleared, Action.notYetAcquired, Action.shop, Action.warp, Action.equip, Action.quest] },
 		{ name: 'warp', actions: [...Object.keys(Action.Warp).map(k => Action.Warp[k])] },
 		{ name: 'equip', actions: [...Object.keys(Action.Equip).map(k => Action.Equip[k])] },
 		{ name: 'quest', actions: [...Object.keys(Action.Quest).map(k => Action.Quest[k])] }
@@ -148,12 +147,10 @@ const Toolbars = () => {
 			currentSubBar = 'quest';
 			return;
 		}
-
-		currentSubBar = '';
 	};
 
 	const getAction = (name) => {
-		return Action[name];
+		return flattenObject(Action)[name];
 	};
 
 	const allActions = () => {

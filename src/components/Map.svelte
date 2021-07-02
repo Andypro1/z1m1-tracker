@@ -3,7 +3,7 @@
     import tilesheet from "./tilesheet.js";
     import Overlay from "./Overlay.svelte";
     import Premark from "./Premark.svelte";
-    import { actions } from '../services/tracker.js';
+    import { actions, updateMapData } from '../services/tracker.js';
     import toolbars from './toolbars.js';
 
     //  Props
@@ -124,25 +124,16 @@
       const areaType = area.rowStart ? 'region' : 'room';
       const arrIndex = areaType === 'room' ? areaId : areaId - data.rooms.length;
 
-      // markRoom(cell.areaId, cell, $actions[e.button]);
       if(areaType === 'room' && (!area.active || area.outofbounds))
         return;
 
       const wasMarked = areaType === 'region' ? data.gridRegions[arrIndex].marked : data.rooms[arrIndex].marked;
 
-      if(areaType === 'room') {
-        data.rooms[arrIndex].marked = !wasMarked;
-        data.rooms[arrIndex].action = $actions[e.button];
-      }
-      else {
-        data.gridRegions[arrIndex].marked = !wasMarked;
-        data.gridRegions[arrIndex].action = $actions[e.button];
-      }
+      updateMapData(areaId, !wasMarked, $actions[e.button]);
+      data = data;
 
       $toolbars.setSubToolbar($actions[e.button]);
       $toolbars = $toolbars;
-
-      trackerUpdated();
 
       if(!wasMarked)
         handleMouseMark(areaId, area, $actions[e.button], mouseX, mouseY);
@@ -203,7 +194,7 @@
               <Premark text={cell.premark} />
             {/if}
 
-            <Overlay action={cell.action} draw={cell.marked} />
+            <Overlay action={cell.action} draw={cell.marked} notAcquired={cell.notAcquired} />
           </div>
         {:else}
           <div></div>
@@ -223,7 +214,7 @@
             <Premark text={region.premark} />
           {/if}
 
-          <Overlay action={region.action} draw={region.marked} isRegion="true" />
+          <Overlay action={region.action} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
         </div>
           {:else if data.isVflipped}
             <div
@@ -236,7 +227,7 @@
                 <Premark text={region.premark} />
               {/if}
 
-              <Overlay action={region.action} draw={region.marked} isRegion="true" />
+              <Overlay action={region.action} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
             </div>
           {:else if data.isHflipped}
             <div
@@ -249,7 +240,7 @@
                 <Premark text={region.premark} />
               {/if}
 
-              <Overlay action={region.action} draw={region.marked} isRegion="true" />
+              <Overlay action={region.action} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
             </div>
           {:else}
             <div
@@ -262,7 +253,7 @@
                 <Premark text={region.premark} />
               {/if}
               
-              <Overlay action={region.action} draw={region.marked} isRegion="true" />
+              <Overlay action={region.action} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
             </div>
           {/if}
         {/each}

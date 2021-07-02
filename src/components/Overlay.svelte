@@ -5,6 +5,7 @@
     export let action;
     export let draw     = false;
     export let isRegion = false;
+    export let notAcquired = false;
 
     const actList = $toolbars.allActions();
 </script>
@@ -22,6 +23,9 @@
           <div class:label={actList[action].mapText} class:warp-label={actList[action].warpText}>
             <b>{actList[action].mapText || actList[action].warpText}</b>
           </div>
+        {/if}
+        {#if notAcquired}
+          <i class="backdrop-icon notAcquired fas fa-asterisk"></i>
         {/if}
     </div>
 {/if}
@@ -118,7 +122,6 @@
 
   .backdrop-icon.cleared {
     color: rgb(132, 192, 117);
-    /* filter: brightness(75%); */
 
     font-size: 1rem;
 
@@ -127,8 +130,22 @@
     align-items: flex-start; /* align vertical */
   }
 
-  .backdrop-icon.cleared::before {
-    margin: 0.45rem;
+  .backdrop-icon.notAcquired {
+    color: rgb(238, 255, 0);
+
+    font-size: 1rem;
+
+    opacity: 1;
+    z-index: 30;
+
+    display: flex;
+    justify-content: flex-end; /* align horizontal */
+    align-items: flex-start; /* align vertical */
+  }
+
+  .backdrop-icon.cleared::before,
+  .backdrop-icon.notAcquired::before {
+    margin: calc(var(--map-room-height) * 0.005brem);
   }
 
   .backdrop-icon.quest {

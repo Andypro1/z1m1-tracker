@@ -49,7 +49,7 @@ export const tracker = {
 
 
 export const GlobalAction = {
-	hyrule: { display: 'Hyrule', hotkeys: ['h', 'o'], name: 'Hyrule (Q1)' },
+	hyrule: { display: 'Hyrule', hotkeys: ['h', 'o', '`'], name: 'Hyrule (Q1)' },
 	brinstar: { display: 'Brinstar', hotkeys: ['b'], name: 'Brinstar' },
 	norfair: { display: 'Norfair', hotkeys: ['n'], name: 'Norfair' },
 	kraids: { display: 'Kraid\'s', hotkeys: ['k'], name: 'Kraid\'s' },
@@ -100,6 +100,37 @@ export const actions = actionsStore();
 
 export const trackerUpdated = () => {
 	storage.saveData(tracker);
+};
+
+export const updateMapData = (areaId, marked, actionName) => {
+	const regionsStartAreaId = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
+	const isRegion           = areaId >= regionsStartAreaId;
+
+	//  isReminder is a simple toggle stored in the area as a boolean
+	const isReminder         = actionName === 'notYetAcquired';
+
+	if(isRegion) {
+		if(isReminder) {
+			tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].notAcquired = 
+				!tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].notAcquired;
+		}
+		else {
+			tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].marked = marked;
+			tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].action = actionName;
+		}
+	}
+	else { //room
+		if(isReminder) {
+			tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].notAcquired = 
+				!tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].notAcquired;
+		}
+		else {
+			tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].marked = marked;
+			tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].action = actionName;
+		}
+	}
+
+	trackerUpdated();
 };
 
 export const loadState = async (storageKey) => {
