@@ -5,11 +5,15 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "sirv public --single --no-clear"
+    "start": "sirv public --single --no-clear",
+    "client": "rollup -c -w",
+    "server": "(cd src/server && npm run start)",
+    "dev2": "concurrently \"npm run server\" \"npm run client\" "
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.0",
+    "concurrently": "^6.2.0",
     "rollup": "^2.3.4",
     "rollup-plugin-css-only": "^3.1.0",
     "rollup-plugin-livereload": "^2.0.0",

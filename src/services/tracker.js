@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import storage from '../services/storage.js';
+import coopClient from './coop-client.js';
 
 import Hyruleq1 from "../components/maps/Hyruleq1.mapdata.js";
 import Level1 from "../components/maps/Level1q1.mapdata.js";
@@ -130,6 +131,9 @@ export const updateMapData = (areaId, marked, actionName) => {
 		}
 	}
 
+		//  Test coop-client section  \\
+		coopClient.send(`${tracker.curAreaMapIndex} ${areaId} ${marked} ${actionName}`);
+		
 	trackerUpdated();
 };
 
