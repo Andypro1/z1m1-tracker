@@ -1,5 +1,14 @@
-const sveltePreprocess = require('svelte-preprocess')
+import { sveltePreprocess } from 'svelte-preprocess/dist/autoProcess.js';
+import netlify from '@sveltejs/adapter-netlify';
 
-module.exports = {
-  preprocess: sveltePreprocess(),
-}
+/** @type {import('@sveltejs/kit').Config} */
+const config = {
+	preprocess: sveltePreprocess(),
+	kit: {
+		// hydrate the <div id="svelte"> element in src/app.html
+		adapter: netlify(),
+		target: '#svelte',
+	}
+};
+
+export default config;

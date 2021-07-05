@@ -1,6 +1,8 @@
 import { writable } from 'svelte/store';
 import storage from '../services/storage.js';
-import coopClient from './coop-client.js';
+// import coopClient from './coop-client.js';
+
+let coopClient;
 
 import Hyruleq1 from "../components/maps/Hyruleq1.mapdata.js";
 import Level1 from "../components/maps/Level1q1.mapdata.js";
@@ -103,7 +105,7 @@ export const trackerUpdated = () => {
 	storage.saveData(tracker);
 };
 
-export const updateMapData = (areaId, marked, actionName) => {
+export const updateMapData = async (areaId, marked, actionName) => {
 	const regionsStartAreaId = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
 	const isRegion           = areaId >= regionsStartAreaId;
 
@@ -131,9 +133,12 @@ export const updateMapData = (areaId, marked, actionName) => {
 		}
 	}
 
-		//  Test coop-client section  \\
-		coopClient.send(`${tracker.curAreaMapIndex} ${areaId} ${marked} ${actionName}`);
-		
+	//  Test coop-client section  \\
+	if(!coopClient)
+		coopClient = (await import('./coop-client.js')).default;
+
+	coopClient.send(`${tracker.curAreaMapIndex} ${areaId} ${marked} ${actionName}`);
+
 	trackerUpdated();
 };
 

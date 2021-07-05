@@ -1,4 +1,5 @@
-import { compressToUTF16, decompressFromUTF16 } from 'async-lz-string';
+import { compressToUTF16, decompressFromUTF16 } from '../libs/async-lz-string.js';
+
 
 const storage = () => {
     const storageKeyPrefix = 'z1m1.trackingdata.lzstring.';

@@ -26,13 +26,21 @@ const coopClient = () => {
         console.log('onclose()');
     };
 
-    const send = (data) => {
+    const send = (data, retries) => {
         if(conn.readyState === WebSocket.OPEN) {
             conn.send(data);
             console.log(`sent: ${data}`);
         }
         else {
-            console.log(`could not send.`);
+            if(typeof retries === 'undefined')
+                retries = 3;
+                
+            if(retries > 0) {    
+                retries -= 1;
+                console.log(`could not send; retrying (retries remaining: ${retries}).`);
+
+                setTimeout(() => send(data, retries), 500);
+            }
         }
     };
 

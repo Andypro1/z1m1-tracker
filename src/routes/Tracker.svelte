@@ -1,13 +1,22 @@
+<script context="module">
+	export const ssr = false;
+</script>
+
 <script>
 	import { onMount } from 'svelte';
+	import { browser } from '$app/env';
 	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, areaPairs, updateMapData, trackerUpdated, actions, loadState, GlobalAction } from '../services/tracker.js';
+	import { tracker, areaPairs,  trackerUpdated, actions, loadState, GlobalAction } from '../services/tracker.js';
 	import Toolbars from "../components/Toolbars.svelte";
 	import toolbars from '../components/toolbars.js';
 	import Map from "../components/Map.svelte";
 
+	// let tracker, areaPairs, trackerUpdated, actions, loadState, GlobalAction;
+	let updateMapData;
+
 	//  Route props
 	export let coopGuid = '';
+	export let storageKey = '';
 
 	let activeHotkeySequence = '';
 	let activeHotkeyAreaId = -1;
@@ -29,21 +38,39 @@
 		.map(([key, value]) => `--${key}:${value}`)
 		.join(';');
 
-	onMount(async () => {
-		//  Load the tracking session if passed in
-		if(history && history.state && history.state.track) {
-			const state = await loadState(history.state.track);
 
-			tracker.sessionTimestamp = state.sessionTimestamp;
-			tracker.curAreaMapIndex = state.curAreaMapIndex;
-			tracker.layout = state.layout;
-			tracker.actions = [...state.actions];
-			tracker.areaMaps = [...state.areaMaps];
+	if(browser) {
+		onMount(async () => {
+			updateMapData = (await import('../services/tracker.js')).updateMapData;
+			
+			//  Load the tracking session if passed in
+			if(history && history.state && history.state.track) {
+				const state = await loadState(history.state.track);
 
-			//  Also set stores used by components
-			actions.set([...state.actions]);
-		}
-    });
+				tracker.sessionTimestamp = state.sessionTimestamp;
+				tracker.curAreaMapIndex = state.curAreaMapIndex;
+				tracker.layout = state.layout;
+				tracker.actions = [...state.actions];
+				tracker.areaMaps = [...state.areaMaps];
+
+				//  Also set stores used by components
+				actions.set([...state.actions]);
+			}
+
+			if(storageKey) {
+				const state = await loadState(storageKey);
+
+				tracker.sessionTimestamp = state.sessionTimestamp;
+				tracker.curAreaMapIndex = state.curAreaMapIndex;
+				tracker.layout = state.layout;
+				tracker.actions = [...state.actions];
+				tracker.areaMaps = [...state.areaMaps];
+
+				//  Also set stores used by components
+				actions.set([...state.actions]);
+			}
+		});
+	}
 
 	const selectMap = (name) => {
 		tracker.curAreaMapIndex = tracker.areaMaps.findIndex(e => e.name === name);
@@ -138,7 +165,7 @@
 			if(matchingActions.length) {
 				if(curAreaId !== -1) {
 					updateMapData(curAreaId, true, matchingActions[0].name);
-					tracker = tracker;
+					tracker.areaMaps = tracker.areaMaps;
 					return;
 				}
 			}
@@ -147,7 +174,7 @@
 				//  If this needs to be expanded for multiple special cases I'll refactor
 				if(curAreaId !== -1) {
 					updateMapData(curAreaId, false, '');
-					tracker = tracker;
+					tracker.areaMaps = tracker.areaMaps;
 					return;
 				}
 			}

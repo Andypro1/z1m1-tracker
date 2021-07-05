@@ -1,6 +1,9 @@
+<script context="module">
+	export const ssr = false;
+</script>
+
 <script>
 	import { onMount } from "svelte";
-	import { Link } from "svelte-routing";
 	import storage from "../services/storage";
 
 	const generateCoopGuid = () => {
@@ -23,8 +26,8 @@
 	
 	<nav>
 		<h2>Start here</h2>
-		<Link to="solo">Start tracking solo</Link>
-		<Link to="coop/{generateCoopGuid()}">Start tracking coop</Link>
+		<a href="/solo">Start tracking solo</a>
+		<a href="/coop/{generateCoopGuid()}">Start tracking coop</a>
 
 		<h2>Previous sessions</h2>
 		<table>
@@ -37,8 +40,8 @@
 				{#each storage.listSaves() as item, index }
 					<tr>
 						<td>
-							<Link to="solo" state={{ track: item.key }}>Resume solo</Link>
-							<Link to="coop/{generateCoopGuid()}" state={{ track: item.key }}>Resume coop</Link>
+							<a href="/solo/{item.key}" state={{ track: item.key }}>Resume solo</a>
+							<a href="/coop/{generateCoopGuid()}" state={{ track: item.key }}>Resume coop</a>
 							Trash
 						</td>
 						<td>
@@ -59,6 +62,11 @@
 </main>
 
 <style type="scss">
+	:global(body) {
+		height: 100vh;
+		background-color: #333;
+	}
+
 	main {
 		margin: auto;
 		width: 60rem;
