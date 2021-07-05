@@ -2,6 +2,7 @@ nongit/
 .DS_Store
 node_modules
 /.svelte-kit
+/.vscode
 /package
 /build
 /functions
