@@ -41,7 +41,26 @@
 
 	if(browser) {
 		onMount(async () => {
+			// alert(JSON.stringify(history.state));
+			if(history.state.storageKey)
+				storageKey = history.state.storageKey;
+
 			updateMapData = (await import('../services/tracker.js')).updateMapData;
+
+			//TODO: Not working.
+			if(history.state.isNew) {
+				const fresh = (await import('../services/tracker.js')).tracker;
+
+				console.log(fresh.sessionTimestamp);
+
+				tracker.sessionTimestamp = fresh.sessionTimestamp;
+				tracker.curAreaMapIndex = fresh.curAreaMapIndex;
+				tracker.layout = fresh.layout;
+				tracker.actions = [...fresh.actions];
+				tracker.areaMaps = [...fresh.areaMaps];
+
+				return;
+			}
 			
 			//  Load the tracking session if passed in
 			if(history && history.state && history.state.track) {

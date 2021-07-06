@@ -3,9 +3,9 @@
 
     let coopGuid;
 
-	export async function load({ page, fetch, session, context }) {
+	export async function load({ page }) {
         coopGuid = page.params.coopGuid;
-	
+
         return {
             props: {
                 coopGuid: coopGuid
@@ -13,6 +13,5 @@
         };
     }
 </script>
-
 
 <Tracker coopGuid={coopGuid} />
