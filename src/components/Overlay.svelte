@@ -1,5 +1,6 @@
 <script>
     import toolbars from './toolbars.js';
+    import Warp from "./WarpUnderlay.svelte";
 
     //  Props
     export let action;
@@ -12,11 +13,15 @@
 
 {#if draw}
     <div class="overlay" class:region={isRegion}>
-        <div class="marked-backdrop"></div>
+        {#if typeof actList[action].warpText === 'undefined'}
+          <div class="marked-backdrop"></div>
+        {/if}
         {#if actList[action].mapClass}
           <i class="backdrop-icon {action} {actList[action] && actList[action].mapClass}"></i>
         {/if}
-        {#if actList[action] && actList[action].spriteIndex }
+        {#if actList[action].warpText && (typeof actList[action].spriteIndex !== 'undefined')}
+          <Warp spriteIndex={actList[action].spriteIndex} />
+        {:else if actList[action] && actList[action].spriteIndex }
           <div class="icon {action} sprite-index{actList[action].spriteIndex}"></div>
         {/if}
         {#if actList[action] && (actList[action].mapText || actList[action].warpText) }
@@ -37,6 +42,8 @@
     padding-bottom: calc(100% * 1 / var(--aspect) * var(--map-cols) / var(--map-rows));
     font-family: 'Baloo 2', cursive;
 		font-weight: 600;
+
+    overflow: hidden;
   }
 
   //  Overrides for grid regions

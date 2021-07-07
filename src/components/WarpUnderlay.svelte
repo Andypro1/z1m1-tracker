@@ -1,48 +1,45 @@
 <script>
+    export let spriteIndex;
 </script>
 
-<div class="grid">
-    {#each [0,1,2,3,13,14,6,7,8] as i, pos}
-        <div class="grid-elem">
-            <div class="deform-glow">
-                <div class="rotate-glow">
-                    <div class="counterrotate-glow">
-                        <div class="inner-glow">
-                            <div class="glow"></div>
-                        </div>
-                    </div>
-                </div>    
+<div class="grid-elem">
+    <div class="deform-glow">
+        <div class="rotate-glow">
+            <div class="counterrotate-glow">
+                <div class="inner-glow">
+                    <div class="glow"></div>
+                </div>
             </div>
-        
-            <div class="bg-elem">
-                <div class="icon sprite-index{i}"></div>
-            </div>
+        </div>    
+    </div>
 
-            <div class="deform">
-                <div class="rotate">
-                    <div class="counterrotate">
-                        <div class="inner">
-                            <div class="sparkle1"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="rotate2">
-                    <div class="counterrotate2">
-                        <div class="inner">
-                            <div class="sparkle1"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="rotate3">
-                    <div class="counterrotate3">
-                        <div class="inner">
-                            <div class="sparkle1"></div>
-                        </div>
-                    </div>
+    <div class="bg-elem">
+        <div class="icon sprite-index{spriteIndex}"></div>
+    </div>
+
+    <div class="deform">
+        <div class="rotate">
+            <div class="counterrotate">
+                <div class="inner">
+                    <div class="sparkle1"></div>
                 </div>
             </div>
         </div>
-    {/each}
+        <div class="rotate2">
+            <div class="counterrotate2">
+                <div class="inner">
+                    <div class="sparkle1"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate3">
+            <div class="counterrotate3">
+                <div class="inner">
+                    <div class="sparkle1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style type="scss">
@@ -50,43 +47,42 @@
     //     outline: 1px solid #f00 !important;
     // }
 
-    $largeSize: 8rem;
-    $smallSize: 3 / 10 * $largeSize;
-    $spriteSize: 2 / 3 * $smallSize;
+    .grid-elem {
+        --wu-double-size: calc(var(--map-room-width) * 2px * 0.6);
+        --wu-large-size : calc(var(--map-room-width) * 1px * 0.6);
+        --wu-small-size : calc(var(--map-room-width) * 0.3px * 0.6);
+        --wu-sprite-size: calc(var(--map-room-width) * 0.2px * 0.6);
+        --wu-glow-size  : calc(var(--map-room-width) * 0.875px * 0.6);
+        --wu-glow-small-size: calc(var(--map-room-width) * 0.8125px * 0.6);
+        --wu-glow-radius: calc(var(--map-room-width) * 0.0625px * 0.6);
+        --wu-inset-shadow: calc(var(--map-room-width) * 0.25px * 0.6);
 
-    :global(body) {
-        padding: 2rem;
-    }
+        --wu-margin-adjust: calc(var(--map-room-width) * -0.1px);
 
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(3, 1fr);
-        justify-items: center;
-        align-items: center;
-
-        margin: auto;
-        width: 90%;
-        height: 90vh;
+        z-index: -10;
+        overflow: hidden;
     }
 
     .grid-elem {
         align-self: center;
         justify-self: center;
-        position: relative;
+        position: absolute;
+
+        top: 0; bottom: 0; left: 0; right: 0;
+        margin: auto var(--wu-margin-adjust);
 
         display: flex;
         justify-content: center;
         align-items: center;
 
-        width: $largeSize * 2;
-        height: $largeSize * 2;
+        width: var(--wu-double-size);
+        // height: var(--wu-double-size);
     }
 
     .bg-elem {
         z-index: 1;
-        width: 2 * $largeSize;
-        height: $largeSize;
+        width: var(--wu-double-size);
+        height: var(--wu-large-size);
 
         transform: scaleX(0.8);
 
@@ -99,8 +95,8 @@
     .deform  {
         align-self: center;
 
-        width: $largeSize;
-        height: $largeSize;
+        width: var(--wu-large-size);
+        height: var(--wu-large-size);
         transform: scaleX(1.6);
         background-color: transparent;
         position: relative;
@@ -111,8 +107,8 @@
     .deform-glow  {
         align-self: center;
 
-        width: $largeSize;
-        height: $largeSize;
+        width: var(--wu-large-size);
+        height: var(--wu-large-size);
         transform: scaleX(1.6);
         background-color: transparent;
         position: absolute;
@@ -155,33 +151,33 @@
     }
 
     .counterrotate {
-        width: $smallSize;
-        height: $smallSize;
+        width: var(--wu-small-size);
+        height: var(--wu-small-size);
         animation: ccircle 2s infinite linear;    
     }
 
     .counterrotate2 {
-        width: $smallSize;
-        height: $smallSize;
+        width: var(--wu-small-size);
+        height: var(--wu-small-size);
         animation: ccircle 2s infinite 0.3s linear;    
     }
 
     .counterrotate3 {
-        width: $smallSize;
-        height: $smallSize;
+        width: var(--wu-small-size);
+        height: var(--wu-small-size);
         animation: ccircle 2s infinite 0.5s linear;    
     }
 
     .counterrotate-glow {
-        width: 7rem;
-        height: 7rem;
+        width: var(--wu-glow-size);
+        height: var(--wu-glow-size);
         animation: ccircle 2s infinite 0.45s linear;    
         position: relative;
     }
         
     .inner {
-        width: $smallSize;
-        height: $smallSize;
+        width: var(--wu-small-size);
+        height: var(--wu-small-size);
         position: absolute;
         left: 0px;
         top: 0px;
@@ -194,8 +190,8 @@
     }
 
     .inner-glow {
-        width: 7rem;
-        height: 7rem;
+        width: var(--wu-glow-size);
+        height: var(--wu-glow-size);
         position: relative;
         left: 0px;
         top: 0px;
@@ -209,20 +205,20 @@
     }
 
     .sparkle1 {
-        width: $spriteSize;
-        height: $spriteSize;
+        width: var(--wu-sprite-size);
+        height: var(--wu-sprite-size);
         background-image: url("/images/sparkle.png");
         background-size: cover;
     }
 
     .glow {
-        width: 6.5rem;
-        height: 6.5rem;
+        width: var(--wu-glow-small-size);
+        height: var(--wu-glow-small-size);
         background-color: white;
         // transform: scaleX(1.0);
         border-radius: 50% 50%;
-        filter: drop-shadow(0 0 0.5rem rgb(255, 255, 220))
-                drop-shadow(0 0 0.5rem rgb(255, 255, 128));
+        filter: drop-shadow(0 0 var(--wu-glow-radius) rgb(255, 255, 220))
+                drop-shadow(0 0 var(--wu-glow-radius) rgb(255, 255, 128));
         position: relative;
 
         z-index: -20;
@@ -245,12 +241,12 @@
   .icon {
     transform: scaleX(1.2);
 
-    box-shadow: inset rgba(0,0,0,1) 0 0 2rem 2rem;
+    box-shadow: inset rgba(0,0,0,1) 0 0 var(--wu-inset-shadow) var(--wu-inset-shadow);
     border-radius: 50% 50%;
 
     position: absolute;
-    width: 2 * $largeSize;
-    height: $largeSize;
+    width: var(--wu-double-size);
+    height: var(--wu-large-size);
 
     background: url(/images/spites-warp.png) no-repeat;
     background-size: auto 100%;

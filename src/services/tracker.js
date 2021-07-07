@@ -134,10 +134,10 @@ export const updateMapData = async (areaId, marked, actionName) => {
 	}
 
 	//  Test coop-client section  \\
-	if(!coopClient)
-		coopClient = (await import('./coop-client.js')).default;
+	// if(!coopClient)
+	// 	coopClient = (await import('./coop-client.js')).default;
 
-	coopClient.send(`${tracker.curAreaMapIndex} ${areaId} ${marked} ${actionName}`);
+	// coopClient.send(`${tracker.curAreaMapIndex} ${areaId} ${marked} ${actionName}`);
 
 	trackerUpdated();
 };

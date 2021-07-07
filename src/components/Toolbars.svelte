@@ -78,7 +78,7 @@
 								actions.setPosition(action.name, e.button);
 						}}
 					>
-						{#if action.spriteIndex }
+						{#if action.spriteIndex && (typeof action.warpText === 'undefined') }
 							<div class="icon sprite-index{action.spriteIndex}"></div>
 						{:else}
 							{ action.display }
