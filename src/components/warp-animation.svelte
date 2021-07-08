@@ -29,14 +29,14 @@
                 <div class="rotate2">
                     <div class="counterrotate2">
                         <div class="inner">
-                            <div class="sparkle1"></div>
+                            <div class="sparkle2"></div>
                         </div>
                     </div>
                 </div>
                 <div class="rotate3">
                     <div class="counterrotate3">
                         <div class="inner">
-                            <div class="sparkle1"></div>
+                            <div class="sparkle3"></div>
                         </div>
                     </div>
                 </div>
@@ -131,7 +131,7 @@
     .rotate2 {
         width: 100%;
         height: 100%;
-        animation: circle 2s infinite 0.3s linear;    
+        animation: circle 2s infinite 0.1s linear;    
         transform-origin: 50% 50%;
         position: absolute;
     }
@@ -139,7 +139,7 @@
     .rotate3 {
         width: 100%;
         height: 100%;
-        animation: circle 2s infinite 0.5s linear;    
+        animation: circle 2s infinite 0.3s linear;    
         transform-origin: 50% 50%;
         position: absolute;
     }
@@ -147,7 +147,7 @@
     .rotate-glow {
         width: 100%;
         height: 100%;
-        animation: circle 2s infinite 0.45s linear;    
+        animation: circle 2s infinite 0.35s linear;    
         transform-origin: 50% 50%;
         position: absolute;
 
@@ -163,19 +163,19 @@
     .counterrotate2 {
         width: $smallSize;
         height: $smallSize;
-        animation: ccircle 2s infinite 0.3s linear;    
+        animation: ccircle 2s infinite 0.1s linear;    
     }
 
     .counterrotate3 {
         width: $smallSize;
         height: $smallSize;
-        animation: ccircle 2s infinite 0.5s linear;    
+        animation: ccircle 2s infinite 0.3s linear;    
     }
 
     .counterrotate-glow {
         width: 7rem;
         height: 7rem;
-        animation: ccircle 2s infinite 0.45s linear;    
+        animation: ccircle 2s infinite 0.35s linear;    
         position: relative;
     }
         
@@ -208,11 +208,24 @@
         align-items: center;
     }
 
+    .sparkle1, .sparkle2, .sparkle3 {
+        background-image: url("/images/sparkle.png");
+        background-size: cover;
+    }
+
     .sparkle1 {
         width: $spriteSize;
         height: $spriteSize;
-        background-image: url("/images/sparkle.png");
-        background-size: cover;
+    }
+
+    .sparkle2 {
+        width: $spriteSize * .8;
+        height: $spriteSize * .8;
+    }
+
+    .sparkle3 {
+        width: $spriteSize * .6;
+        height: $spriteSize * .6;
     }
 
     .glow {
@@ -221,8 +234,8 @@
         background-color: white;
         // transform: scaleX(1.0);
         border-radius: 50% 50%;
-        filter: drop-shadow(0 0 0.5rem rgb(255, 255, 220))
-                drop-shadow(0 0 0.5rem rgb(255, 255, 128));
+        filter: drop-shadow(0 0 0.2rem rgb(255, 255, 220))
+                drop-shadow(0 0 0.2rem rgb(255, 255, 128));
         position: relative;
 
         z-index: -20;
@@ -230,12 +243,12 @@
         // background-size: cover;
     }
 
-    @-webkit-keyframes circle {
+    @keyframes circle {
         from {transform: rotateZ(0deg)}
         to {transform: rotateZ(360deg)}
     }
 
-    @-webkit-keyframes ccircle {
+    @keyframes ccircle {
         from {transform: rotateZ(360deg)}
         to {transform: rotateZ(0deg)}
     }

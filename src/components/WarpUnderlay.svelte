@@ -3,6 +3,7 @@
 </script>
 
 <div class="grid-elem">
+    <div class="darken-bg"></div>
     <div class="deform-glow">
         <div class="rotate-glow">
             <div class="counterrotate-glow">
@@ -28,14 +29,14 @@
         <div class="rotate2">
             <div class="counterrotate2">
                 <div class="inner">
-                    <div class="sparkle1"></div>
+                    <div class="sparkle2"></div>
                 </div>
             </div>
         </div>
         <div class="rotate3">
             <div class="counterrotate3">
                 <div class="inner">
-                    <div class="sparkle1"></div>
+                    <div class="sparkle3"></div>
                 </div>
             </div>
         </div>
@@ -48,14 +49,21 @@
     // }
 
     .grid-elem {
-        --wu-double-size: calc(var(--map-room-width) * 2px * 0.6);
-        --wu-large-size : calc(var(--map-room-width) * 1px * 0.6);
-        --wu-small-size : calc(var(--map-room-width) * 0.3px * 0.6);
-        --wu-sprite-size: calc(var(--map-room-width) * 0.2px * 0.6);
-        --wu-glow-size  : calc(var(--map-room-width) * 0.875px * 0.6);
+        --wu-double-size    : calc(var(--map-room-width) * 2px * 0.6);
+        --wu-large-size     : calc(var(--map-room-width) * 1px * 0.6);
+        --wu-small-size     : calc(var(--map-room-width) * 0.3px * 0.6);
+        --wu-sprite-size    : calc(var(--map-room-width) * 0.2px * 0.6);
+        --wu-sprite2-size   : calc(var(--map-room-width) * 0.2px * 0.8 * 0.6);
+        --wu-sprite3-size   : calc(var(--map-room-width) * 0.2px * 0.6 * 0.6);
+        --wu-glow-size      : calc(var(--map-room-width) * 0.875px * 0.6);
         --wu-glow-small-size: calc(var(--map-room-width) * 0.8125px * 0.6);
-        --wu-glow-radius: calc(var(--map-room-width) * 0.0625px * 0.6);
-        --wu-inset-shadow: calc(var(--map-room-width) * 0.25px * 0.6);
+        --wu-glow-radius    : calc(var(--map-room-width) * 0.025px * 0.6);
+        --wu-inset-shadow   : calc(var(--map-room-width) * 0.25px * 0.6);
+
+        --wu-anim-duration  : 2s;
+        --wu-anim-delay2    : 0.1s;
+        --wu-anim-delay3    : 0.3s;
+        --wu-anim-delay-glow: 0.35s;
 
         --wu-margin-adjust: calc(var(--map-room-width) * -0.1px);
 
@@ -76,7 +84,14 @@
         align-items: center;
 
         width: var(--wu-double-size);
-        // height: var(--wu-double-size);
+    }
+
+    .darken-bg {
+        position: absolute;
+        width: 85%;
+        height: 100%;
+        background-color: #000a;
+        margin: 0;
     }
 
     .bg-elem {
@@ -119,7 +134,7 @@
     .rotate {
         width: 100%;
         height: 100%;
-        animation: circle 2s infinite linear;    
+        animation: circle var(--wu-anim-duration) infinite linear;    
         transform-origin: 50% 50%;
         position: absolute;
     }
@@ -127,7 +142,7 @@
     .rotate2 {
         width: 100%;
         height: 100%;
-        animation: circle 2s infinite 0.3s linear;    
+        animation: circle var(--wu-anim-duration) infinite var(--wu-anim-delay2) linear;    
         transform-origin: 50% 50%;
         position: absolute;
     }
@@ -135,7 +150,7 @@
     .rotate3 {
         width: 100%;
         height: 100%;
-        animation: circle 2s infinite 0.5s linear;    
+        animation: circle var(--wu-anim-duration) infinite var(--wu-anim-delay3) linear;    
         transform-origin: 50% 50%;
         position: absolute;
     }
@@ -143,7 +158,7 @@
     .rotate-glow {
         width: 100%;
         height: 100%;
-        animation: circle 2s infinite 0.45s linear;    
+        animation: circle var(--wu-anim-duration) infinite var(--wu-anim-delay-glow) linear;    
         transform-origin: 50% 50%;
         position: absolute;
 
@@ -153,25 +168,25 @@
     .counterrotate {
         width: var(--wu-small-size);
         height: var(--wu-small-size);
-        animation: ccircle 2s infinite linear;    
+        animation: ccircle var(--wu-anim-duration) infinite linear;    
     }
 
     .counterrotate2 {
         width: var(--wu-small-size);
         height: var(--wu-small-size);
-        animation: ccircle 2s infinite 0.3s linear;    
+        animation: ccircle var(--wu-anim-duration) infinite var(--wu-anim-delay2) linear;    
     }
 
     .counterrotate3 {
         width: var(--wu-small-size);
         height: var(--wu-small-size);
-        animation: ccircle 2s infinite 0.5s linear;    
+        animation: ccircle var(--wu-anim-duration) infinite var(--wu-anim-delay3) linear;    
     }
 
     .counterrotate-glow {
         width: var(--wu-glow-size);
         height: var(--wu-glow-size);
-        animation: ccircle 2s infinite 0.45s linear;    
+        animation: ccircle var(--wu-anim-duration) infinite var(--wu-anim-delay-glow) linear;    
         position: relative;
     }
         
@@ -196,7 +211,6 @@
         left: 0px;
         top: 0px;
         display: block;
-        // transform: scaleX(0.5);
         z-index: -10;
         
         display: flex;
@@ -204,11 +218,24 @@
         align-items: center;
     }
 
+    .sparkle1, .sparkle2, .sparkle3 {
+        background-image: url("/images/sparkle.png");
+        background-size: cover;
+    }
+
     .sparkle1 {
         width: var(--wu-sprite-size);
         height: var(--wu-sprite-size);
-        background-image: url("/images/sparkle.png");
-        background-size: cover;
+    }
+
+    .sparkle2 {
+        width: var(--wu-sprite2-size);
+        height: var(--wu-sprite2-size);
+    }
+
+    .sparkle3 {
+        width: var(--wu-sprite3-size);
+        height: var(--wu-sprite3-size);
     }
 
     .glow {
@@ -226,12 +253,12 @@
         // background-size: cover;
     }
 
-    @-webkit-keyframes circle {
+    @keyframes circle {
         from {transform: rotateZ(0deg)}
         to {transform: rotateZ(360deg)}
     }
 
-    @-webkit-keyframes ccircle {
+    @keyframes ccircle {
         from {transform: rotateZ(360deg)}
         to {transform: rotateZ(0deg)}
     }
