@@ -159,7 +159,6 @@ const map = {
         { name: 'varia-hall',
           rowStart: 2, rowEnd: 2, colStart: 5, colEnd: 10,
           bgSize: 'calc(var(--map-cols) * 100% / 5) calc(var(--map-rows) * 100%)',
-          //bgPosX: 'calc((var(--map-cols) - var(--level-cols) - 1 + 5) * 100% / (var(--map-cols) - 1))',
           bgPosX: '68.0%',
           bgPosY: 'calc(23 * 100% / 29)',
           premark: 'U'

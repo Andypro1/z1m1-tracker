@@ -33,8 +33,7 @@ export const tracker = {
 	areaMaps: [
 		{ name: 'Hyrule (Q1)', map: Hyruleq1.data},
 		{ name: 'Level 9 (Q1)', map: Level9.data},
-		{ name: 'Shops', map: Level1.data},
-		{ name: 'Potion shops', map: Level2.data},
+		{ name: 'Shops & stats', map: Level1.data},
 		{ name: 'Level 1 (Q1)', map: Level1.data},
 		{ name: 'Level 5 (Q1)', map: Level5.data},
 		{ name: 'Level 2 (Q1)', map: Level2.data},
@@ -67,13 +66,6 @@ export const GlobalAction = {
 	level8: { display: 'Level 8', hotkeys: ['8'], name: 'Level 8 (Q1)' },
 	level9: { display: 'Level 9', hotkeys: ['9'], name: 'Level 9 (Q1)' }
 };
-
-
-export const areaPairs = tracker.areaMaps.reduce((a,v,i,o) => {
-		if(i % 2 === 0)
-			a.push(o.slice(i, i+2));
-			return a;
-	}, []);
 
 function actionsStore() {
 	const { subscribe, set, update } = writable(tracker.actions);

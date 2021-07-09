@@ -60,8 +60,8 @@ html {
     /* width: 100%; */
 
 		display: grid;
-    grid-template-columns: repeat(var(--level-cols), calc(100% / var(--level-cols)));
-		grid-template-rows: repeat(var(--level-rows), calc(100% / var(--level-rows)));
+    /* grid-template-columns: repeat(var(--level-cols), calc(100% / var(--level-cols)));
+		grid-template-rows: repeat(var(--level-rows), calc(100% / var(--level-rows))); */
 		gap: 1px;
 
     justify-content: center;

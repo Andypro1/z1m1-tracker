@@ -119,7 +119,7 @@
 		justify-content: flex-start;
 		align-items: flex-start;
 
-		margin: 0.2rem;
+		margin: 0rem;
 
 		& .action.cleared { grid-area: 1 / 1; }
 		& .action.notYetAcquired { grid-area: 1 / 2; }

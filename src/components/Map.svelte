@@ -142,7 +142,7 @@
 
     const sizeMapGrid = () => {
       const [wWin, hWin, hTopBar] = [window.innerWidth, window.innerHeight, document.querySelector('.top-bar').clientHeight];
-      const ASSUMED_CARD_PAIR_SIZE = 240;
+      const ASSUMED_CARD_PAIR_SIZE = 255;
   
       const hSCAvail = hWin - hTopBar;
       const wSCAvail = wWin - ASSUMED_CARD_PAIR_SIZE;
@@ -160,16 +160,25 @@
       const hBCNewMap = rBCWin < rMap ? wBCAvail / rMap : hBCAvail;
       const BCMapArea = wBCNewMap * hBCNewMap;
   
+      const rPad = (mapTilesheet.sectionCols() - 1);
+      const bPad = (mapTilesheet.sectionRows() - 1);
+
       layout(SCMapArea > BCMapArea ?
              {name: 'side',
-              width: wSCNewMap / mapTilesheet.sectionCols(),
-              height: hSCNewMap / mapTilesheet.sectionRows(),
-              pad: mapTilesheet.sectionCols() - 1
+              width: (wSCNewMap - rPad) / mapTilesheet.sectionCols(),
+              height: (hSCNewMap - bPad) / mapTilesheet.sectionRows(),
+              rightPad: rPad,
+              bottomPad: bPad,
+              fullWidth: wSCNewMap,
+              fullHeight: hSCNewMap
             } :
              { name: 'bottom',
-             width: wBCNewMap / mapTilesheet.sectionCols(),
-             height: hBCNewMap / mapTilesheet.sectionRows(),
-             pad: mapTilesheet.sectionRows() - 1
+                width: (wBCNewMap - rPad) / mapTilesheet.sectionCols(),
+                height: (hBCNewMap - bPad) / mapTilesheet.sectionRows(),
+                rightPad: rPad,
+                bottomPad: bPad,
+                fullWidth: wBCNewMap,
+                fullHeight: hBCNewMap
             });
     };
   </script>

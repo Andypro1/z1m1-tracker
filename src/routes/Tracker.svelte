@@ -6,12 +6,12 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/env';
 	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, areaPairs,  trackerUpdated, actions, loadState, GlobalAction } from '../services/tracker.js';
+	import { tracker, trackerUpdated, actions, loadState, GlobalAction } from '../services/tracker.js';
 	import Toolbars from "../components/Toolbars.svelte";
 	import toolbars from '../components/toolbars.js';
 	import Map from "../components/Map.svelte";
 
-	// let tracker, areaPairs, trackerUpdated, actions, loadState, GlobalAction;
+	// let tracker, trackerUpdated, actions, loadState, GlobalAction;
 	let updateMapData;
 
 	//  Route props
@@ -24,9 +24,12 @@
 	const doLayout = (m) => {
 		tracker.layout = m.name;
 
+		styles['map-full-width'] = m.fullWidth;
+		styles['map-full-height'] = m.fullHeight;
 		styles['map-room-width'] = m.width;
 		styles['map-room-height'] = m.height;
-		styles['map-padding'] = m.pad;
+		styles['map-right-padding'] = m.rightPad;
+		styles['map-bottom-padding'] = m.bottomPad;
 	};
 
     //  Dynamic style vars
@@ -255,24 +258,22 @@
 				data={tracker.areaMaps[tracker.curAreaMapIndex].map} actions={tracker.actions}/>
 		</section>
 		<section class="area-cards">
-			{#each areaPairs as area }
-				<div class="area-card-column">
-					<div class="area-card" on:click={() => { selectMap(area[0].name); trackerUpdated(); } }>
-						<aside class="key-overlay" data-before={ getAreaCardHotkey(area[0].name) }></aside>
-						{ area[0].name }
-					</div>
-					<!-- hyrule: { display: 'Hyrule', hotkeys: ['h'], name: 'Hyrule (Q1)' }, -->
-					<div class="area-card" on:click={() => { selectMap(area[1].name); trackerUpdated(); } }>
-						<aside class="key-overlay" data-before={ getAreaCardHotkey(area[1].name) }></aside>
-						{ area[1].name }
-					</div>
+			{#each tracker.areaMaps as area }
+				<div class="area-card" on:click={() => { selectMap(area.name); trackerUpdated(); } }>
+					<aside class="key-overlay" data-before={ getAreaCardHotkey(area.name) }></aside>
+					{ area.name }
 				</div>
+				<!-- hyrule: { display: 'Hyrule', hotkeys: ['h'], name: 'Hyrule (Q1)' }, -->
 			{/each}
 		</section>
 	</div>
 </main>
 
 <style global lang="scss">
+	// * {
+	// 	outline: 1px solid red;
+	// }
+
 	@import "../styles/overlays.scss";
 
 	:global(body) {
@@ -292,9 +293,12 @@
 	}
 
 	.top-bar {
-		flex: 0 0 10rem;
-		height: 10rem;
-		max-height: 10rem;
+		flex: 0 0 11.5rem;
+		height: 11.5rem;
+		max-height: 11.5rem;
+
+		margin-top: 0.2rem;
+		margin-left: 0.2rem;
 
 		display: flex;
 		flex-direction: row;
@@ -309,22 +313,11 @@
 		flex-direction: column;
 
 		.area-cards {
-			flex: 0 0 15rem;
+			flex: 1 0 15rem;
 
-			display: flex;
-			flex-wrap: wrap;
-			flex-direction: row;
-			justify-content: space-between;
-			align-items: auto;
-			align-content: stretch;
-
-			font-weight: 400;
-		}
-
-		.map-section {
-			flex: 1 0 auto;
-
-			padding-bottom: calc(1px * var(--map-padding));
+			display: grid;
+			grid-template-rows: repeat(2, 1fr);
+			grid-template-columns: repeat(8, 1fr);
 		}
 	}
 
@@ -333,53 +326,25 @@
 
 		display: flex;
 		flex-direction: row;
-		justify-content: center;
+		justify-content: space-around;
 		align-items: center;
 
 		.area-cards {
 			flex: 0 0 15rem;
 			height: 100%;
 
-			display: flex;
-			flex-wrap: wrap;
-			flex-direction: row;
-			justify-content: space-between;
-			align-content: stretch;
-
-			font-weight: 400;
+			display: grid;
+			grid-template-rows: repeat(8, 1fr);
+			grid-template-columns: 1fr 1fr;
+			gap: 0.3rem;
 		}
-
-		.area-card-column {
-			flex: 1 0 1rem;
-			margin: 1px;
-
-			display: flex;
-			flex-direction: row;
-			justify-content: space-between;
-			align-items: stretch;
-		}
-
-		.map-section {
-			flex: 1 0 auto;
-
-			padding-right: calc(1px * var(--map-padding));
-		}
-	}
-
-	.area-card-column {
-		flex: 1 0 1rem;
-		margin: 1px;
-
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-		align-content: stretch;
 	}
 
 	.area-card {
-		flex: 1 0 auto;
 		position: relative;
 
+		width: 3rem;
+		height: 3rem;
 		background-color: #ddd;
 		cursor: pointer;
 		padding: 1rem;
