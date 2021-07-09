@@ -157,12 +157,24 @@ const Toolbars = () => {
 		return flattenObject(Action);
 	}
 
+	const questActions = () => {
+		return Object.keys(Action.Quest).map(k => Action.Quest[k])
+			.concat(Action.quest);
+	}
+
+	const equipActions = () => {
+		return Object.keys(Action.Equip).map(k => Action.Equip[k])
+		.concat(Action.equip);
+	}
+
 	return Object.freeze({
 		getMainToolbar,
 		getSubToolbar,
 		setSubToolbar,
 		isAToolbarAction,
 		getAction,
+		questActions,
+		equipActions,
 		allActions,
 		getCurrentSubBarName
 	});

@@ -123,15 +123,21 @@
 		return -1;
 	};
 
-	//  Affect the activeHotkey vars with mouse clicks for
-	//  combined mouse-keyboard sequences
-	const handleMouseMark = (areaId, cell, action, mouseX, mouseY) => {
-		const mouseMarkAreaId = getAreaUnderCursor(mouseX, mouseY);
 
-		if(mouseMarkAreaId > -1) {
-			activeHotkeySequence  = $toolbars.getAction(action).hotkeys[0];
-			activeHotkeyAreaId    = mouseMarkAreaId;
+	const handleMouseMark = (areaId, cell, action, mouseX, mouseY, wasMarked) => {
+		if(!wasMarked) {
+			//  Affect the activeHotkey vars with mouse clicks for
+			//  combined mouse-keyboard sequences
+			const mouseMarkAreaId = getAreaUnderCursor(mouseX, mouseY);
+			
+			if(mouseMarkAreaId > -1) {
+				activeHotkeySequence  = $toolbars.getAction(action).hotkeys[0];
+				activeHotkeyAreaId    = mouseMarkAreaId;
+			}
 		}
+
+		//  Force area stats reevaluation
+		tracker.areaMaps = tracker.areaMaps;
 	};
 
 
@@ -261,7 +267,11 @@
 			{#each tracker.areaMaps as area }
 				<div class="area-card" on:click={() => { selectMap(area.name); trackerUpdated(); } }>
 					<aside class="key-overlay" data-before={ getAreaCardHotkey(area.name) }></aside>
-					{ area.name }
+					<!-- { area.name } -->
+					<aside>got: { area.stats.numEquipAcquired } { area.stats.numQuestAcquired }</aside>
+					<aside>spots: { area.stats.markedEquipSpots }/{ area.stats.maxEquipSpots }
+						{ area.stats.markedQuestSpots }/{ area.stats.maxQuestSpots }
+						{ area.stats.markedUpgradeSpots }/{ area.stats.maxUpgradeSpots }</aside>
 				</div>
 				<!-- hyrule: { display: 'Hyrule', hotkeys: ['h'], name: 'Hyrule (Q1)' }, -->
 			{/each}
@@ -331,7 +341,7 @@
 
 		.area-cards {
 			flex: 0 0 15rem;
-			height: 100%;
+			height: calc(var(--map-full-height) * 1px);
 
 			display: grid;
 			grid-template-rows: repeat(8, 1fr);
@@ -342,9 +352,10 @@
 
 	.area-card {
 		position: relative;
+		height: calc(var(--map-full-height) / 8 * 1px - (0.3rem));
 
-		width: 3rem;
-		height: 3rem;
+		// width: 3rem;
+		// height: 3rem;
 		background-color: #ddd;
 		cursor: pointer;
 		padding: 1rem;

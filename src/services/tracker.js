@@ -1,5 +1,7 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import storage from '../services/storage.js';
+import toolbars from '../components/toolbars.js';
+import mapStats from '../components/areaStatistics.js';
 // import coopClient from './coop-client.js';
 
 let coopClient;
@@ -19,6 +21,7 @@ import Norfair from "../components/maps/Norfair.mapdata.js";
 import Kraids from "../components/maps/Kraids.mapdata.js";
 import Ridleys from "../components/maps/Ridleys.mapdata.js";
 
+
 //  Must contain only JSON-serializable data (no functions, dates, js constants, etc.)
 export const tracker = {
 	sessionTimestamp: +new Date(),
@@ -31,21 +34,21 @@ export const tracker = {
 		'quest'
 	],
 	areaMaps: [
-		{ name: 'Hyrule (Q1)', map: Hyruleq1.data},
-		{ name: 'Level 9 (Q1)', map: Level9.data},
-		{ name: 'Shops & stats', map: Level1.data},
-		{ name: 'Level 1 (Q1)', map: Level1.data},
-		{ name: 'Level 5 (Q1)', map: Level5.data},
-		{ name: 'Level 2 (Q1)', map: Level2.data},
-		{ name: 'Level 6 (Q1)', map: Level6.data},
-		{ name: 'Level 3 (Q1)', map: Level3.data},
-		{ name: 'Level 7 (Q1)', map: Level7.data},
-		{ name: 'Level 4 (Q1)', map: Level4.data},
-		{ name: 'Level 8 (Q1)', map: Level8.data},
-		{ name: 'Kraid\'s', map: Kraids.data},
-		{ name: 'Ridley\'s', map: Ridleys.data},
-		{ name: 'Brinstar', map: Brinstar.data},
-		{ name: 'Norfair', map: Norfair.data}
+		{ name: 'Hyrule (Q1)', map: Hyruleq1.data, stats: mapStats},
+		{ name: 'Level 9 (Q1)', map: Level9.data, stats: mapStats},
+		{ name: 'Shops & stats', map: Level1.data, stats: mapStats},
+		{ name: 'Level 1 (Q1)', map: Level1.data, stats: mapStats},
+		{ name: 'Level 5 (Q1)', map: Level5.data, stats: mapStats},
+		{ name: 'Level 2 (Q1)', map: Level2.data, stats: mapStats},
+		{ name: 'Level 6 (Q1)', map: Level6.data, stats: mapStats},
+		{ name: 'Level 3 (Q1)', map: Level3.data, stats: mapStats},
+		{ name: 'Level 7 (Q1)', map: Level7.data, stats: mapStats},
+		{ name: 'Level 4 (Q1)', map: Level4.data, stats: mapStats},
+		{ name: 'Level 8 (Q1)', map: Level8.data, stats: mapStats},
+		{ name: 'Kraid\'s', map: Kraids.data, stats: mapStats},
+		{ name: 'Ridley\'s', map: Ridleys.data, stats: mapStats},
+		{ name: 'Brinstar', map: Brinstar.data, stats: mapStats},
+		{ name: 'Norfair', map: Norfair.data, stats: mapStats}
 	]
 };
 
@@ -97,6 +100,42 @@ export const trackerUpdated = () => {
 	storage.saveData(tracker);
 };
 
+const updateMapStats = (areaMapIndex) => {
+	const area = tracker.areaMaps[areaMapIndex].map;
+	const cells = area.gridRegions ? area.rooms.concat(area.gridRegions) : area.rooms;
+
+	const maxEquipSpots = cells.filter(c => c.premark === 'E').length;
+	const maxQuestSpots = cells.filter(c => c.premark === 'Q').length;
+	const maxUpgradeSpots = cells.filter(c => c.premark === 'U').length;
+	const maxMinorSpots = cells.filter(c => c.premark === 'M').length;
+
+	const totalValidCells = cells.filter(c => (c.active !== 'false') && !c.outofbounds).length;
+
+	//  TODO: distinguish between marked and non-acquired gear so that users
+	//  can see how much has been accounted for, even if not picked up (low priority)
+	const markedEquipSpots = cells.filter(c => c.premark === 'E' && c.marked && !c.notAcquired).length;
+	const markedQuestSpots = cells.filter(c => c.premark === 'Q' && c.marked && !c.notAcquired).length;
+	const markedUpgradeSpots = cells.filter(c => c.premark === 'U' && c.marked && !c.notAcquired).length;
+	const markedMinorSpots = cells.filter(c => c.premark === 'M' && c.marked && !c.notAcquired).length;
+
+	const areaMarkedNames = cells
+		.filter(c => c.action && c.marked && !c.notAcquired)
+		.map(c => c.action);
+
+	const equips = get(toolbars).equipActions().map(e => e.name);
+	const quests = get(toolbars).questActions().map(q => q.name);
+	
+	const numEquipAcquired = areaMarkedNames.filter(a => equips.includes(a)).length;
+	const numQuestAcquired = areaMarkedNames.filter(a => quests.includes(a)).length;
+
+	tracker.areaMaps[areaMapIndex].stats = {
+		maxEquipSpots, maxQuestSpots, maxUpgradeSpots, maxMinorSpots,
+		totalValidCells,
+		markedEquipSpots, markedQuestSpots, markedUpgradeSpots, markedMinorSpots,
+		numEquipAcquired, numQuestAcquired
+	};
+};
+
 export const updateMapData = async (areaId, marked, actionName) => {
 	const regionsStartAreaId = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
 	const isRegion           = areaId >= regionsStartAreaId;
@@ -130,7 +169,7 @@ export const updateMapData = async (areaId, marked, actionName) => {
 	// 	coopClient = (await import('./coop-client.js')).default;
 
 	// coopClient.send(`${tracker.curAreaMapIndex} ${areaId} ${marked} ${actionName}`);
-
+	updateMapStats(tracker.curAreaMapIndex);
 	trackerUpdated();
 };
 

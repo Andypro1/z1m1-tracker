@@ -135,8 +135,7 @@
       $toolbars.setSubToolbar($actions[e.button]);
       $toolbars = $toolbars;
 
-      if(!wasMarked)
-        handleMouseMark(areaId, area, $actions[e.button], mouseX, mouseY);
+      handleMouseMark(areaId, area, $actions[e.button], mouseX, mouseY, wasMarked);
     };
 
 
