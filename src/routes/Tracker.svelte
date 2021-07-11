@@ -292,7 +292,7 @@
 	}
 
 	main {
-		height: 100%;
+		height: 100vh;
 		font-family: 'Baloo 2', cursive;
 		font-weight: 400;
 
@@ -323,11 +323,19 @@
 		flex-direction: column;
 
 		.area-cards {
-			flex: 1 0 15rem;
+			flex: 0 0 15rem;
+
+			margin-top: auto;
+			overflow: hidden;
 
 			display: grid;
 			grid-template-rows: repeat(2, 1fr);
 			grid-template-columns: repeat(8, 1fr);
+			gap: 0.3rem;
+
+			.area-card {
+				height: calc((15rem - 0.3rem) / 2);
+			}
 		}
 	}
 
@@ -339,23 +347,36 @@
 		justify-content: space-around;
 		align-items: center;
 
+		.map-section {
+			margin-left: auto;
+		}
+
 		.area-cards {
 			flex: 0 0 15rem;
-			height: calc(var(--map-full-height) * 1px);
+			height: 100%;
+
+			margin-left: auto;
+			overflow: hidden;
 
 			display: grid;
 			grid-template-rows: repeat(8, 1fr);
 			grid-template-columns: 1fr 1fr;
 			gap: 0.3rem;
+
+			.area-card {
+				//TODO: fix.  This only works when the map height takes up
+				//  the full remaining height.  Most of the time, the overworld
+				//  won't due to how vertically-challenged it is.
+				height: calc(var(--map-full-height) / 8 * 1px - (0.3rem));
+			}
 		}
 	}
 
+
 	.area-card {
 		position: relative;
-		height: calc(var(--map-full-height) / 8 * 1px - (0.3rem));
+		overflow: hidden;
 
-		// width: 3rem;
-		// height: 3rem;
 		background-color: #ddd;
 		cursor: pointer;
 		padding: 1rem;
