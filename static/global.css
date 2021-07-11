@@ -74,19 +74,24 @@ html {
   }
 
   .map-options {
-    flex: 1 0 auto;
+    flex: 0 0 15rem;
+    margin-left: auto;
     
+    padding-left: 0.5rem;
+
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    align-items: flex-end;
+    align-items: stretch;
   }
 
   .map-option {
-    width: 20rem;
+    width: 100%;
     padding: 0.2rem;
     background-color: rgb(214, 214, 214);
     border-radius: 0.5rem;
+
+    box-shadow: 0.2rem 0.2rem 0.2rem 0.2rem #0006;
   }
 
   .map-option label {

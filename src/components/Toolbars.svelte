@@ -103,13 +103,6 @@
 <style type="scss">
     @import "../styles/overlays.scss";
 
-    // .toolbars {
-	// 	display: flex;
-	// 	flex-direction: column;
-	// 	justify-content: flex-start;
-	// 	align-content: space-around;
-	// }
-
 	.toolbar {
 		flex: 0 0 auto;
 
@@ -228,12 +221,14 @@
 
 	//  Override toolbar styles for subtoolbars
 	.sub.toolbar {
+		flex: 1 0;
+
 		display: flex;
 		flex-direction: row;
 		flex-wrap: wrap;
 		// height: 100%;
-		max-width: calc(100vw - 20rem - 24rem);
-		max-height: 10rem;
+		// max-width: calc(100vw - 20rem - 24rem);
+		max-height: 11.5rem;
 
 		justify-content: stretch;
 		align-items: stretch;
@@ -252,38 +247,6 @@
 			height: 3.5rem;
 		}
 	}
-
-// 	.flex-container {
-//     padding: 0;
-//     margin: 0;
-//     list-style: none;
-//     display: -webkit-box;
-//     display: -moz-box;
-//     display: -ms-flexbox;
-//     display: -webkit-flex;
-//     display: flex;
-//     -webkit-flex-flow: row;
-//     justify-content: space-around;
-   
-//     line-height:30px;
-// }
-// 	.flex-item {
-//     background: tomato;
-//     margin: 5px;
-//     color: white;
-//     font-weight: bold;
-//     font-size: 1.5em;
-//     text-align: center;
-//     flex: 1 0 auto;
-//     height:auto;
-// }
-// .flex-item:before {
-//     content:'';
-//     float:left;
-//     padding-top:100%;
-// }
-
-
 
 
   //  TODO: Below are dupes with Overlay - draw out and refactor
