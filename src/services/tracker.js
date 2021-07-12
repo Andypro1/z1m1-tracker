@@ -7,6 +7,7 @@ import mapStats from '../components/areaStatistics.js';
 let coopClient;
 
 import Hyruleq1 from "../components/maps/Hyruleq1.mapdata.js";
+import ShopsAndStats from "../components/maps/ShopsAndStats.mapdata.js";
 import Level1 from "../components/maps/Level1q1.mapdata.js";
 import Level2 from "../components/maps/Level2q1.mapdata.js";
 import Level3 from "../components/maps/Level3q1.mapdata.js";
@@ -23,34 +24,83 @@ import Ridleys from "../components/maps/Ridleys.mapdata.js";
 
 
 //  Must contain only JSON-serializable data (no functions, dates, js constants, etc.)
-export const tracker = {
-	sessionTimestamp: +new Date(),
-	curAreaMapIndex: 0,
-	layout: 'bottom',
-	actions: [
-		'cleared',
-		'warp',
-		'equip',
-		'quest'
-	],
-	areaMaps: [
-		{ name: 'Hyrule (Q1)', map: Hyruleq1.data, stats: mapStats},
-		{ name: 'Level 9 (Q1)', map: Level9.data, stats: mapStats},
-		{ name: 'Shops & stats', map: Level1.data, stats: mapStats},
-		{ name: 'Level 1 (Q1)', map: Level1.data, stats: mapStats},
-		{ name: 'Level 5 (Q1)', map: Level5.data, stats: mapStats},
-		{ name: 'Level 2 (Q1)', map: Level2.data, stats: mapStats},
-		{ name: 'Level 6 (Q1)', map: Level6.data, stats: mapStats},
-		{ name: 'Level 3 (Q1)', map: Level3.data, stats: mapStats},
-		{ name: 'Level 7 (Q1)', map: Level7.data, stats: mapStats},
-		{ name: 'Level 4 (Q1)', map: Level4.data, stats: mapStats},
-		{ name: 'Level 8 (Q1)', map: Level8.data, stats: mapStats},
-		{ name: 'Kraid\'s', map: Kraids.data, stats: mapStats},
-		{ name: 'Ridley\'s', map: Ridleys.data, stats: mapStats},
-		{ name: 'Brinstar', map: Brinstar.data, stats: mapStats},
-		{ name: 'Norfair', map: Norfair.data, stats: mapStats}
-	]
+function trackerFactory() {
+	const _trackData = {
+		sessionTimestamp: +new Date(),
+		curAreaMapIndex: 0,
+		layout: 'bottom',
+		actions: [
+			'cleared',
+			'warp',
+			'equip',
+			'quest'
+		],
+		areaMaps: [
+			{ name: 'Hyrule (Q1)', map: Hyruleq1.data, stats: mapStats},
+			{ name: 'Shops & stats', map: ShopsAndStats.data, stats: mapStats},
+			{ name: 'Level 1 (Q1)', map: Level1.data, stats: mapStats},
+			{ name: 'Level 2 (Q1)', map: Level2.data, stats: mapStats},
+			{ name: 'Level 3 (Q1)', map: Level3.data, stats: mapStats},
+			{ name: 'Level 4 (Q1)', map: Level4.data, stats: mapStats},
+			{ name: 'Level 5 (Q1)', map: Level5.data, stats: mapStats},
+			{ name: 'Level 6 (Q1)', map: Level6.data, stats: mapStats},
+			{ name: 'Level 7 (Q1)', map: Level7.data, stats: mapStats},
+			{ name: 'Level 8 (Q1)', map: Level8.data, stats: mapStats},
+			{ name: 'Level 9 (Q1)', map: Level9.data, stats: mapStats},
+			{ name: 'Brinstar', map: Brinstar.data, stats: mapStats},
+			{ name: 'Norfair', map: Norfair.data, stats: mapStats},
+			{ name: 'Kraid\'s', map: Kraids.data, stats: mapStats},
+			{ name: 'Ridley\'s', map: Ridleys.data, stats: mapStats}
+		]
+	};
+
+	const updateMapStats = (areaMapIndex) => {
+		const area = _trackData.areaMaps[areaMapIndex].map;
+		const cells = area.gridRegions ? area.rooms.concat(area.gridRegions) : area.rooms;
+	
+		const maxEquipSpots = cells.filter(c => c.premark === 'E').length;
+		const maxQuestSpots = cells.filter(c => c.premark === 'Q').length;
+		const maxUpgradeSpots = cells.filter(c => c.premark === 'U').length;
+		const maxMinorSpots = cells.filter(c => c.premark === 'M').length;
+	
+		const totalValidCells = cells.filter(c => (c.active !== 'false') && !c.outofbounds).length;
+	
+		//  TODO: distinguish between marked and non-acquired gear so that users
+		//  can see how much has been accounted for, even if not picked up (low priority)
+		const markedEquipSpots = cells.filter(c => c.premark === 'E' && c.marked && !c.notAcquired).length;
+		const markedQuestSpots = cells.filter(c => c.premark === 'Q' && c.marked && !c.notAcquired).length;
+		const markedUpgradeSpots = cells.filter(c => c.premark === 'U' && c.marked && !c.notAcquired).length;
+		const markedMinorSpots = cells.filter(c => c.premark === 'M' && c.marked && !c.notAcquired).length;
+	
+		const areaMarkedNames = cells
+			.filter(c => c.action && c.marked && !c.notAcquired)
+			.map(c => c.action);
+	
+		const equips = get(toolbars).equipActions().map(e => e.name);
+		const quests = get(toolbars).questActions().map(q => q.name);
+		
+		const maxEquipInArea = area.class.indexOf('overworld') >= 0 ? 12 : 3;
+		const maxQuestInArea = 2;
+
+		const numEquipAcquired = areaMarkedNames.filter(a => equips.includes(a)).length;
+		const numQuestAcquired = areaMarkedNames.filter(a => quests.includes(a)).length;
+	
+		_trackData.areaMaps[areaMapIndex].stats = {
+			maxEquipSpots, maxQuestSpots, maxUpgradeSpots, maxMinorSpots,
+			totalValidCells,
+			markedEquipSpots, markedQuestSpots, markedUpgradeSpots, markedMinorSpots,
+			maxEquipInArea, maxQuestInArea,
+			numEquipAcquired, numQuestAcquired
+		};
+	};
+
+	//  Hydrate all area map statistics before returning the tracker object to the caller
+	_trackData.areaMaps.map((a, i) => updateMapStats(i));
+
+	return _trackData;
 };
+
+export const tracker = trackerFactory();
 
 
 export const GlobalAction = {
@@ -67,8 +117,10 @@ export const GlobalAction = {
 	level6: { display: 'Level 6', hotkeys: ['6'], name: 'Level 6 (Q1)' },
 	level7: { display: 'Level 7', hotkeys: ['7'], name: 'Level 7 (Q1)' },
 	level8: { display: 'Level 8', hotkeys: ['8'], name: 'Level 8 (Q1)' },
-	level9: { display: 'Level 9', hotkeys: ['9'], name: 'Level 9 (Q1)' }
+	level9: { display: 'Level 9', hotkeys: ['9'], name: 'Level 9 (Q1)' },
+	shopsandstats: { display: 'Shops & stats', hotkeys: ['s'], name: 'Shops & stats' }
 };
+
 
 function actionsStore() {
 	const { subscribe, set, update } = writable(tracker.actions);
@@ -96,10 +148,13 @@ function actionsStore() {
 
 export const actions = actionsStore();
 
+
 export const trackerUpdated = () => {
 	storage.saveData(tracker);
 };
 
+
+//  TODO: De-dupe this exported function with the member function trackerFactory.updateMapStats() above
 const updateMapStats = (areaMapIndex) => {
 	const area = tracker.areaMaps[areaMapIndex].map;
 	const cells = area.gridRegions ? area.rooms.concat(area.gridRegions) : area.rooms;
@@ -125,6 +180,9 @@ const updateMapStats = (areaMapIndex) => {
 	const equips = get(toolbars).equipActions().map(e => e.name);
 	const quests = get(toolbars).questActions().map(q => q.name);
 	
+	const maxEquipInArea = area.class.indexOf('overworld') >= 0 ? 12 : 3;
+	const maxQuestInArea = 2;
+
 	const numEquipAcquired = areaMarkedNames.filter(a => equips.includes(a)).length;
 	const numQuestAcquired = areaMarkedNames.filter(a => quests.includes(a)).length;
 
@@ -132,9 +190,11 @@ const updateMapStats = (areaMapIndex) => {
 		maxEquipSpots, maxQuestSpots, maxUpgradeSpots, maxMinorSpots,
 		totalValidCells,
 		markedEquipSpots, markedQuestSpots, markedUpgradeSpots, markedMinorSpots,
+		maxEquipInArea, maxQuestInArea,
 		numEquipAcquired, numQuestAcquired
 	};
 };
+
 
 export const updateMapData = async (areaId, marked, actionName) => {
 	const regionsStartAreaId = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;

@@ -140,7 +140,8 @@
 
 
     const sizeMapGrid = () => {
-      const [wWin, hWin, hTopBar] = [window.innerWidth, window.innerHeight, document.querySelector('.top-bar').clientHeight];
+      const errorPx = 30;
+      const [wWin, hWin, hTopBar] = [window.innerWidth, window.innerHeight, document.querySelector('.top-bar').clientHeight + errorPx];
       const ASSUMED_CARD_PAIR_SIZE = 255;
   
       const hSCAvail = hWin - hTopBar;

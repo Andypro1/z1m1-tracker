@@ -11,6 +11,9 @@ const areaStatistics = {
     markedUpgradeSpots: 0,
     markedMinorSpots: 0,
 
+    maxEquipInArea: 0,
+    maxQuestInArea: 0,
+
     numEquipAcquired: 0,
     numQuestAcquired: 0
 };

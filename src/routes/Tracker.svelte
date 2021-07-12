@@ -267,13 +267,110 @@
 			{#each tracker.areaMaps as area }
 				<div class="area-card" on:click={() => { selectMap(area.name); trackerUpdated(); } }>
 					<aside class="key-overlay" data-before={ getAreaCardHotkey(area.name) }></aside>
-					<!-- { area.name } -->
-					<aside>got: { area.stats.numEquipAcquired } { area.stats.numQuestAcquired }</aside>
-					<aside>spots: { area.stats.markedEquipSpots }/{ area.stats.maxEquipSpots }
-						{ area.stats.markedQuestSpots }/{ area.stats.maxQuestSpots }
-						{ area.stats.markedUpgradeSpots }/{ area.stats.maxUpgradeSpots }</aside>
+					<div class="name">{ area.name }</div>
+					<div class="stat-bars">
+						<div class="equip-acquired">
+							{#if area.stats.maxEquipInArea > 0}
+								<div class:full={area.stats.numEquipAcquired > 0}></div>
+							{/if}
+							{#if area.stats.maxEquipInArea > 1}
+								<div class:full={area.stats.numEquipAcquired > 1}></div>
+							{/if}
+							{#if area.stats.maxEquipInArea > 2}
+								<div class:full={area.stats.numEquipAcquired > 2}></div>
+							{/if}
+							{#if area.stats.maxEquipInArea > 3}
+								<div class:full={area.stats.numEquipAcquired > 3}></div>
+							{/if}
+							{#if area.stats.maxEquipInArea > 4}
+								<div class:full={area.stats.numEquipAcquired > 4}></div>
+							{/if}
+							{#if area.stats.maxEquipInArea > 5}
+								<div class:full={area.stats.numEquipAcquired > 5}></div>
+							{/if}
+							{#if area.stats.maxEquipInArea > 6}
+								<div class:full={area.stats.numEquipAcquired > 6}></div>
+							{/if}
+							{#if area.stats.maxEquipInArea > 7}
+								<div class:full={area.stats.numEquipAcquired > 7}></div>
+							{/if}
+							{#if area.stats.numEquipAcquired > area.stats.maxEquipInArea}
+								<div class="overmarked">*</div>
+							{/if}
+						</div>
+						<div class="quest-acquired">
+							{#if area.stats.maxQuestInArea > 0}
+								<div class:full={area.stats.numQuestAcquired > 0}></div>
+							{/if}
+							{#if area.stats.maxQuestInArea > 1}
+								<div class:full={area.stats.numQuestAcquired > 1}></div>
+							{/if}
+							{#if area.stats.maxQuestInArea > 2}
+								<div class:full={area.stats.numQuestAcquired > 2}></div>
+							{/if}
+							{#if area.stats.maxQuestInArea > 3}
+								<div class:full={area.stats.numQuestAcquired > 3}></div>
+							{/if}
+							{#if area.stats.maxQuestInArea > 4}
+								<div class:full={area.stats.numQuestAcquired > 4}></div>
+							{/if}
+							{#if area.stats.maxQuestInArea > 5}
+								<div class:full={area.stats.numQuestAcquired > 5}></div>
+							{/if}
+							{#if area.stats.maxQuestInArea > 6}
+								<div class:full={area.stats.numQuestAcquired > 6}></div>
+							{/if}
+							{#if area.stats.maxQuestInArea > 7}
+								<div class:full={area.stats.numQuestAcquired > 7}></div>
+							{/if}
+							{#if area.stats.numQuestAcquired > area.stats.maxQuestInArea}
+								<div class="overmarked"></div>
+							{/if}
+						</div>
+						<div class="equip-spots">
+							{#if area.stats.maxEquipSpots > 0}
+								<div class:full={area.stats.markedEquipSpots > 0}></div>
+							{/if}
+							{#if area.stats.maxEquipSpots > 1}
+								<div class:full={area.stats.markedEquipSpots > 1}></div>
+							{/if}
+							{#if area.stats.maxEquipSpots > 2}
+								<div class:full={area.stats.markedEquipSpots > 2}></div>
+							{/if}
+							{#if area.stats.maxEquipSpots > 3}
+								<div class:full={area.stats.markedEquipSpots > 3}></div>
+							{/if}
+						</div>
+						<div class="quest-spots">
+							{#if area.stats.maxQuestSpots > 0}
+								<div class:full={area.stats.markedQuestSpots > 0}></div>
+							{/if}
+							{#if area.stats.maxQuestSpots > 1}
+								<div class:full={area.stats.markedQuestSpots > 1}></div>
+							{/if}
+							{#if area.stats.maxQuestSpots > 2}
+								<div class:full={area.stats.markedQuestSpots > 2}></div>
+							{/if}
+							{#if area.stats.maxQuestSpots > 3}
+								<div class:full={area.stats.markedQuestSpots > 3}></div>
+							{/if}
+						</div>
+						<div class="upgrade-spots">
+							{#if area.stats.maxUpgradeSpots > 0}
+								<div class:full={area.stats.markedUpgradeSpots > 0}></div>
+							{/if}
+							{#if area.stats.maxUpgradeSpots > 1}
+								<div class:full={area.stats.markedUpgradeSpots > 1}></div>
+							{/if}
+							{#if area.stats.maxUpgradeSpots > 2}
+								<div class:full={area.stats.markedUpgradeSpots > 2}></div>
+							{/if}
+							{#if area.stats.maxUpgradeSpots > 3}
+								<div class:full={area.stats.markedUpgradeSpots > 3}></div>
+							{/if}
+						</div>
+					</div>
 				</div>
-				<!-- hyrule: { display: 'Hyrule', hotkeys: ['h'], name: 'Hyrule (Q1)' }, -->
 			{/each}
 		</section>
 	</div>
@@ -365,10 +462,7 @@
 			gap: 0.3rem;
 
 			.area-card {
-				//TODO: fix.  This only works when the map height takes up
-				//  the full remaining height.  Most of the time, the overworld
-				//  won't due to how vertically-challenged it is.
-				height: calc(var(--map-full-height) / 8 * 1px - (0.3rem));
+				height: 100%;
 			}
 		}
 	}
@@ -376,12 +470,13 @@
 
 	.graph-paper {
 		background-color: #d9d3c5;
-		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.54'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.3'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 	
 		box-shadow: -10px 0 1rem 0 #000b,
 					inset 0 0.5rem 1rem 0.3rem #0004;
 	}
 
+	
 	.area-card {
 		position: relative;
 		overflow: hidden;
@@ -402,6 +497,160 @@
 
 		.side-cards-layout .area-cards & {
 			box-shadow: 0.2rem 0.2rem 0.2rem 0.2rem #0006;
+		}
+
+		.name {
+			position: absolute;
+			right: 0; top: 0;
+			margin: 0 0.4rem;
+
+			text-align: center;
+			font-variant: small-caps;
+			font-weight: bold;
+		}
+	}
+
+	/***************************
+	**  Area card stats bars  **
+	***************************/
+
+	.stat-bars {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		align-items: center;
+
+		position: absolute;
+		top: 0; left: 0;
+		width: 100%;
+		height: 100%;
+
+		.equip-acquired {
+
+		}
+		
+		.quest-acquired {
+
+		}
+
+		.equip-spots {
+			width: 70%;
+			margin-top: 0.3rem;
+			height: 5px;
+			position: relative;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+			align-items: center;
+
+			div {
+				height: 5px;
+				flex: 1;
+
+				box-shadow: 1px 0 0 0 black;
+				border-bottom: 1px dashed gray;
+
+				background: linear-gradient(to left, transparent 50%, #00ff 50%) right;
+				background-size: 200% 100%;
+				background-position: right bottom;
+				transition: all 0.4s ease;
+			}
+
+			& .full {
+				box-shadow: none;
+				border-bottom: none;
+				background-position: left bottom;
+				transition: all 0.4s ease;
+			}
+
+			&:before {
+				content: 'E';
+				font-weight: bold;
+				font-size: 0.7rem;
+				position: absolute;
+				top: -0.5rem; left: -0.5rem;
+			}
+		}
+
+		.quest-spots {
+			width: 70%;
+			margin-top: 0.3rem;
+			height: 5px;
+			position: relative;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+			align-items: center;
+
+			div {
+				height: 5px;
+				flex: 1;
+
+				box-shadow: 1px 0 0 0 black;
+				border-bottom: 1px dashed gray;
+
+				background: linear-gradient(to left, transparent 50%, #f00f 50%) right;
+				background-size: 200% 100%;
+				background-position: right bottom;
+				transition: all 0.4s ease;
+			}
+
+			& .full {
+				box-shadow: none;
+				border-bottom: none;
+				background-position: left bottom;
+				transition: all 0.4s ease;
+			}
+
+			&:before {
+				content: 'Q';
+				font-weight: bold;
+				font-size: 0.7rem;
+				position: absolute;
+				top: -0.5rem; left: -0.5rem;
+			}
+		}
+
+		.upgrade-spots {
+			width: 70%;
+			margin-top: 0.3rem;
+			height: 5px;
+			position: relative;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+			align-items: center;
+
+			div {
+				height: 5px;
+				flex: 1;
+
+				box-shadow: 1px 0 0 0 black;
+				border-bottom: 1px dashed gray;
+
+				background: linear-gradient(to left, transparent 50%, rgb(0, 190, 0) 50%) right;
+				background-size: 200% 100%;
+				background-position: right bottom;
+				transition: all 0.4s ease;
+			}
+
+			& .full {
+				box-shadow: none;
+				border-bottom: none;
+				background-position: left bottom;
+				transition: all 0.4s ease;
+			}
+
+			&:before {
+				content: 'U';
+				font-weight: bold;
+				font-size: 0.7rem;
+				position: absolute;
+				top: -0.5rem; left: -0.5rem;
+			}
 		}
 	}
 </style>

@@ -2,7 +2,7 @@ import { writable } from 'svelte/store';
 
 const Action = {
 	cleared: { display: 'cleared', hotkeys: [' ', 'c'], name: 'cleared', mapClass: 'fas fa-check-circle' },
-	notYetAcquired: { display: 'not yet acquired', hotkeys: ['n'], name: 'notYetAcquired', mapClass: 'fas fa-asterisk' },
+	notYetAcquired: { display: 'not yet acquired', hotkeys: ['z'], name: 'notYetAcquired', mapClass: 'fas fa-asterisk' },
 	warp: { display: 'warp', hotkeys: ['w'], name: 'warp', mapClass: 'fas fa-door-open', mapText: 'W' },
 	equip: { display: 'equip', hotkeys: ['e'], name: 'equip', mapClass: 'fas fa-gavel', mapText: 'E' },
 	quest: { display: 'quest', hotkeys: ['q'], name: 'quest', mapClass: 'fas fa-trophy', mapText: 'Q' },
@@ -107,11 +107,7 @@ const Toolbars = () => {
 	const getMainToolbar = (set) => {
 		if(set.indexOf('overworld') >= 0)
 			return _toolbars.filter(t => t.name === 'overworld');
-
-		if(set.indexOf('dungeon') >= 0)
-			return _toolbars.filter(t => t.name === 'dungeon');
-
-		if(set.indexOf('zebes') >= 0)
+		else
 			return _toolbars.filter(t => t.name === 'dungeon');
 	};
 
