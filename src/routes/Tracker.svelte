@@ -96,6 +96,9 @@
 
 	const selectMap = (name) => {
 		tracker.curAreaMapIndex = tracker.areaMaps.findIndex(e => e.name === name);
+
+		if(tracker.areaMaps.findIndex(e => e.name === name).length < 1)
+			console.error(`No area map was found with name ${name}.  Logic bug.`);
 	};
 
 	const getAreaCardHotkey = (name) => {
@@ -269,7 +272,7 @@
 					<aside class="key-overlay" data-before={ getAreaCardHotkey(area.name) }></aside>
 					<div class="name">{ area.name }</div>
 					<div class="stat-bars">
-						<div class="equip-acquired">
+						<div class="equip-acquired" class:overmarked={area.stats.numEquipAcquired > area.stats.maxEquipInArea}>
 							{#if area.stats.maxEquipInArea > 0}
 								<div class:full={area.stats.numEquipAcquired > 0}></div>
 							{/if}
@@ -282,52 +285,16 @@
 							{#if area.stats.maxEquipInArea > 3}
 								<div class:full={area.stats.numEquipAcquired > 3}></div>
 							{/if}
-							{#if area.stats.maxEquipInArea > 4}
-								<div class:full={area.stats.numEquipAcquired > 4}></div>
-							{/if}
-							{#if area.stats.maxEquipInArea > 5}
-								<div class:full={area.stats.numEquipAcquired > 5}></div>
-							{/if}
-							{#if area.stats.maxEquipInArea > 6}
-								<div class:full={area.stats.numEquipAcquired > 6}></div>
-							{/if}
-							{#if area.stats.maxEquipInArea > 7}
-								<div class:full={area.stats.numEquipAcquired > 7}></div>
-							{/if}
-							{#if area.stats.numEquipAcquired > area.stats.maxEquipInArea}
-								<div class="overmarked">*</div>
-							{/if}
 						</div>
-						<div class="quest-acquired">
+						<div class="quest-acquired" class:overmarked={area.stats.numQuestAcquired > area.stats.maxQuestInArea}>
 							{#if area.stats.maxQuestInArea > 0}
 								<div class:full={area.stats.numQuestAcquired > 0}></div>
 							{/if}
 							{#if area.stats.maxQuestInArea > 1}
 								<div class:full={area.stats.numQuestAcquired > 1}></div>
 							{/if}
-							{#if area.stats.maxQuestInArea > 2}
-								<div class:full={area.stats.numQuestAcquired > 2}></div>
-							{/if}
-							{#if area.stats.maxQuestInArea > 3}
-								<div class:full={area.stats.numQuestAcquired > 3}></div>
-							{/if}
-							{#if area.stats.maxQuestInArea > 4}
-								<div class:full={area.stats.numQuestAcquired > 4}></div>
-							{/if}
-							{#if area.stats.maxQuestInArea > 5}
-								<div class:full={area.stats.numQuestAcquired > 5}></div>
-							{/if}
-							{#if area.stats.maxQuestInArea > 6}
-								<div class:full={area.stats.numQuestAcquired > 6}></div>
-							{/if}
-							{#if area.stats.maxQuestInArea > 7}
-								<div class:full={area.stats.numQuestAcquired > 7}></div>
-							{/if}
-							{#if area.stats.numQuestAcquired > area.stats.maxQuestInArea}
-								<div class="overmarked"></div>
-							{/if}
 						</div>
-						<div class="equip-spots">
+						<div class="equip-spots" class:empty={area.stats.maxEquipSpots === 0}>
 							{#if area.stats.maxEquipSpots > 0}
 								<div class:full={area.stats.markedEquipSpots > 0}></div>
 							{/if}
@@ -340,8 +307,26 @@
 							{#if area.stats.maxEquipSpots > 3}
 								<div class:full={area.stats.markedEquipSpots > 3}></div>
 							{/if}
+							{#if area.stats.maxEquipSpots > 4}
+								<div class:full={area.stats.markedEquipSpots > 4}></div>
+							{/if}
+							{#if area.stats.maxEquipSpots > 5}
+								<div class:full={area.stats.markedEquipSpots > 5}></div>
+							{/if}
+							{#if area.stats.maxEquipSpots > 6}
+								<div class:full={area.stats.markedEquipSpots > 6}></div>
+							{/if}
+							{#if area.stats.maxEquipSpots > 7}
+								<div class:full={area.stats.markedEquipSpots > 7}></div>
+							{/if}
+							{#if area.stats.maxEquipSpots > 8}
+								<div class:full={area.stats.markedEquipSpots > 8}></div>
+							{/if}
+							{#if area.stats.maxEquipSpots > 9}
+								<div class:full={area.stats.markedEquipSpots > 9}></div>
+							{/if}
 						</div>
-						<div class="quest-spots">
+						<div class="quest-spots" class:empty={area.stats.maxQuestSpots === 0}>
 							{#if area.stats.maxQuestSpots > 0}
 								<div class:full={area.stats.markedQuestSpots > 0}></div>
 							{/if}
@@ -354,8 +339,26 @@
 							{#if area.stats.maxQuestSpots > 3}
 								<div class:full={area.stats.markedQuestSpots > 3}></div>
 							{/if}
+							{#if area.stats.maxQuestSpots > 4}
+								<div class:full={area.stats.markedQuestSpots > 4}></div>
+							{/if}
+							{#if area.stats.maxQuestSpots > 5}
+								<div class:full={area.stats.markedQuestSpots > 5}></div>
+							{/if}
+							{#if area.stats.maxQuestSpots > 6}
+								<div class:full={area.stats.markedQuestSpots > 6}></div>
+							{/if}
+							{#if area.stats.maxQuestSpots > 7}
+								<div class:full={area.stats.markedQuestSpots > 7}></div>
+							{/if}
+							{#if area.stats.maxQuestSpots > 8}
+								<div class:full={area.stats.markedQuestSpots > 8}></div>
+							{/if}
+							{#if area.stats.maxQuestSpots > 9}
+								<div class:full={area.stats.markedQuestSpots > 9}></div>
+							{/if}
 						</div>
-						<div class="upgrade-spots">
+						<div class="upgrade-spots" class:empty={area.stats.maxUpgradeSpots === 0}>
 							{#if area.stats.maxUpgradeSpots > 0}
 								<div class:full={area.stats.markedUpgradeSpots > 0}></div>
 							{/if}
@@ -367,6 +370,30 @@
 							{/if}
 							{#if area.stats.maxUpgradeSpots > 3}
 								<div class:full={area.stats.markedUpgradeSpots > 3}></div>
+							{/if}
+							{#if area.stats.maxUpgradeSpots > 4}
+								<div class:full={area.stats.markedUpgradeSpots > 4}></div>
+							{/if}
+							{#if area.stats.maxUpgradeSpots > 5}
+								<div class:full={area.stats.markedUpgradeSpots > 5}></div>
+							{/if}
+							{#if area.stats.maxUpgradeSpots > 6}
+								<div class:full={area.stats.markedUpgradeSpots > 6}></div>
+							{/if}
+							{#if area.stats.maxUpgradeSpots > 7}
+								<div class:full={area.stats.markedUpgradeSpots > 7}></div>
+							{/if}
+							{#if area.stats.maxUpgradeSpots > 8}
+								<div class:full={area.stats.markedUpgradeSpots > 8}></div>
+							{/if}
+							{#if area.stats.maxUpgradeSpots > 9}
+								<div class:full={area.stats.markedUpgradeSpots > 9}></div>
+							{/if}
+							{#if area.stats.maxUpgradeSpots > 10}
+								<div class:full={area.stats.markedUpgradeSpots > 10}></div>
+							{/if}
+							{#if area.stats.maxUpgradeSpots > 11}
+								<div class:full={area.stats.markedUpgradeSpots > 11}></div>
 							{/if}
 						</div>
 					</div>
@@ -476,7 +503,7 @@
 					inset 0 0.5rem 1rem 0.3rem #0004;
 	}
 
-	
+
 	.area-card {
 		position: relative;
 		overflow: hidden;
@@ -521,16 +548,118 @@
 		align-items: center;
 
 		position: absolute;
-		top: 0; left: 0;
+		bottom: 0; left: 0;
 		width: 100%;
-		height: 100%;
+		height: calc(100% - 1rem);
+
+		.empty {
+			display: none !important;
+		}
 
 		.equip-acquired {
+			width: 70%;
+			margin-top: 0.3rem;
+			height: 5px;
+			position: relative;
 
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+			align-items: center;
+
+			div {
+				height: 5px;
+				flex: 1;
+
+				box-shadow: 1px 0 0 0 black;
+				border-bottom: 1px dashed gray;
+
+				background: linear-gradient(to left, transparent 50%, #00ff 50%) right;
+				background-size: 200% 100%;
+				background-position: right bottom;
+				transition: all 0.4s ease;
+			}
+
+			&.overmarked {
+				&:after {
+					position: absolute;
+					top: -1rem; right: -0.8rem;
+					content: '*';
+
+					color: red;
+					font-weight: bold;
+					font-size: 2rem;
+				}
+			}
+
+			& .full {
+				box-shadow: none;
+				border-bottom: none;
+				background-position: left bottom;
+				transition: all 0.4s ease;
+			}
+
+			&:before {
+				content: 'E';
+				font-weight: bold;
+				font-size: 0.7rem;
+				position: absolute;
+				top: -0.5rem; left: -0.5rem;
+			}
 		}
 		
 		.quest-acquired {
+			margin-bottom: auto;
 
+			width: 70%;
+			margin-top: 0.3rem;
+			height: 5px;
+			position: relative;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+			align-items: center;
+
+			div {
+				height: 5px;
+				flex: 1;
+
+				box-shadow: 1px 0 0 0 black;
+				border-bottom: 1px dashed gray;
+
+				background: linear-gradient(to left, transparent 50%, #f00f 50%) right;
+				background-size: 200% 100%;
+				background-position: right bottom;
+				transition: all 0.4s ease;
+			}
+
+			&.overmarked {
+				&:after {
+					position: absolute;
+					top: -1rem; right: -0.8rem;
+					content: '*';
+
+					color: red;
+					font-weight: bold;
+					font-size: 2rem;
+				}
+			}
+
+			& .full {
+				box-shadow: none;
+				border-bottom: none;
+				background-position: left bottom;
+				transition: all 0.4s ease;
+			}
+
+			&:before {
+				content: 'Q';
+				font-weight: bold;
+				font-size: 0.7rem;
+				position: absolute;
+				top: -0.5rem; left: -0.5rem;
+			}
 		}
 
 		.equip-spots {

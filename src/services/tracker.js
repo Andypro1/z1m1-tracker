@@ -79,7 +79,7 @@ function trackerFactory() {
 		const equips = get(toolbars).equipActions().map(e => e.name);
 		const quests = get(toolbars).questActions().map(q => q.name);
 		
-		const maxEquipInArea = area.class.indexOf('overworld') >= 0 ? 12 : 3;
+		const maxEquipInArea = area.class.indexOf('overworld') >= 0 ? 4 : 3;
 		const maxQuestInArea = 2;
 
 		const numEquipAcquired = areaMarkedNames.filter(a => equips.includes(a)).length;
@@ -180,7 +180,7 @@ const updateMapStats = (areaMapIndex) => {
 	const equips = get(toolbars).equipActions().map(e => e.name);
 	const quests = get(toolbars).questActions().map(q => q.name);
 	
-	const maxEquipInArea = area.class.indexOf('overworld') >= 0 ? 12 : 3;
+	const maxEquipInArea = area.class.indexOf('overworld') >= 0 ? 4 : 3;
 	const maxQuestInArea = 2;
 
 	const numEquipAcquired = areaMarkedNames.filter(a => equips.includes(a)).length;
