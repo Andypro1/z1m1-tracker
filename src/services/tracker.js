@@ -28,7 +28,7 @@ function trackerFactory() {
 	const _trackData = {
 		sessionTimestamp: +new Date(),
 		curAreaMapIndex: 0,
-		layout: 'bottom',
+		// layout: 'bottom',
 		actions: [
 			'cleared',
 			'warp',
@@ -155,7 +155,7 @@ export const trackerUpdated = () => {
 
 
 //  TODO: De-dupe this exported function with the member function trackerFactory.updateMapStats() above
-const updateMapStats = (areaMapIndex) => {
+export const updateMapStats = (areaMapIndex) => {
 	const area = tracker.areaMaps[areaMapIndex].map;
 	const cells = area.gridRegions ? area.rooms.concat(area.gridRegions) : area.rooms;
 
@@ -196,6 +196,15 @@ const updateMapStats = (areaMapIndex) => {
 };
 
 
+export const getCell = (areaId) => {
+	const regionsStartAreaId = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
+	const isRegion           = areaId >= regionsStartAreaId;
+
+	return isRegion ? tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId] :
+		tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId];
+};
+
+
 export const updateMapData = async (areaId, marked, actionName) => {
 	const regionsStartAreaId = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
 	const isRegion           = areaId >= regionsStartAreaId;
@@ -212,6 +221,10 @@ export const updateMapData = async (areaId, marked, actionName) => {
 			tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].marked = marked;
 			tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].action = actionName;
 		}
+
+		//  Clear notAcquired property if cell was unmarked
+		if(!marked)
+			tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].notAcquired = undefined;
 	}
 	else { //room
 		if(isReminder) {
@@ -222,6 +235,10 @@ export const updateMapData = async (areaId, marked, actionName) => {
 			tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].marked = marked;
 			tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].action = actionName;
 		}
+
+		//  Clear notAcquired property if cell was unmarked
+		if(!marked)
+			tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].notAcquired = undefined;
 	}
 
 	//  Test coop-client section  \\

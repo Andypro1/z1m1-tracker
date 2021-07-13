@@ -6,7 +6,7 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/env';
 	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, trackerUpdated, actions, loadState, GlobalAction } from '../services/tracker.js';
+	import { tracker, trackerUpdated, updateMapStats, getCell, actions, loadState, GlobalAction } from '../services/tracker.js';
 	import Toolbars from "../components/Toolbars.svelte";
 	import toolbars from '../components/toolbars.js';
 	import Map from "../components/Map.svelte";
@@ -18,11 +18,14 @@
 	export let coopGuid = '';
 	export let storageKey = '';
 
+	//  My props
 	let activeHotkeySequence = '';
 	let activeHotkeyAreaId = -1;
+	$: layout = 'bottom';
+
 
 	const doLayout = (m) => {
-		tracker.layout = m.name;
+		layout = m.name;
 
 		styles['map-full-width'] = m.fullWidth;
 		styles['map-full-height'] = m.fullHeight;
@@ -44,52 +47,90 @@
 
 	if(browser) {
 		onMount(async () => {
+			console.log('onmount');
+
 			// alert(JSON.stringify(history.state));
 			if(history.state.storageKey)
 				storageKey = history.state.storageKey;
 
 			updateMapData = (await import('../services/tracker.js')).updateMapData;
 
-			//TODO: Not working.
-			if(history.state.isNew) {
-				const fresh = (await import('../services/tracker.js')).tracker;
-
-				console.log(fresh.sessionTimestamp);
-
-				tracker.sessionTimestamp = fresh.sessionTimestamp;
-				tracker.curAreaMapIndex = fresh.curAreaMapIndex;
-				tracker.layout = fresh.layout;
-				tracker.actions = [...fresh.actions];
-				tracker.areaMaps = [...fresh.areaMaps];
-
-				return;
-			}
-			
-			//  Load the tracking session if passed in
-			if(history && history.state && history.state.track) {
-				const state = await loadState(history.state.track);
-
-				tracker.sessionTimestamp = state.sessionTimestamp;
-				tracker.curAreaMapIndex = state.curAreaMapIndex;
-				tracker.layout = state.layout;
-				tracker.actions = [...state.actions];
-				tracker.areaMaps = [...state.areaMaps];
-
-				//  Also set stores used by components
-				actions.set([...state.actions]);
-			}
-
 			if(storageKey) {
 				const state = await loadState(storageKey);
 
 				tracker.sessionTimestamp = state.sessionTimestamp;
 				tracker.curAreaMapIndex = state.curAreaMapIndex;
-				tracker.layout = state.layout;
+				// tracker.layout = state.layout;
 				tracker.actions = [...state.actions];
 				tracker.areaMaps = [...state.areaMaps];
 
 				//  Also set stores used by components
 				actions.set([...state.actions]);
+			}
+			else {
+				// TODO: Find a better way to create a fresh copy of the tracker data.
+				// Ensure initialization routines that are typically run get run here.
+				// TODO2:  This is STILL not working.  Repro:
+				//			- Start tracking coop
+				//			- mark some rooms
+				//			- back button
+				//			- Start tracking solo (or coop).  Stale data loads from .mapdata.js imports.
+				const Hyruleq1 = (await import("../components/maps/Hyruleq1.mapdata.js")).default;
+				const ShopsAndStats = (await import("../components/maps/ShopsAndStats.mapdata.js")).default;
+				const Level1 = (await import("../components/maps/Level1q1.mapdata.js")).default;
+				const Level2 = (await import("../components/maps/Level2q1.mapdata.js")).default;
+				const Level3 = (await import("../components/maps/Level3q1.mapdata.js")).default;
+				const Level4 = (await import("../components/maps/Level4q1.mapdata.js")).default;
+				const Level5 = (await import("../components/maps/Level5q1.mapdata.js")).default;
+				const Level6 = (await import("../components/maps/Level6q1.mapdata.js")).default;
+				const Level7 = (await import("../components/maps/Level7q1.mapdata.js")).default;
+				const Level8 = (await import("../components/maps/Level8q1.mapdata.js")).default;
+				const Level9 = (await import("../components/maps/Level9q1.mapdata.js")).default;
+				const Brinstar = (await import("../components/maps/Brinstar.mapdata.js")).default;
+				const Norfair = (await import("../components/maps/Norfair.mapdata.js")).default;
+				const Kraids = (await import("../components/maps/Kraids.mapdata.js")).default;
+				const Ridleys = (await import("../components/maps/Ridleys.mapdata.js")).default;
+				const mapStats = (await import ('../components/areaStatistics.js')).default;
+
+				tracker.sessionTimestamp = +new Date();
+
+				console.log(tracker.sessionTimestamp);
+
+				tracker.curAreaMapIndex = 0;
+				tracker.actions = [
+						'cleared',
+						'warp',
+						'equip',
+						'quest'
+					];
+				tracker.areaMaps = [
+					{ name: 'Hyrule (Q1)', map: Hyruleq1.data, stats: mapStats},
+					{ name: 'Shops & stats', map: ShopsAndStats.data, stats: mapStats},
+					{ name: 'Level 1 (Q1)', map: Level1.data, stats: mapStats},
+					{ name: 'Level 2 (Q1)', map: Level2.data, stats: mapStats},
+					{ name: 'Level 3 (Q1)', map: Level3.data, stats: mapStats},
+					{ name: 'Level 4 (Q1)', map: Level4.data, stats: mapStats},
+					{ name: 'Level 5 (Q1)', map: Level5.data, stats: mapStats},
+					{ name: 'Level 6 (Q1)', map: Level6.data, stats: mapStats},
+					{ name: 'Level 7 (Q1)', map: Level7.data, stats: mapStats},
+					{ name: 'Level 8 (Q1)', map: Level8.data, stats: mapStats},
+					{ name: 'Level 9 (Q1)', map: Level9.data, stats: mapStats},
+					{ name: 'Brinstar', map: Brinstar.data, stats: mapStats},
+					{ name: 'Norfair', map: Norfair.data, stats: mapStats},
+					{ name: 'Kraid\'s', map: Kraids.data, stats: mapStats},
+					{ name: 'Ridley\'s', map: Ridleys.data, stats: mapStats}
+				];
+
+				//  Also set stores used by components
+				actions.set([
+					'cleared',
+					'warp',
+					'equip',
+					'quest'
+				]);
+
+				//  Hydrate all area map statistics
+				tracker.areaMaps.map((a, i) => updateMapStats(i));
 			}
 		});
 	}
@@ -103,7 +144,7 @@
 
 	const getAreaCardHotkey = (name) => {
 		const match = Object.values(GlobalAction).filter(ga => ga.name === name);
-		
+
 		if(match && match[0])
 			return match[0].hotkeys[0];
 
@@ -115,7 +156,7 @@
 
 	const getAreaUnderCursor = (x, y) => {
 		let elem = document.elementFromPoint(x, y);
-		
+
 		while(elem.parentElement && !elem.classList.contains('map-grid')) {
 			if(elem.classList.contains('room') || elem.classList.contains('grid-region'))
 				return elem.dataset.areaId;
@@ -132,7 +173,7 @@
 			//  Affect the activeHotkey vars with mouse clicks for
 			//  combined mouse-keyboard sequences
 			const mouseMarkAreaId = getAreaUnderCursor(mouseX, mouseY);
-			
+
 			if(mouseMarkAreaId > -1) {
 				activeHotkeySequence  = $toolbars.getAction(action).hotkeys[0];
 				activeHotkeyAreaId    = mouseMarkAreaId;
@@ -194,7 +235,7 @@
 			}
 
 			if(matchingActions.length) {
-				if(curAreaId !== -1) {
+				if((curAreaId !== -1) && (getCell(curAreaId).active !== false)) {
 					updateMapData(curAreaId, true, matchingActions[0].name);
 					tracker.areaMaps = tracker.areaMaps;
 					return;
@@ -217,10 +258,10 @@
 			//  - reset the active key combination
 			activeHotkeySequence = '';
 		}
-			
+
 		//  - Check for matching "outside map" keys (area cards, settings shortcuts (alt+h, alt+v, etc.)) and take action
 		const globalAction = [...Object.keys(GlobalAction).map(k => GlobalAction[k])].filter(ga => ga.hotkeys.includes(e.key));
-		
+
 		if(globalAction && globalAction[0]) {
 			//  TODO: Flesh out handling once non-area cards are added to global actions like tracker settings, etc.
 			selectMap(globalAction[0].name);
@@ -261,7 +302,7 @@
 			</div>
 		  </div>
 	</section>
-	<div class:bottom-cards-layout={tracker.layout === 'bottom'} class:side-cards-layout={tracker.layout === 'side'}>
+	<div class:bottom-cards-layout={layout === 'bottom'} class:side-cards-layout={layout === 'side'}>
 		<section class="map-section">
 			<Map layout={doLayout} trackerUpdated={trackerUpdated} handleHotkey={handleHotkey} handleMouseMark={handleMouseMark}
 				data={tracker.areaMaps[tracker.curAreaMapIndex].map} actions={tracker.actions}/>
@@ -498,7 +539,7 @@
 	.graph-paper {
 		background-color: #d9d3c5;
 		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.3'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-	
+
 		box-shadow: -10px 0 1rem 0 #000b,
 					inset 0 0.5rem 1rem 0.3rem #0004;
 	}
@@ -509,12 +550,12 @@
 		overflow: hidden;
 
 		border-radius: 0.5rem;
-		
+
 		background-image: url("/images/tb.action.equip.png");//, linear-gradient(rgba(185, 174, 110, 0.329),rgba(185, 174, 110, 0.329));
 		background-image: url("/images/tb.action.equip.png"), linear-gradient(rgba(255, 254, 221, 0.9),rgba(255, 254, 221, 0.75));
 		background-blend-mode: lighten;
 		background-size: contain;
-		
+
 		cursor: pointer;
 		padding: 1rem;
 
@@ -607,7 +648,7 @@
 				top: -0.5rem; left: -0.5rem;
 			}
 		}
-		
+
 		.quest-acquired {
 			margin-bottom: auto;
 
