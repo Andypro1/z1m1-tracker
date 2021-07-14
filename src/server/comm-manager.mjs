@@ -3,8 +3,17 @@ const commManager = () => {
     let _rooms = [];
 
 
-    const handleInit = (msg) => {
-        console.log('initt\'n\'!');
+    const handleInit = (msg, userid) => {
+        console.log(`initt\'n\' ${userid}!`);
+
+        if(msg.room) {
+            const existingRoom = _rooms.filter(r => r.id === msg.room);
+
+            return { success: existingRoom.length };
+        }
+        else {
+            return { failed: 'room property not valid.' };
+        }
     };
 
 
@@ -13,8 +22,8 @@ const commManager = () => {
     ];
 
     
-    const handleMessage = (msg) => {
-        console.log('handlin\'.');
+    const handleMessage = (msg, userid) => {
+        console.log(`handlin\' from ${userid}!`);
 
         if(typeof msg === 'string' && msg[0] === '{') {
             try {
@@ -22,7 +31,9 @@ const commManager = () => {
                 console.log(`parsed: ${JSON.stringify(msgObj)}`);
 
                 if(msgObj && msgObj.name && _directives.filter(n => n.name === msgObj.name)) {
-                    this[_directives.filter(n => n.name === msgObj.name)[0].method](msgObj);
+                    const res = _directives.filter(n => n.name === msgObj.name)[0].method(msgObj, userid);
+
+                    console.log(JSON.stringify(res));
                 }
                 else {
                     console.log(`Directive not found: ${JSON.stringify(msgObj)}`);

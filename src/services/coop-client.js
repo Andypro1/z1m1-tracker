@@ -15,7 +15,7 @@ const coopClient = () => {
             conn.onopen = () => {
                 console.log(`socket open.  Sending roomGuid: ${_roomGuid}`);
 
-                conn.send(`{ "init": "${_roomGuid}" }`);
+                conn.send(JSON.stringify({ name: 'init', room: _roomGuid }));
             };
         
             conn.onmessage = async (e) => {
