@@ -1,10 +1,8 @@
 import { writable, get } from 'svelte/store';
 import storage from '../services/storage.js';
 import toolbars from '../components/toolbars.js';
+import coopClient from '../services/coop-client.js';
 import mapStats from '../components/areaStatistics.js';
-// import coopClient from './coop-client.js';
-
-let coopClient;
 
 import Hyruleq1 from "../components/maps/Hyruleq1.mapdata.js";
 import ShopsAndStats from "../components/maps/ShopsAndStats.mapdata.js";
@@ -28,7 +26,6 @@ function trackerFactory() {
 	const _trackData = {
 		sessionTimestamp: +new Date(),
 		curAreaMapIndex: 0,
-		// layout: 'bottom',
 		actions: [
 			'cleared',
 			'warp',
@@ -241,11 +238,9 @@ export const updateMapData = async (areaId, marked, actionName) => {
 			tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].notAcquired = undefined;
 	}
 
-	//  Test coop-client section  \\
-	// if(!coopClient)
-	// 	coopClient = (await import('./coop-client.js')).default;
+	//  Tell all "subscribers" about our state change (coop if enabled, current map statistics, and local storage)
+	get(coopClient).send(`${tracker.curAreaMapIndex} ${areaId} ${marked} ${actionName}`);
 
-	// coopClient.send(`${tracker.curAreaMapIndex} ${areaId} ${marked} ${actionName}`);
 	updateMapStats(tracker.curAreaMapIndex);
 	trackerUpdated();
 };

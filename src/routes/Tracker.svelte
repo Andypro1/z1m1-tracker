@@ -3,19 +3,22 @@
 </script>
 
 <script>
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/env';
+	import { page } from "$app/stores";
 	import '@fortawesome/fontawesome-free/css/all.css';
 	import { tracker, trackerUpdated, updateMapStats, getCell, actions, loadState, GlobalAction } from '../services/tracker.js';
 	import Toolbars from "../components/Toolbars.svelte";
 	import toolbars from '../components/toolbars.js';
+	import coopClient from '../services/coop-client.js';
 	import Map from "../components/Map.svelte";
+
+	let { coopGuid } = $page.params;
 
 	// let tracker, trackerUpdated, actions, loadState, GlobalAction;
 	let updateMapData;
 
 	//  Route props
-	export let coopGuid = '';
 	export let storageKey = '';
 
 	//  My props
@@ -47,10 +50,16 @@
 
 	if(browser) {
 		onMount(async () => {
-			console.log('onmount');
+			if(coopGuid) {
+				var res = await $coopClient.enable(coopGuid);
 
-			// alert(JSON.stringify(history.state));
-			if(history.state.storageKey)
+				console.log(res);
+			}
+			else {
+				var res = await $coopClient.disable();
+			}
+
+			if(history && history.state && history.state.storageKey)
 				storageKey = history.state.storageKey;
 
 			updateMapData = (await import('../services/tracker.js')).updateMapData;
@@ -132,6 +141,10 @@
 				//  Hydrate all area map statistics
 				tracker.areaMaps.map((a, i) => updateMapStats(i));
 			}
+		});
+
+		onDestroy(async () => {
+			$coopClient.disable();
 		});
 	}
 
