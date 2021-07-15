@@ -202,8 +202,9 @@ export const getCell = (areaId) => {
 };
 
 
-export const updateMapData = async (areaId, marked, actionName) => {
-	const regionsStartAreaId = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
+export const updateMapData = async (areaId, marked, actionName, areaMapIndex, excludeResend) => {
+	const ami 				 = areaMapIndex ? areaMapIndex : tracker.curAreaMapIndex;
+	const regionsStartAreaId = tracker.areaMaps[ami].map.rooms.length;
 	const isRegion           = areaId >= regionsStartAreaId;
 
 	//  isReminder is a simple toggle stored in the area as a boolean
@@ -211,42 +212,54 @@ export const updateMapData = async (areaId, marked, actionName) => {
 
 	if(isRegion) {
 		if(isReminder) {
-			tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].notAcquired = 
-				!tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].notAcquired;
+			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].notAcquired = 
+				!tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].notAcquired;
 		}
 		else {
-			tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].marked = marked;
-			tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].action = actionName;
+			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].marked = marked;
+			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].action = actionName;
 		}
 
 		//  Clear notAcquired property if cell was unmarked
 		if(!marked)
-			tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId].notAcquired = undefined;
+			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].notAcquired = undefined;
 	}
 	else { //room
 		if(isReminder) {
-			tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].notAcquired = 
-				!tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].notAcquired;
+			tracker.areaMaps[ami].map.rooms[areaId].notAcquired = 
+				!tracker.areaMaps[ami].map.rooms[areaId].notAcquired;
 		}
 		else {
-			tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].marked = marked;
-			tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].action = actionName;
+			tracker.areaMaps[ami].map.rooms[areaId].marked = marked;
+			tracker.areaMaps[ami].map.rooms[areaId].action = actionName;
 		}
 
 		//  Clear notAcquired property if cell was unmarked
 		if(!marked)
-			tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId].notAcquired = undefined;
+			tracker.areaMaps[ami].map.rooms[areaId].notAcquired = undefined;
 	}
 
 	//  Tell all "subscribers" about our state change (coop if enabled, current map statistics, and local storage)
-	get(coopClient).send(`${tracker.curAreaMapIndex} ${areaId} ${marked} ${actionName}`);
+	if(!excludeResend)
+		get(coopClient).send(`${ami} ${areaId} ${marked} ${actionName}`);
 
-	updateMapStats(tracker.curAreaMapIndex);
+	updateMapStats(ami);
 	trackerUpdated();
 };
+
 
 export const loadState = async (storageKey) => {
 	const data = await storage.loadData(storageKey);
 	
 	return data;
+};
+
+export const loadRawData = async (data) => {
+	const res = await storage.decodeRawData(data);
+
+	return res;
+};
+
+export const getRawData = async () => {
+	return storage.packageData(tracker);
 };

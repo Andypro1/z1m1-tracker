@@ -7,7 +7,7 @@
 	import { browser } from '$app/env';
 	import { page } from "$app/stores";
 	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, trackerUpdated, updateMapStats, getCell, actions, loadState, GlobalAction } from '../services/tracker.js';
+	import { tracker, trackerUpdated, loadRawData, getRawData, updateMapStats, getCell, actions, loadState, GlobalAction } from '../services/tracker.js';
 	import Toolbars from "../components/Toolbars.svelte";
 	import toolbars from '../components/toolbars.js';
 	import coopClient from '../services/coop-client.js';
@@ -38,6 +38,27 @@
 		styles['map-bottom-padding'] = m.bottomPad;
 	};
 
+
+	const loadAllData = async (data) => {
+		console.log(`loadAllData(): len(${data.length})`);
+
+		const state = await loadRawData(data);
+
+		console.log(`processed data len: ${JSON.stringify(state).length}`);
+
+		//  Only update areaMaps.  Thus far, all other properties
+		//  are ones that shouldn't be shared between coop partners
+		tracker.areaMaps = [...state.areaMaps];
+	};
+
+
+	const dataFromPartner = async (areaId, marked, actionName, areaMapIndex, excludeResend) => {
+		await updateMapData(areaId, marked, actionName, areaMapIndex, excludeResend);
+
+		tracker.areaMaps = tracker.areaMaps;
+	};
+
+
     //  Dynamic style vars
     let styles = {
       'shadow-color': 'rgb(128, 128, 128)'
@@ -50,15 +71,6 @@
 
 	if(browser) {
 		onMount(async () => {
-			if(coopGuid) {
-				var res = await $coopClient.enable(coopGuid);
-
-				console.log(res);
-			}
-			else {
-				var res = await $coopClient.disable();
-			}
-
 			if(history && history.state && history.state.storageKey)
 				storageKey = history.state.storageKey;
 
@@ -141,7 +153,18 @@
 				//  Hydrate all area map statistics
 				tracker.areaMaps.map((a, i) => updateMapStats(i));
 			}
+
+			//  Need to wait to initialize coop to ensure we have a valid storage key (sessionTimestamp)
+			if(coopGuid) {
+				var res = await $coopClient.enable(coopGuid, tracker.sessionTimestamp, loadAllData, getRawData, dataFromPartner);
+
+				console.log(res);
+			}
+			else {
+				var res = await $coopClient.disable();
+			}
 		});
+
 
 		onDestroy(async () => {
 			$coopClient.disable();

@@ -12,15 +12,20 @@ wss.on('connection', function connection(ws) {
     ws.userid = uuidv4();
 
     ws.on('message', function incoming(data) {
-        console.log(`message: ${JSON.stringify(data)}`);
+        console.log(`msg len: ${data.length}`);
 
         commManager.handleMessage(data, ws.userid, wss);
 
-        wss.clients.forEach(function each(client) {
-            if(client !== ws && client.readyState === WebSocket.OPEN) {
-                client.send(data);
-            }
-        });
+        ///  FOR DEBUG
+        // wss.clients.forEach(function each(client) {
+        //     if(client !== ws && client.readyState === WebSocket.OPEN) {
+        //         client.send(data);
+        //     }
+        // });
+    });
+
+    ws.on('close', () => {
+        commManager.handleLeave(ws.userid, wss);
     });
 });
 

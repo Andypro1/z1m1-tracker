@@ -1,4 +1,6 @@
 import { writable } from 'svelte/store';
+import storage from './storage.js';
+
 
 const coopClient = () => {
     //  TODO: Configurify
@@ -6,6 +8,10 @@ const coopClient = () => {
     let conn;
     let _modeEnabled = false;
     let _roomGuid;
+    let _myStorageKey;
+    let _loadCallback;
+    let _getSaveDataCallback;
+    let _processDataCallback;
 
 
     const startSession = async () => {
@@ -19,15 +25,38 @@ const coopClient = () => {
             };
         
             conn.onmessage = async (e) => {
+                let content = undefined;
+                let contentObj = undefined;
+
                 if(e.data) {
                     if(e.data instanceof Blob) {
-                        var content = await e.data.text();
-                        console.log(content);
-                        return content;
+                        content = await e.data.text();
                     }
                     else { //string content
-                        console.log(e.data);
-                        return e.data;
+                        content = e.data;
+                    }
+
+                    console.log(`[rcv'd len]: ${content.length}`);
+                    
+                    if(content && content[0] === '{') {
+                        try {
+                            contentObj = JSON.parse(content);
+                        }
+                        catch(e) {
+                            console.log(`Error: ${e}`);
+                        }
+
+                        
+                        if(contentObj.name === 'sendAllData') {
+                            sendAllData();
+                        }
+                        else if(contentObj.name === 'allData') {
+                            loadAllData(contentObj.data);
+                        }
+                    }
+                    else if(content.length && content.split(' ').length) {
+                        //  Regular area update
+                        processTrackerData(...content.split(' '));
                     }
                 }
             };
@@ -44,10 +73,14 @@ const coopClient = () => {
     };
 
 
-    const enable = async (roomGuid) => {
-        _modeEnabled = true;
-        _roomGuid = roomGuid;
-
+    const enable = async (roomGuid, storageKey, loadCallback, getSaveDataCallback, processDataCallback) => {
+        _modeEnabled  = true;
+        _roomGuid     = roomGuid;
+        _myStorageKey = storageKey;
+        _loadCallback = loadCallback;
+        _getSaveDataCallback = getSaveDataCallback;
+        _processDataCallback = processDataCallback;
+        
         const res = await startSession();
 
         if(res.failed)
@@ -79,7 +112,7 @@ const coopClient = () => {
 
         if(conn.readyState === WebSocket.OPEN) {
             conn.send(data);
-            console.log(`sent: ${data}`);
+            console.log(`sent length: ${data.length}`);
         }
         else {
             if(typeof retries === 'undefined')
@@ -95,12 +128,33 @@ const coopClient = () => {
     };
 
 
+    const sendAllData = async () => {
+        let data;
+        
+        if(storage.exists(_myStorageKey)) {
+            data = await storage.loadCompressedData(_myStorageKey);
+        }
+        else {
+            data = await _getSaveDataCallback();
+        }
+
+        send(JSON.stringify({ name: 'allData', data: data }));
+    };
+
+
+    const loadAllData = async (data) => {
+        _loadCallback(data);
+    };
+
+    const processTrackerData = (areaMapIndex, areaId, marked, actionName) => {
+        //${tracker.curAreaMapIndex} ${areaId} ${marked} ${actionName}
+        _processDataCallback(areaId, marked, actionName, areaMapIndex, true);
+    };
+
+
     return {
         enable      : enable,
         disable     : disable,
-        // onopen      : conn.onopen,
-        // onmessage   : conn.onmessage,
-        // onclose     : conn.onclose,
         send        : send
     };
 };

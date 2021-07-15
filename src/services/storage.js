@@ -29,6 +29,35 @@ const storage = () => {
         localStorage[`${storageKeyPrefix}${combinedData.sessionTimestamp}`] = await compressToUTF16(JSON.stringify(combinedData));
     };
 
+
+    const packageData = async (combinedData) => {
+        if(!combinedData.sessionTimestamp) {
+            console.error('Cannot generate tracking data: session timestamp not supplied.');
+            return;
+        }
+
+        return await compressToUTF16(JSON.stringify(combinedData));
+    };
+
+    const loadCompressedData = async (sessionTimestamp) => {
+        if(!sessionTimestamp) {
+            console.error('Cannot load tracking data from storage: session timestamp not supplied.');
+            return;
+        }
+
+        return localStorage[`${storageKeyPrefix}${sessionTimestamp}`];
+    };
+
+    const exists = (sessionTimestamp) => {
+        return typeof localStorage[`${storageKeyPrefix}${sessionTimestamp}`] !== 'undefined';
+    };
+
+    const decodeRawData = async (data) => {
+        return JSON.parse(
+            await decompressFromUTF16(data)
+        );
+    };
+
     const loadData = async (sessionTimestamp) => {
         if(!sessionTimestamp) {
             console.error('Cannot load tracking data from storage: session timestamp not supplied.');
@@ -57,11 +86,15 @@ const storage = () => {
     };
 
     return Object.freeze({
-        saveData: saveData,
-        loadData: loadData,
-        deleteData: deleteData,
-        listSaves: listSaves,
-        addLabel: addLabel
+        exists            : exists,
+        packageData       : packageData,
+        saveData          : saveData,
+        loadData          : loadData,
+        loadCompressedData: loadCompressedData,
+        decodeRawData     : decodeRawData,
+        deleteData        : deleteData,
+        listSaves         : listSaves,
+        addLabel          : addLabel
     });
 };
 
