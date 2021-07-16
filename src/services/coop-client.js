@@ -21,8 +21,7 @@ const coopClient = () => {
         console.log('ping');
         send(JSON.stringify({ name: 'ping' }));
 
-        clearTimeout(_pingTimer);
-        _pingTimer = setTimeout(() => { conn.close(); }, _pingTime);
+        _pingTimer = setTimeout(handlePing, _pingTime);
     };
 
     const startSession = async () => {
