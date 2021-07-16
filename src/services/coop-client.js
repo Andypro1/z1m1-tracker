@@ -4,7 +4,7 @@ import storage from './storage.js';
 
 const coopClient = () => {
     //  TODO: Configurify
-    const endpoint = 'ws://localhost:8080/';
+    const endpoint = 'ws://z1m1-server.andypro.net:8080/';
     let conn;
     let _modeEnabled = false;
     let _roomGuid;

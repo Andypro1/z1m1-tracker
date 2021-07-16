@@ -203,7 +203,7 @@ export const getCell = (areaId) => {
 
 
 export const updateMapData = async (areaId, marked, actionName, areaMapIndex, excludeResend) => {
-	const ami 				 = areaMapIndex ? areaMapIndex : tracker.curAreaMapIndex;
+	const ami 				 = (typeof areaMapIndex !== 'undefined') ? areaMapIndex : tracker.curAreaMapIndex;
 	const regionsStartAreaId = tracker.areaMaps[ami].map.rooms.length;
 	const isRegion           = areaId >= regionsStartAreaId;
 

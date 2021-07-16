@@ -127,7 +127,10 @@
       if(areaType === 'room' && (!area.active || area.outofbounds))
         return;
 
-      const wasMarked = areaType === 'region' ? data.gridRegions[arrIndex].marked : data.rooms[arrIndex].marked;
+      let wasMarked = areaType === 'region' ? data.gridRegions[arrIndex].marked : data.rooms[arrIndex].marked;
+
+      //  Special case(s) for actions that should not toggle the marked state
+      wasMarked = $actions[e.button] === 'notYetAcquired' ? !wasMarked : wasMarked;
 
       updateMapData(areaId, !wasMarked, $actions[e.button]);
       data = data;

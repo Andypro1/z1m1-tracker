@@ -53,7 +53,11 @@
 
 
 	const dataFromPartner = async (areaId, marked, actionName, areaMapIndex, excludeResend) => {
-		await updateMapData(areaId, marked, actionName, areaMapIndex, excludeResend);
+		const areaMapIndexnum = +areaMapIndex;
+		const areaIdnum = +areaId;
+		const isMarked = (marked === 'true');
+
+		await updateMapData(areaIdnum, isMarked, actionName, areaMapIndexnum, excludeResend);
 
 		tracker.areaMaps = tracker.areaMaps;
 	};
