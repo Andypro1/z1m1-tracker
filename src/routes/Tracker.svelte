@@ -7,7 +7,7 @@
 	import { browser } from '$app/env';
 	import { page } from "$app/stores";
 	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, trackerUpdated, loadRawData, getRawData, updateMapStats, getCell, actions, loadState, GlobalAction } from '../services/tracker.js';
+	import { tracker, trackerUpdated, loadRawData, getRawData, updateMapStats, updateMapMetadata, getCell, actions, loadState, GlobalAction } from '../services/tracker.js';
 	import Toolbars from "../components/Toolbars.svelte";
 	import toolbars from '../components/toolbars.js';
 	import coopClient from '../services/coop-client.js';
@@ -60,6 +60,14 @@
 		await updateMapData(areaIdnum, isMarked, actionName, areaMapIndexnum, excludeResend);
 
 		tracker.areaMaps = tracker.areaMaps;
+	};
+
+
+	const metadataFromPartner = async (areaMapIndex, propName, propValue, excludeResend) => {
+		const areaMapIndexnum = +areaMapIndex;
+		const propValueBool   = (propValue === 'true');
+
+		await updateMapMetadata(areaMapIndexnum, propName, propValueBool, excludeResend);
 	};
 
 
@@ -160,7 +168,7 @@
 
 			//  Need to wait to initialize coop to ensure we have a valid storage key (sessionTimestamp)
 			if(coopGuid) {
-				var res = await $coopClient.enable(coopGuid, tracker.sessionTimestamp, loadAllData, getRawData, dataFromPartner);
+				var res = await $coopClient.enable(coopGuid, tracker.sessionTimestamp, loadAllData, getRawData, dataFromPartner, metadataFromPartner);
 
 				console.log(res);
 			}
@@ -328,14 +336,16 @@
 		<div class="graph-paper map-options">
 			<div class="map-option">
 			  <label>
-				<input type="checkbox" on:change={() => setTimeout(trackerUpdated, 0)}
+				<input type="checkbox" on:change={() => setTimeout(async () =>
+					await updateMapMetadata(tracker.curAreaMapIndex, 'isHflipped', tracker.areaMaps[tracker.curAreaMapIndex].map.isHflipped), 0)}
 					bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isHflipped} />
 				Flip horizontally
 			  </label>
 			</div>
 			<div class="map-option">
 			  <label>
-				<input type="checkbox" on:change={() => setTimeout(trackerUpdated, 0)}
+				<input type="checkbox" on:change={() => setTimeout(async () =>
+					await updateMapMetadata(tracker.curAreaMapIndex, 'isVflipped', tracker.areaMaps[tracker.curAreaMapIndex].map.isVflipped), 0)}
 					bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isVflipped} />
 				Flip vertically
 			  </label>

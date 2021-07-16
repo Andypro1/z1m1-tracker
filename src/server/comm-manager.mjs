@@ -114,7 +114,8 @@ const commManager = () => {
     const _directives = [
         { name: 'init', method: handleInit },
         { name: 'allData', method: distributeTrackerData },
-        { name: 'mapData', method: distributeMapData }
+        { name: 'mapData', method: distributeMapData },
+        { name: 'metaUpdate', method: distributeMapData }
     ];
 
     

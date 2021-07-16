@@ -248,6 +248,21 @@ export const updateMapData = async (areaId, marked, actionName, areaMapIndex, ex
 };
 
 
+//  Used for universal handling of non-map-mark actions.
+//  Currently only used for area h-flipped and v-flipped states
+export const updateMapMetadata = async (areaMapIndex, propName, propValue, excludeResend) => {
+	const ami = (typeof areaMapIndex !== 'undefined') ? areaMapIndex : tracker.curAreaMapIndex;
+
+	//  Tell all "subscribers" about our state change (coop if enabled, current map statistics, and local storage)
+	if(!excludeResend)
+		get(coopClient).send(JSON.stringify({ name: 'metaUpdate', data: `${ami} ${propName} ${propValue}`} ));
+
+	//  No current metadata requires that the map stats be recalculated; skip for now
+	//updateMapStats(ami);
+	trackerUpdated();
+};
+
+
 export const loadState = async (storageKey) => {
 	const data = await storage.loadData(storageKey);
 	

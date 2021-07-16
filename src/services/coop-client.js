@@ -12,6 +12,7 @@ const coopClient = () => {
     let _loadCallback;
     let _getSaveDataCallback;
     let _processDataCallback;
+    let _processMetadataCallback;
 
 
     const startSession = async () => {
@@ -53,6 +54,10 @@ const coopClient = () => {
                         else if(contentObj.name === 'allData') {
                             loadAllData(contentObj.data);
                         }
+                        else if(contentObj.name === 'metaUpdate') {
+                            //  Map metadata update (flipped states, etc.)
+                            processTrackerMetadata(...contentObj.data.split(' '));
+                        }
                     }
                     else if(content.length && content.split(' ').length) {
                         //  Regular area update
@@ -73,13 +78,14 @@ const coopClient = () => {
     };
 
 
-    const enable = async (roomGuid, storageKey, loadCallback, getSaveDataCallback, processDataCallback) => {
+    const enable = async (roomGuid, storageKey, loadCallback, getSaveDataCallback, processDataCallback, processMetadataCallback) => {
         _modeEnabled  = true;
         _roomGuid     = roomGuid;
         _myStorageKey = storageKey;
         _loadCallback = loadCallback;
         _getSaveDataCallback = getSaveDataCallback;
         _processDataCallback = processDataCallback;
+        _processMetadataCallback = processMetadataCallback;
         
         const res = await startSession();
 
@@ -147,8 +153,11 @@ const coopClient = () => {
     };
 
     const processTrackerData = (areaMapIndex, areaId, marked, actionName) => {
-        //${tracker.curAreaMapIndex} ${areaId} ${marked} ${actionName}
         _processDataCallback(areaId, marked, actionName, areaMapIndex, true);
+    };
+
+    const processTrackerMetadata = (areaMapIndex, propName, propValue) => {
+        _processMetadataCallback(areaMapIndex, propName, propValue, true);
     };
 
 
