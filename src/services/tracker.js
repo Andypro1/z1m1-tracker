@@ -253,6 +253,10 @@ export const updateMapData = async (areaId, marked, actionName, areaMapIndex, ex
 export const updateMapMetadata = async (areaMapIndex, propName, propValue, excludeResend) => {
 	const ami = (typeof areaMapIndex !== 'undefined') ? areaMapIndex : tracker.curAreaMapIndex;
 
+	if(typeof tracker.areaMaps[ami].map[propName] !== 'undefined') {
+		tracker.areaMaps[ami].map[propName] = propValue;
+	}
+
 	//  Tell all "subscribers" about our state change (coop if enabled, current map statistics, and local storage)
 	if(!excludeResend)
 		get(coopClient).send(JSON.stringify({ name: 'metaUpdate', data: `${ami} ${propName} ${propValue}`} ));

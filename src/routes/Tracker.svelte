@@ -68,6 +68,8 @@
 		const propValueBool   = (propValue === 'true');
 
 		await updateMapMetadata(areaMapIndexnum, propName, propValueBool, excludeResend);
+
+		tracker.areaMaps = tracker.areaMaps;
 	};
 
 

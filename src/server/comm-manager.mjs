@@ -15,7 +15,7 @@ const commManager = () => {
 
 
     const handleInit = (msg, userid, wss) => {
-        console.log(`initt\'n\' ${userid}!`);
+        // console.log(`initt\'n\' ${userid}!`);
 
         if(msg.room) {
             const existingRoom = _rooms.find(r => r.id === msg.room);
@@ -32,10 +32,10 @@ const commManager = () => {
                     if(roomMasterClient) {
                         if(roomMasterClient.readyState === WebSocket.OPEN) {
                             roomMasterClient.send(JSON.stringify({ name: 'sendAllData' }));
-                            console.log(`Successfully queried room master for data.`);
+                            // console.log(`Successfully queried room master for data.`);
 
                             _rooms.find(r => r.id === msg.room).users.push(userid);
-                            console.log(`Let myself in as a guest for room ${msg.room}`);
+                            // console.log(`Let myself in as a guest for room ${msg.room}`);
                         }
                         else {
                             console.log(`handleInit() error: Room master broken socket.`);
@@ -54,7 +54,7 @@ const commManager = () => {
                     //  No one in here; I assume room master responsibilities
                     _rooms.find(r => r.id === msg.room).users.push(userid);
 
-                    console.log(`${userid} inherits room master role for empty room ${msg.room}.`);
+                    console.log(`[init]: ${userid} inherits room master role for empty room ${msg.room}.`);
                     return;
                 }
             }
@@ -66,7 +66,7 @@ const commManager = () => {
                     users: [ userid ]
                 });
 
-                console.log(`Created new room ${msg.room} for room master ${userid}`);
+                console.log(`[init]: room ${msg.room} created. Room master: ${userid.substring(0, 4)}`);
             }
 
             return { success: `room json: ${JSON.stringify(existingRoom)}` };
@@ -81,7 +81,7 @@ const commManager = () => {
         const myRoom = _rooms.find(r => r.users.includes(userid));
 
         if(myRoom?.users?.[0] === userid) {
-            console.log(`Found room that I lead; sending tracking data to other occupants.`);
+            // console.log(`Found room that I lead; sending tracking data to other occupants.`);
 
             [...wss.clients]
                 .filter(c => myRoom.users.includes(c.userid) && c.userid !== userid)
@@ -91,23 +91,24 @@ const commManager = () => {
                     }
                 });
 
-            console.log(`Sent tracking data to room occupants.`);
+            // console.log(`Sent tracking data to room occupants.`);
         }
     };
 
 
     const distributeMapData = (msg, userid, wss) => {
         const myRoom = _rooms.find(r => r.users.includes(userid));
+        const toSend = (typeof msg === 'object') ? JSON.stringify(msg) : msg;
 
         [...wss.clients]
         .filter(c => myRoom.users.includes(c.userid) && c.userid !== userid)
         .forEach(function each(client) {
             if(client.readyState === WebSocket.OPEN) {
-                client.send(msg);
+                client.send(toSend);
             }
         });
 
-        console.log(`Sent map data to room occupants.`);
+        // console.log(`Sent map data to room occupants.`);
     };
 
 
@@ -120,7 +121,7 @@ const commManager = () => {
 
     
     const handleMessage = (msg, userid, wss) => {
-        console.log(`handlin\' len(${msg.length}) from ${userid}!`);
+        // console.log(`handlin\' len(${msg.length}) from ${userid}!`);
 
         if(typeof msg === 'string' && msg[0] === '{') {
             try {
@@ -131,10 +132,10 @@ const commManager = () => {
                     const res = _directives.filter(n => n.name === msgObj.name)[0]
                         .method(msgObj, userid, wss);
 
-                    console.log(`msgpump process response: ${JSON.stringify(res)}`);
+                    // console.log(`msgpump process response: ${JSON.stringify(res)}`);
                 }
                 else {
-                    console.log(`Directive not found: ${JSON.stringify(msgObj)}`);
+                    console.log(`handleMessage() error: Directive not found: ${JSON.stringify(msgObj)}`);
                 }
             }
             catch(e) {
@@ -149,7 +150,7 @@ const commManager = () => {
 
 
     const handleLeave = (userid, wss) => {
-        console.log(`${userid} is outta here.`);
+        console.log(`[leave]: ${userid.substring(0, 4)} left.`);
 
         try {
             //  Remove the leaving user from all rooms
@@ -158,11 +159,11 @@ const commManager = () => {
                 return r;
             });
 
-            console.log(`${userid} removed from all room lists.`);
+            // console.log(`${userid} removed from all room lists.`);
 
             _rooms = _rooms.filter(r => r.users.length > 0);
 
-            console.log(`Destroyed empty rooms.`);
+            // console.log(`Destroyed empty rooms.`);
         }
         catch(e) {
             console.log(`handleLeave() error: ${e}`);
