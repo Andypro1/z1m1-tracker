@@ -5,6 +5,8 @@ import storage from './storage.js';
 const coopClient = () => {
     //  TODO: Configurify
     const endpoint = 'wss://z1m1-server.andypro.net:8081/';
+    let _pingTimer;
+    const _pingTime = 45000;  //ms
     let conn;
     let _modeEnabled = false;
     let _roomGuid;
@@ -15,16 +17,28 @@ const coopClient = () => {
     let _processMetadataCallback;
 
 
+    const handlePing = () => {
+        console.log('ping');
+        send(JSON.stringify({ name: 'ping' }));
+
+        clearTimeout(_pingTimer);
+        _pingTimer = setTimeout(() => { conn.close(); }, _pingTime);
+    };
+
     const startSession = async () => {
         try {
             conn = new WebSocket(endpoint);
 
+
             conn.onopen = () => {
                 console.log(`socket open.  Sending roomGuid: ${_roomGuid}`);
+
+                handlePing();
 
                 conn.send(JSON.stringify({ name: 'init', room: _roomGuid }));
             };
         
+
             conn.onmessage = async (e) => {
                 let content = undefined;
                 let contentObj = undefined;
@@ -66,7 +80,10 @@ const coopClient = () => {
                 }
             };
         
+
             conn.onclose = () => {
+                clearTimeout(_pingTimer);
+
                 console.log('socket closed.');
             };
         }
