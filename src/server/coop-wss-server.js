@@ -11,7 +11,7 @@ const server = https.createServer({
 
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', function connection(ws) {
+wss.on('connection', function connection(ws, req) {
     console.log(`[conn]: New user ${req.socket.remoteAddress}`);
 
     //  Generate a userid for this connection

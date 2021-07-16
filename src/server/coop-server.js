@@ -5,7 +5,7 @@ import commManager from './comm-manager.mjs';
 
 const wss = new WebSocket.Server({ port: 8080 });
 
-wss.on('connection', function connection(ws) {
+wss.on('connection', function connection(ws, req) {
     console.log(`[conn]: New user ${req.socket.remoteAddress}`);
 
     //  Generate a userid for this connection
