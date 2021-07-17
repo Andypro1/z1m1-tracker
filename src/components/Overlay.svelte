@@ -5,6 +5,7 @@
     //  Props
     export let action;
     export let draw     = false;
+    export let custom;
     export let isRegion = false;
     export let notAcquired = false;
 
@@ -33,6 +34,10 @@
           <i class="backdrop-icon notAcquired fas fa-asterisk"></i>
         {/if}
     </div>
+{/if}
+
+{#if custom}
+    <div class="custom custom{custom}"></div>
 {/if}
 
 <style type="scss">
@@ -93,6 +98,22 @@
     margin: auto;
     opacity: 0.7;
     z-index: -10;
+  }
+
+  .custom {
+    position: absolute;
+    top: 0; left: 0;
+
+    width: 100%;
+    height: calc(var(--map-room-height) * 1px);
+
+    &.custom1 {
+      box-shadow: inset 0 0 0.5rem 0.3rem red;
+    }
+
+    &.custom2 {
+      box-shadow: inset 0 0 0.5rem 0.3rem rgb(0, 89, 255);
+    }
   }
 
   .label {

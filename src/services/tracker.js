@@ -209,34 +209,57 @@ export const updateMapData = async (areaId, marked, actionName, areaMapIndex, ex
 
 	//  isReminder is a simple toggle stored in the area as a boolean
 	const isReminder         = actionName === 'notYetAcquired';
+	const isCustom			 = actionName.substring(0, 6) === 'custom';
 
 	if(isRegion) {
 		if(isReminder) {
 			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].notAcquired = 
 				!tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].notAcquired;
 		}
+		else if(isCustom) {
+			const customNumber = +actionName.substring(6);
+			const curCustom = tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].custom;
+
+			if(customNumber === curCustom)
+				tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].custom = undefined;
+			else
+				tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].custom = customNumber;
+		}
 		else {
 			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].marked = marked;
 			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].action = actionName;
 		}
 
-		//  Clear notAcquired property if cell was unmarked
-		if(!marked)
+		//  Clear toggled properties if cell was unmarked
+		if(!marked) {
 			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].notAcquired = undefined;
+			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].custom      = undefined;
+		}
 	}
 	else { //room
 		if(isReminder) {
 			tracker.areaMaps[ami].map.rooms[areaId].notAcquired = 
 				!tracker.areaMaps[ami].map.rooms[areaId].notAcquired;
 		}
+		else if(isCustom) {
+			const customNumber = +actionName.substring(6);
+			const curCustom = tracker.areaMaps[ami].map.rooms[areaId].custom;
+
+			if(customNumber === curCustom)
+				tracker.areaMaps[ami].map.rooms[areaId].custom = undefined;
+			else
+				tracker.areaMaps[ami].map.rooms[areaId].custom = customNumber;
+		}
 		else {
 			tracker.areaMaps[ami].map.rooms[areaId].marked = marked;
 			tracker.areaMaps[ami].map.rooms[areaId].action = actionName;
 		}
 
-		//  Clear notAcquired property if cell was unmarked
-		if(!marked)
+		//  Clear toggled properties if cell was unmarked
+		if(!marked) {
 			tracker.areaMaps[ami].map.rooms[areaId].notAcquired = undefined;
+			tracker.areaMaps[ami].map.rooms[areaId].custom      = undefined;
+		}
 	}
 
 	//  Tell all "subscribers" about our state change (coop if enabled, current map statistics, and local storage)

@@ -49,6 +49,7 @@
             {#each tb.actions as action}
                 <div class="action {action.name} {tbActionClass(action).name}"
 					class:active-tb={curSubTb === action.name}
+					class:custom={action.class === 'custom'}
                     on:mousedown={(e) => tbclick(e, action)}
 					on:mouseover={(e) => tbhover(e, action)}
                 >
@@ -108,7 +109,7 @@
 
 		display: grid;
 		grid-template-rows: 1fr 1fr;
-		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-columns: 1fr 1fr 1fr 0.5fr;
 		justify-content: flex-start;
 		align-items: flex-start;
 
@@ -120,6 +121,8 @@
 		& .action.warp { grid-area: 2 / 1; }
 		& .action.equip { grid-area: 2 / 2; }
 		& .action.quest { grid-area: 2 / 3; }
+		& .action.custom1 { grid-area: 1 / 4; }
+		& .action.custom2 { grid-area: 2 / 4; }
 	}
 
 	.toolbar .action {
@@ -151,6 +154,21 @@
 		text-align: center;
 		font-size: 1rem;
 		font-weight: 600;
+
+		&.custom {
+			width: 3.8rem;
+			height: 3.8rem;
+			margin-top: 1.3rem;
+			font-size: 0.8rem;
+
+			&.custom1 {
+				box-shadow: inset 0 0 0.5rem 0.3rem red;
+			}
+
+			&.custom2 {
+				box-shadow: inset 0 0 0.5rem 0.3rem rgb(0, 89, 255);
+			}
+		}
 
 		&.button0,
 		&.button1,

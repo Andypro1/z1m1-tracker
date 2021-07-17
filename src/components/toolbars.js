@@ -1,12 +1,14 @@
 import { writable } from 'svelte/store';
 
 const Action = {
-	cleared: { display: 'cleared', hotkeys: [' ', 'c'], name: 'cleared', mapClass: 'fas fa-check-circle' },
+	cleared: { display: 'cleared', hotkeys: [' ', 'a'], name: 'cleared', mapClass: 'fas fa-check-circle' },
 	notYetAcquired: { display: 'not yet acquired', hotkeys: ['z'], name: 'notYetAcquired', mapClass: 'fas fa-asterisk' },
 	warp: { display: 'warp', hotkeys: ['w'], name: 'warp', mapClass: 'fas fa-door-open', mapText: 'W' },
 	equip: { display: 'equip', hotkeys: ['e'], name: 'equip', mapClass: 'fas fa-gavel', mapText: 'E' },
 	quest: { display: 'quest', hotkeys: ['q'], name: 'quest', mapClass: 'fas fa-trophy', mapText: 'Q' },
 	shop: { display: 'shop', hotkeys: ['s'], name: 'shop', image: true, mapText: 'shop' },
+	custom1: { display: 'custom 1', hotkeys: ['c'], name: 'custom1', class: 'custom' },
+	custom2: { display: 'custom 2', hotkeys: ['cc'], name: 'custom2', class: 'custom' },
 
 	Warp: {
 		toHyrule: { display: 'Hyrule', hotkeys: ['wh', 'wo', 'w`'], name: 'toHyrule', warpText: 'Hyrule', spriteIndex: 0},
@@ -97,8 +99,8 @@ const Toolbars = () => {
 	let currentSubBar = 'warp';
 
 	const _toolbars = [
-		{ name: 'dungeon', actions: [Action.cleared, Action.notYetAcquired, Action.warp, Action.equip, Action.quest] },
-		{ name: 'overworld', actions: [Action.cleared, Action.notYetAcquired, Action.shop, Action.warp, Action.equip, Action.quest] },
+		{ name: 'dungeon', actions: [Action.cleared, Action.notYetAcquired, Action.warp, Action.equip, Action.quest, Action.custom1, Action.custom2] },
+		{ name: 'overworld', actions: [Action.cleared, Action.notYetAcquired, Action.shop, Action.warp, Action.equip, Action.quest, Action.custom1, Action.custom2] },
 		{ name: 'warp', actions: [...Object.keys(Action.Warp).map(k => Action.Warp[k])] },
 		{ name: 'equip', actions: [...Object.keys(Action.Equip).map(k => Action.Equip[k])] },
 		{ name: 'quest', actions: [...Object.keys(Action.Quest).map(k => Action.Quest[k])] }

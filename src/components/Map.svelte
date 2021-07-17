@@ -132,6 +132,13 @@
       //  Special case(s) for actions that should not toggle the marked state
       wasMarked = $actions[e.button] === 'notYetAcquired' ? !wasMarked : wasMarked;
 
+      if($actions[e.button] === 'custom1') {
+        wasMarked = areaType === 'region' ? data.gridRegions[arrIndex].custom === 1 : data.rooms[arrIndex].custom === 1;
+      }
+      else if($actions[e.button] === 'custom2') {
+        wasMarked = areaType === 'region' ? data.gridRegions[arrIndex].custom === 2 : data.rooms[arrIndex].custom === 2;
+      }
+
       updateMapData(areaId, !wasMarked, $actions[e.button]);
       data = data;
 
@@ -206,7 +213,7 @@
               <Premark text={cell.premark} />
             {/if}
 
-            <Overlay action={cell.action} draw={cell.marked} notAcquired={cell.notAcquired} />
+            <Overlay action={cell.action} custom={cell.custom} draw={cell.marked} notAcquired={cell.notAcquired} />
           </div>
         {:else}
           <div></div>
@@ -226,7 +233,7 @@
             <Premark text={region.premark} />
           {/if}
 
-          <Overlay action={region.action} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
+          <Overlay action={region.action} custom={region.custom} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
         </div>
           {:else if data.isVflipped}
             <div
@@ -239,7 +246,7 @@
                 <Premark text={region.premark} />
               {/if}
 
-              <Overlay action={region.action} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
+              <Overlay action={region.action} custom={region.custom} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
             </div>
           {:else if data.isHflipped}
             <div
@@ -252,7 +259,7 @@
                 <Premark text={region.premark} />
               {/if}
 
-              <Overlay action={region.action} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
+              <Overlay action={region.action} custom={region.custom} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
             </div>
           {:else}
             <div
@@ -265,7 +272,7 @@
                 <Premark text={region.premark} />
               {/if}
               
-              <Overlay action={region.action} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
+              <Overlay action={region.action} custom={region.custom} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
             </div>
           {/if}
         {/each}
