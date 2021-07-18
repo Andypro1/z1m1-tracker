@@ -136,6 +136,14 @@
 
 		&.active-tb {
 			background: none;
+
+			//  Except for the shop action which has no custom background currently
+			&.shop {
+				background:
+				linear-gradient(217deg, rgba(32,32,32, 0.8), rgba(255,0,0,0) 70.71%),
+				linear-gradient(127deg, rgba(160,160,160, 0.8), rgba(0,255,0,0) 70.71%),
+				linear-gradient(336deg, rgba(0,0,100, 0.5), rgba(0,0,255,0) 70.71%);
+			}
 		}
 
 		color: white;
