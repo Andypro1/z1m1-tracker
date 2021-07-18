@@ -84,6 +84,11 @@
         align-items: center;
 
         width: var(--wu-double-size);
+
+        :global(.region.overlay) & {
+            width: inherit;
+            margin: auto auto;
+        }
     }
 
     .darken-bg {
@@ -92,6 +97,10 @@
         height: 100%;
         background-color: #000a;
         margin: 0;
+
+        :global(.region.overlay) & {
+            width: 100%;
+        }
     }
 
     .bg-elem {
