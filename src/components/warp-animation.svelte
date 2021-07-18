@@ -265,13 +265,13 @@
     width: 2 * $largeSize;
     height: $largeSize;
 
-    background: url(/images/spites-warp.png) no-repeat;
+    background: url(/images/sprites-warp.png) no-repeat;
     background-size: auto 100%;
     image-rendering: crisp-edges;
     image-rendering: pixelated;
 
-    //  Class rules for each sprite in spites-warp.png
-    @for $i from 0 through 14 {
+    //  Class rules for each sprite in sprites-warp.png
+    @for $i from 0 through 16 {
         &.sprite-index#{$i} {
             background-position: calc(#{$i} * 100% / 17);
         }

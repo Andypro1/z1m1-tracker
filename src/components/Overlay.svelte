@@ -1,6 +1,7 @@
 <script>
     import toolbars from './toolbars.js';
     import Warp from "./WarpUnderlay.svelte";
+    import Shop from "./ShopUnderlay.svelte";
 
     //  Props
     export let action;
@@ -22,12 +23,14 @@
         {/if}
         {#if actList[action].warpText && (typeof actList[action].spriteIndex !== 'undefined')}
           <Warp spriteIndex={actList[action].spriteIndex} />
+        {:else if actList[action] && actList[action].spriteIndex && actList[action].shopText }
+          <Shop spriteIndex={actList[action].spriteIndex} />
         {:else if actList[action] && actList[action].spriteIndex }
           <div class="icon {action} sprite-index{actList[action].spriteIndex}"></div>
         {/if}
-        {#if actList[action] && (actList[action].mapText || actList[action].warpText) }
-          <div class:label={actList[action].mapText} class:warp-label={actList[action].warpText}>
-            <b>{actList[action].mapText || actList[action].warpText}</b>
+        {#if actList[action] && (actList[action].mapText || actList[action].warpText || actList[action].shopText) }
+          <div class:label={actList[action].mapText} class:warp-label={actList[action].warpText || actList[action].shopText}>
+            <b>{actList[action].mapText || actList[action].warpText || actList[action].shopText}</b>
           </div>
         {/if}
         {#if notAcquired}

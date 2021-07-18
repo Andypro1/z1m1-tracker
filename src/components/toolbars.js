@@ -6,7 +6,7 @@ const Action = {
 	warp: { display: 'warp', hotkeys: ['w'], name: 'warp', mapClass: 'fas fa-door-open', mapText: 'W' },
 	equip: { display: 'equip', hotkeys: ['e'], name: 'equip', mapClass: 'fas fa-gavel', mapText: 'E' },
 	quest: { display: 'quest', hotkeys: ['q'], name: 'quest', mapClass: 'fas fa-trophy', mapText: 'Q' },
-	shop: { display: 'shop', hotkeys: ['s'], name: 'shop', image: true, mapText: 'shop' },
+	shop: { display: 'shop', hotkeys: ['s'], name: 'shop', shopText: 'shop', spriteIndex: 15 },
 	custom1: { display: 'custom 1', hotkeys: ['c'], name: 'custom1', class: 'custom' },
 	custom2: { display: 'custom 2', hotkeys: ['cc'], name: 'custom2', class: 'custom' },
 
@@ -76,6 +76,10 @@ const Action = {
 
 		kraidTotem: { display: 'Kraid totem', hotkeys: ['qk'], name: 'kraidTotem', spriteIndex: 35, mapText: 'K' },
 		ridleyTotem: { display: 'Ridley totem', hotkeys: ['qr'], name: 'ridleyTotem', spriteIndex: 35, mapText: 'R' }
+	},
+
+	Shop: {
+		potionShop: { display: 'potion shop', hotkeys: ['sp'], name: 'potionShop', shopText: ' ', spriteIndex: 16 },
 	}
 };
 
@@ -103,7 +107,8 @@ const Toolbars = () => {
 		{ name: 'overworld', actions: [Action.cleared, Action.notYetAcquired, Action.shop, Action.warp, Action.equip, Action.quest, Action.custom1, Action.custom2] },
 		{ name: 'warp', actions: [...Object.keys(Action.Warp).map(k => Action.Warp[k])] },
 		{ name: 'equip', actions: [...Object.keys(Action.Equip).map(k => Action.Equip[k])] },
-		{ name: 'quest', actions: [...Object.keys(Action.Quest).map(k => Action.Quest[k])] }
+		{ name: 'quest', actions: [...Object.keys(Action.Quest).map(k => Action.Quest[k])] },
+		{ name: 'shop', actions: [...Object.keys(Action.Shop).map(k => Action.Shop[k])] }
 	];
 
 	const getMainToolbar = (set) => {
@@ -122,11 +127,11 @@ const Toolbars = () => {
 	};
 
 	const isAToolbarAction = (action) => {
-		return ['warp', 'equip', 'quest'].includes(action);
+		return ['warp', 'equip', 'quest', 'shop'].includes(action);
 	};
 
 	const setSubToolbar = (action) => {
-		if(['warp', 'equip', 'quest'].includes(action)) {
+		if(['warp', 'equip', 'quest', 'shop'].includes(action)) {
 			currentSubBar = action;
 			return;
 		}
@@ -143,6 +148,11 @@ const Toolbars = () => {
 
 		if(Object.keys(Action.Quest).includes(action)) {
 			currentSubBar = 'quest';
+			return;
+		}
+
+		if(Object.keys(Action.Shop).includes(action)) {
+			currentSubBar = 'shop';
 			return;
 		}
 	};

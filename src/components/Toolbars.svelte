@@ -53,7 +53,7 @@
                     on:mousedown={(e) => tbclick(e, action)}
 					on:mouseover={(e) => tbhover(e, action)}
                 >
-					{#if action.spriteIndex }
+					{#if action.spriteIndex && !action.shopText }
 						<div class="icon {action} sprite-index{action.spriteIndex}"></div>
 					{:else}
 						{ action.display }
@@ -79,7 +79,7 @@
 								actions.setPosition(action.name, e.button);
 						}}
 					>
-						{#if action.spriteIndex && (typeof action.warpText === 'undefined') }
+						{#if action.spriteIndex && (typeof action.warpText === 'undefined') && (typeof action.shopText === 'undefined') }
 							<div class="icon sprite-index{action.spriteIndex}"></div>
 						{:else}
 							{ action.display }
