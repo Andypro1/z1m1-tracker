@@ -324,14 +324,6 @@
 
 <svelte:window on:contextmenu="{(e) => e.preventDefault()}" />
 
-<svelte:head>
-	<!--  This isn't working.  -->
-	<link rel="prefetch" href="/images/hyrule-q1-halfscale.png">
-	<link rel="prefetch" href="/images/dungeons-halfscale.png">
-	<link rel="prefetch" href="/images/zebes-quarterscale.png">
-	<link rel="prefetch" href="/images/loz-npcs.png">
-</svelte:head>
-
 <main style="{cssVarStyles}">
 	<section class="top-bar">
 		<Toolbars set={tracker.areaMaps[tracker.curAreaMapIndex].map.class} />
@@ -506,6 +498,19 @@
 	:global(body) {
 		height: 100vh;
 		background-color: #333;
+	}
+
+	//  CSS preloading of all tracker image assets
+	:global(body::after) {
+		position:absolute; width:0; height:0; overflow:hidden; z-index:-1; // hide images
+		content:  // load images
+			url(/images/hyrule-q1-halfscale.png)
+			url(/images/zebes-quarterscale.png)
+			url(/images/dungeons-halfscale.png)
+			url(/images/sparkle.png)
+			url(/images/tb.action.quest.png)
+			url(/images/tb.action.equip.png)
+			url(/images/tb.action.warp.png);
 	}
 
 	main {
