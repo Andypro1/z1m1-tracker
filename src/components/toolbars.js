@@ -16,6 +16,7 @@ const Action = {
 		toNorfair: { display: 'Norfair', hotkeys: ['wn'], name: 'toNorfair', warpText: 'Norfair' , spriteIndex: 12},
 		toKraids: { display: 'Kraid\'s', hotkeys: ['wk'], name: 'toKraids', warpText: 'Kraid\'s' , spriteIndex: 13},
 		toRidleys: { display: 'Ridley\'s', hotkeys: ['wr'], name: 'toRidleys', warpText: 'Ridley\'s' , spriteIndex: 14},
+		toTourian: { display: 'Tourian bridge', hotkeys: ['wt'], name: 'toTourian', warpText: 'T. bridge', spriteIndex: 17 },
 		toLevel1: { display: 'Level 1', hotkeys: ['w1'], name: 'toLevel1', warpText: 'Level 1' , spriteIndex: 1},
 		toLevel2: { display: 'Level 2', hotkeys: ['w2'], name: 'toLevel2', warpText: 'Level 2' , spriteIndex: 2},
 		toLevel3: { display: 'Level 3', hotkeys: ['w3'], name: 'toLevel3', warpText: 'Level 3' , spriteIndex: 3},

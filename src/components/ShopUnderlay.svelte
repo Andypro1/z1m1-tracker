@@ -38,7 +38,7 @@
     image-rendering: pixelated;
 
     //  Class rules for each sprite in sprites-warp.png
-    @for $i from 0 through 16 {
+    @for $i from 0 through 17 {
         &.sprite-index#{$i} {
             background-position: calc(#{$i} * 100% / 17.1);
         }

@@ -9,7 +9,6 @@
     //  Props
     export let data = {};
     export let layout;
-    export let trackerUpdated;
     export let handleHotkey;
     export let handleMouseMark;
   
@@ -28,8 +27,8 @@
         aspect: `${mapTilesheet.pxWidth() / mapTilesheet.pxHeight()}`,
     };
 
-    //  Assign every dungeon and zebes room as active
-    $: data.class.match(/(?:dungeon)|(?:zebes)/) && data.rooms.forEach(r => r.active = true);
+    //  Assign the active state to every map cell that doesn't specify otherwise
+    $: data.rooms.forEach(r => r.active = (typeof r.active === 'undefined') ? true : r.active);
 
     //  This hack ensures that methods can be run when the
     //  <svelte:component>'s "this" binding changes in App.svelte
