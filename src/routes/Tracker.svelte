@@ -7,7 +7,8 @@
 	import { browser } from '$app/env';
 	import { page } from "$app/stores";
 	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, trackerUpdated, loadRawData, getRawData, updateMapStats, updateMapMetadata, getCell, actions, loadState, GlobalAction } from '../services/tracker.js';
+	import { tracker, trackerUpdated, loadRawData, getRawData, updateMapStats,
+		updateMapMetadata, hydrateAllToolbarMetadata, getCell, actions, loadState, GlobalAction } from '../services/tracker.js';
 	import Toolbars from "../components/Toolbars.svelte";
 	import toolbars from '../components/toolbars.js';
 	import coopClient from '../services/coop-client.js';
@@ -49,6 +50,8 @@
 		//  Only update areaMaps.  Thus far, all other properties
 		//  are ones that shouldn't be shared between coop partners
 		tracker.areaMaps = [...state.areaMaps];
+
+		await hydrateAllToolbarMetadata();
 	};
 
 
@@ -101,6 +104,8 @@
 
 				//  Also set stores used by components
 				actions.set([...state.actions]);
+
+				await hydrateAllToolbarMetadata();
 			}
 			else {
 				// TODO: Find a better way to create a fresh copy of the tracker data.

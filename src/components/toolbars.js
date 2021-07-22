@@ -208,6 +208,45 @@ const Toolbars = () => {
 		}
 	};
 
+
+	//  Iterate through all tracker map data to hydrate all toolbar action metadata (used status)
+	const hydrateAllMetadata = async (areaMaps) => {
+		const equipIndex       = _toolbars.findIndex(t => t.name === 'equip');
+		const questIndex       = _toolbars.findIndex(t => t.name === 'quest');
+
+		//  Reset all action metadata
+		_toolbars[equipIndex].actions = _toolbars[equipIndex].actions.map(a => { a.used = undefined; a.usedArea = undefined; return a; });
+		_toolbars[questIndex].actions = _toolbars[questIndex].actions.map(a => { a.used = undefined; a.usedArea = undefined; return a; });
+
+
+		for(let areaMapIndex = 0; areaMapIndex < areaMaps.length; ++areaMapIndex) {
+			const cells = areaMaps[areaMapIndex].map.gridRegions ?
+				areaMaps[areaMapIndex].map.rooms.concat(areaMaps[areaMapIndex].map.gridRegions) :
+				areaMaps[areaMapIndex].map.rooms;
+
+			cells.forEach((c, i) => {
+				const ea = _toolbars[equipIndex].actions.findIndex(e => e.name === c.action);
+				const qa = _toolbars[questIndex].actions.findIndex(q => q.name === c.action);
+
+				if(ea >= 0) {
+					const encodedArea = (areaMapIndex * 1000) + i;
+
+					_toolbars[equipIndex].actions[ea].used = true;
+					_toolbars[equipIndex].actions[ea].usedArea = Array.isArray(_toolbars[equipIndex].actions[ea].usedArea) ?
+						[..._toolbars[equipIndex].actions[ea].usedArea, encodedArea] : [encodedArea];
+				}
+
+				if(qa >= 0) {
+					const encodedArea = (areaMapIndex * 1000) + i;
+
+					_toolbars[questIndex].actions[qa].used = true;
+					_toolbars[questIndex].actions[qa].usedArea = Array.isArray(_toolbars[questIndex].actions[qa].usedArea) ?
+						[..._toolbars[questIndex].actions[qa].usedArea, encodedArea] : [encodedArea];
+				}
+			});
+		}
+	};
+
 	const allActions = () => {
 		return flattenObject(Action);
 	}
@@ -229,6 +268,7 @@ const Toolbars = () => {
 		isAToolbarAction,
 		getAction,
 		updateActionUsedStatus,
+		hydrateAllMetadata,
 		questActions,
 		equipActions,
 		allActions,

@@ -200,6 +200,11 @@ const updateToolbarActions = (wasMarked, actionName, areaMapIndex, areaId) => {
 };
 
 
+export const hydrateAllToolbarMetadata = async () => {
+	return await get(toolbars).hydrateAllMetadata(tracker.areaMaps);
+};
+
+
 export const getCell = (areaId) => {
 	const regionsStartAreaId = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
 	const isRegion           = areaId >= regionsStartAreaId;
