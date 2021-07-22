@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 
+
 const Action = {
 	cleared: { display: 'cleared', hotkeys: [' ', 'a'], name: 'cleared', mapClass: 'fas fa-check-circle' },
 	notYetAcquired: { display: 'not yet acquired', hotkeys: ['z'], name: 'notYetAcquired', mapClass: 'fas fa-asterisk' },
@@ -162,6 +163,51 @@ const Toolbars = () => {
 		return flattenObject(Action)[name];
 	};
 
+
+	//  Manages metadata for equipment and quest actions that are considered single use items.
+	//  If the items have been placed in the tracker, a "used" class is added to the toolbar action
+	//  to alert the player to its use.
+	const updateActionUsedStatus = (wasMarked, actionName, areaMapIndex, areaId) => {
+		const equipIndex       = _toolbars.findIndex(t => t.name === 'equip');
+		const questIndex       = _toolbars.findIndex(t => t.name === 'quest');
+		const encodedArea	   = (areaMapIndex * 1000) + areaId;
+		
+		//  First remove existing used metadata for this location, if present
+		const removeEindex = _toolbars[equipIndex].actions.findIndex(a => Array.isArray(a.usedArea) && a.usedArea.includes(encodedArea));
+		const removeQindex = _toolbars[questIndex].actions.findIndex(a => Array.isArray(a.usedArea) && a.usedArea.includes(encodedArea));
+
+		if(removeEindex >= 0) {
+			_toolbars[equipIndex].actions[removeEindex].usedArea = _toolbars[equipIndex].actions[removeEindex].usedArea.filter(a => a !== encodedArea);
+			_toolbars[equipIndex].actions[removeEindex].used = _toolbars[equipIndex].actions[removeEindex].usedArea.length ? true : undefined;
+		}
+
+		if(removeQindex >= 0) {
+			_toolbars[questIndex].actions[removeQindex].usedArea = _toolbars[questIndex].actions[removeQindex].usedArea.filter(a => a !== encodedArea);
+			_toolbars[questIndex].actions[removeQindex].used = _toolbars[questIndex].actions[removeQindex].usedArea.length ? true : undefined;
+		}
+
+
+		if(wasMarked) {
+			//  Find the matching equip or quest action, and mark used along with used location metadata
+			const equipActionIndex = _toolbars[equipIndex].actions.findIndex(a => a.name === actionName);
+			const questActionIndex = _toolbars[questIndex].actions.findIndex(a => a.name === actionName);
+
+			if(equipActionIndex >= 0) {
+				_toolbars[equipIndex].actions[equipActionIndex].used = wasMarked;
+				_toolbars[equipIndex].actions[equipActionIndex].usedArea =
+					Array.isArray(_toolbars[equipIndex].actions[equipActionIndex].usedArea) ?
+					[..._toolbars[equipIndex].actions[equipActionIndex].usedArea, encodedArea] : [encodedArea];
+			}
+
+			if(questActionIndex >= 0) {
+				_toolbars[questIndex].actions[questActionIndex].used = wasMarked;
+				_toolbars[questIndex].actions[questActionIndex].usedArea =
+					Array.isArray(_toolbars[questIndex].actions[questActionIndex].usedArea) ?
+					[..._toolbars[questIndex].actions[questActionIndex].usedArea, encodedArea] : [encodedArea];
+			}
+		}
+	};
+
 	const allActions = () => {
 		return flattenObject(Action);
 	}
@@ -182,6 +228,7 @@ const Toolbars = () => {
 		setSubToolbar,
 		isAToolbarAction,
 		getAction,
+		updateActionUsedStatus,
 		questActions,
 		equipActions,
 		allActions,

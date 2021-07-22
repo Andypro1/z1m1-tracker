@@ -70,6 +70,7 @@
 			<div class="sub toolbar {curSubTb}">
 				{#each stb.actions as action}
 					<div class="action {tbActionClass(action).name}"
+						class:used={action.used}
 						on:mousedown={(e) => {
 							e.preventDefault();
 							e.stopPropagation();
@@ -195,6 +196,10 @@
 				z-index: 9999;
 				border-radius: 5px;
 			}
+		}
+
+		&.used {
+			filter: grayscale(1) contrast(0.3);
 		}
 
 		&:hover {
