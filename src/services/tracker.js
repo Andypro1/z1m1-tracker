@@ -193,6 +193,13 @@ export const updateMapStats = (areaMapIndex) => {
 };
 
 
+//  Adds metadata to toolbar actions as they get used.
+//  Used to add a class to the toolbar action so the user knows the item has already been placed.
+const updateToolbarActions = (wasMarked, actionName, areaMapIndex, areaId) => {
+	return get(toolbars).updateActionUsedStatus(wasMarked, actionName, areaMapIndex, areaId);
+};
+
+
 export const getCell = (areaId) => {
 	const regionsStartAreaId = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
 	const isRegion           = areaId >= regionsStartAreaId;
@@ -266,6 +273,7 @@ export const updateMapData = async (areaId, marked, actionName, areaMapIndex, ex
 	if(!excludeResend)
 		get(coopClient).send(`${ami} ${areaId} ${marked} ${actionName}`);
 
+	updateToolbarActions(marked, actionName, ami, +areaId);
 	updateMapStats(ami);
 	trackerUpdated();
 };

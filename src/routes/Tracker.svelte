@@ -232,6 +232,9 @@
 
 		//  Force area stats reevaluation
 		tracker.areaMaps = tracker.areaMaps;
+
+		//  Force toolbars reevaluation
+		$toolbars = $toolbars;
 	};
 
 
@@ -288,6 +291,7 @@
 				if((curAreaId !== -1) && (getCell(curAreaId).active !== false)) {
 					updateMapData(curAreaId, true, matchingActions[0].name);
 					tracker.areaMaps = tracker.areaMaps;
+					$toolbars = $toolbars;
 					return;
 				}
 			}
@@ -297,6 +301,7 @@
 				if(curAreaId !== -1) {
 					updateMapData(curAreaId, false, '');
 					tracker.areaMaps = tracker.areaMaps;
+					$toolbars = $toolbars;
 					return;
 				}
 			}
@@ -507,10 +512,13 @@
 			url(/images/hyrule-q1-halfscale.png)
 			url(/images/zebes-quarterscale.png)
 			url(/images/dungeons-halfscale.png)
+			url(/images/sprites-16px.png)
+			url(/images/sprites-warp.png)
 			url(/images/sparkle.png)
 			url(/images/tb.action.quest.png)
 			url(/images/tb.action.equip.png)
-			url(/images/tb.action.warp.png);
+			url(/images/tb.action.warp.png)
+			url(/images/zelda-text.png);
 	}
 
 	main {
