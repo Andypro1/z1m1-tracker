@@ -62,7 +62,11 @@
 
 		await updateMapData(areaIdnum, isMarked, actionName, areaMapIndexnum, excludeResend);
 
+		//  Force area stats reevaluation
 		tracker.areaMaps = tracker.areaMaps;
+
+		//  Force toolbars reevaluation
+		$toolbars = $toolbars;
 	};
 
 
@@ -72,6 +76,7 @@
 
 		await updateMapMetadata(areaMapIndexnum, propName, propValueBool, excludeResend);
 
+		//  Force area stats reevaluation
 		tracker.areaMaps = tracker.areaMaps;
 	};
 
@@ -294,7 +299,9 @@
 
 			if(matchingActions.length) {
 				if((curAreaId !== -1) && (getCell(curAreaId).active !== false)) {
-					updateMapData(curAreaId, true, matchingActions[0].name);
+					const newMarkedValue = matchingActions[0].name === 'notYetAcquired' ? !getCell(curAreaId).notAcquired : true;
+
+					updateMapData(curAreaId, newMarkedValue, matchingActions[0].name);
 					tracker.areaMaps = tracker.areaMaps;
 					$toolbars = $toolbars;
 					return;

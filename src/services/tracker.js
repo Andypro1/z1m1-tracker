@@ -278,7 +278,9 @@ export const updateMapData = async (areaId, marked, actionName, areaMapIndex, ex
 	if(!excludeResend)
 		get(coopClient).send(`${ami} ${areaId} ${marked} ${actionName}`);
 
-	updateToolbarActions(marked, actionName, ami, +areaId);
+	if(!isReminder && !isCustom)
+		updateToolbarActions(marked, actionName, ami, +areaId);
+
 	updateMapStats(ami);
 	trackerUpdated();
 };
