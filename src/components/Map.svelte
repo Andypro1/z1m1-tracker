@@ -150,6 +150,8 @@
 
     const sizeMapGrid = () => {
       const errorPx = 30;
+      const errorWidthPx = 42;
+
       const [wWin, hWin, hTopBar] = [window.innerWidth, window.innerHeight, document.querySelector('.top-bar').clientHeight + errorPx];
       const ASSUMED_CARD_PAIR_SIZE = 255;
   
@@ -169,7 +171,7 @@
       const hBCNewMap = rBCWin < rMap ? wBCAvail / rMap : hBCAvail;
       const BCMapArea = wBCNewMap * hBCNewMap;
   
-      const rPad = (mapTilesheet.sectionCols() - 1);
+      const rPad = (mapTilesheet.sectionCols() - 1) + errorWidthPx;
       const bPad = (mapTilesheet.sectionRows() - 1);
 
       layout(SCMapArea > BCMapArea ?
