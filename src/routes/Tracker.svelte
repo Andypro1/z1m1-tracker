@@ -1,5 +1,12 @@
 <script context="module">
-	export const ssr = false;
+    /** @type {import('@sveltejs/kit').Handle} */
+    export async function handle({ event, resolve }) {
+        const response = await resolve(event, {
+            ssr: false
+        });
+
+        return response;
+    }
 </script>
 
 <script>

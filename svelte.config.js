@@ -7,7 +7,7 @@ const config = {
 	kit: {
 		// hydrate the <div id="svelte"> element in src/app.html
 		adapter: netlify(),
-		target: '#svelte',
+		// target: '#svelte',
 	}
 };
 

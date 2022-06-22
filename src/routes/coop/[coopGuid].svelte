@@ -3,8 +3,8 @@
 
     let coopGuid;
 
-	export async function load({ page }) {
-        coopGuid = page.params.coopGuid;
+	export async function load({ params, fetch, session, stuff }) {
+        coopGuid = params.coopGuid;
 
         return {
             props: {
