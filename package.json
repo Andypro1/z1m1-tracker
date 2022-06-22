@@ -10,11 +10,11 @@
     "cdev": "concurrently \"npm run server\" \"npm run dev\" "
   },
   "devDependencies": {
-    "@sveltejs/adapter-netlify": "^1.0.0-next.18",
+    "@sveltejs/adapter-netlify": "^1.0.0-next.64",
     "@sveltejs/kit": "next",
+    "concurrently": "^6.2.0",
     "sass": "^1.35.1",
     "svelte": "^3.34.0",
-    "concurrently": "^6.2.0",
     "svelte-preprocess": "^4.7.3"
   },
   "type": "module",
