@@ -31,7 +31,7 @@
 		//  Use left, middle, right, and forward buttons if available (not back)
 		if(e.button >= 0 && e.button !== 3) {
 			actions.setPosition(action.name, e.button);
-			
+
 			$toolbars.setSubToolbar(action.name);
 			$toolbars = $toolbars;
 		}
@@ -58,7 +58,7 @@
 					{:else}
 						{ action.display }
 					{/if}
-					
+
 					<div class="tb-backdrop"></div>
 					<aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
 					<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys[0]}></aside>
@@ -74,7 +74,7 @@
 						on:mousedown={(e) => {
 							e.preventDefault();
 							e.stopPropagation();
-	
+
 							//  Use left, middle, right, and forward buttons if available (not back)
 							if(e.button >= 0 && e.button !== 3)
 								actions.setPosition(action.name, e.button);
@@ -85,13 +85,13 @@
 						{:else}
 							{ action.display }
 						{/if}
-	
+
 						{#if action.mapText }
 							<div class:label={action.mapText}>
 								<b>{action.mapText}</b>
 							</div>
 						{/if}
-	
+
 						<div class="tb-backdrop"></div>
 						<aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
 						<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys}></aside>
@@ -149,8 +149,9 @@
 
 		color: white;
 		padding: 1rem;
-		width: 4.8rem;
-		height: 4.8rem;
+		// width: 4.8rem;
+		// height: 4.8rem;
+		max-width: 100%;
 		border-radius: 0.5rem;
 
 		display: flex;
@@ -254,15 +255,20 @@
 	.sub.toolbar {
 		flex: 1 0;
 
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
+		// display: flex;
+		// flex-direction: row;
+		// flex-wrap: wrap;
 		// height: 100%;
 		// max-width: calc(100vw - 20rem - 24rem);
 		max-height: 11.5rem;
 
-		justify-content: stretch;
-		align-items: stretch;
+		// justify-content: stretch;
+		// align-items: stretch;
+
+		display: grid;
+		// grid-template-rows: 1fr 1fr 1fr; /*repeat(auto-fill, minmax(min(1rem, 100%), 1fr));*/
+		grid-template-columns: repeat(auto-fill, minmax(2rem, 1fr));
+		grid-template-rows: repeat(3, minmax(2rem, 1fr));
 
 		& .action:before {
 			content: '';
@@ -274,8 +280,9 @@
 			margin: 0.15rem;
 
 			padding: 1rem;
-			width: 3.5rem;
-			height: 3.5rem;
+			max-width: 100%;
+			// width: 3.5rem;
+			// height: 3.5rem;
 		}
 	}
 
