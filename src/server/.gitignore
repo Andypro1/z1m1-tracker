@@ -3,3 +3,5 @@
 nongit/
 
 .DS_Store
+
+.env

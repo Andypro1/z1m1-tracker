@@ -5,5 +5,5 @@
 			"$lib/*": ["src/lib/*"]
 		}
 	},
-	"include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte", "src/server/comm-manager.mjs"]
+	"include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte", "src/server/comm-manager.mjs", "src/server/config.mjs"]
 }
