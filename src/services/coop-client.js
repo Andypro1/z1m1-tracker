@@ -4,7 +4,7 @@ import storage from './storage.js';
 
 const coopClient = () => {
     //  TODO: Configurify
-    const endpoint = 'wss://z1m1-server.andypro.net:8081/';
+    let endpoint = 'wss://z1m1-server.andypro.net:8081/';
     let _pingTimer;
     const _pingTime = 45000;  //ms
     let conn;
@@ -16,6 +16,11 @@ const coopClient = () => {
     let _processDataCallback;
     let _processMetadataCallback;
 
+
+    const setEndpoint = (_endpoint) => {
+        endpoint = _endpoint;
+        console.log(`Coop endpoint set to ${_endpoint}`);
+    };
 
     const handlePing = () => {
         console.log('ping');
@@ -178,6 +183,7 @@ const coopClient = () => {
 
 
     return {
+        setEndpoint : setEndpoint,
         enable      : enable,
         disable     : disable,
         send        : send
