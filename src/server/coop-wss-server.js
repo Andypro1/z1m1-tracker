@@ -45,8 +45,10 @@ wss.on('connection', function connection(ws, req) {
     //  Generate a userid for this connection
     ws.userid = crypto.randomUUID();
 
-    ws.on('message', function incoming(data) {
-        commManager.handleMessage(data, ws.userid, wss);
+    ws.on('message', function incoming(data, isBinary) {
+        const msg = isBinary ? data : data.toString();
+
+        commManager.handleMessage(msg, ws.userid, wss);
     });
 
     ws.on('close', () => {

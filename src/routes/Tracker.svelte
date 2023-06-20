@@ -21,6 +21,9 @@
 	import coopClient from '../services/coop-client.js';
 	import Map from "../components/Map.svelte";
 
+	//  Configure import objects
+	$coopClient.setEndpoint($page.url.searchParams.get('endpoint') || 'wss://localhost:8081/');
+
 	let { coopGuid } = $page.params;
 
 	// let tracker, trackerUpdated, actions, loadState, GlobalAction;
