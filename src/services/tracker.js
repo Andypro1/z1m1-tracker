@@ -132,6 +132,8 @@ const migrateLegacy = (saved) => {
 };
 
 export const hydrateTracker = (saved) => {
+  if (saved?.version === 2 && Array.isArray(saved.areaMaps))
+    return hydrateTracker(serializeTracker(saved));
   if (!saved || saved.version !== 2 || !Array.isArray(saved.maps))
     return migrateLegacy(saved);
   const fresh = createTracker(saved.starterPreset);

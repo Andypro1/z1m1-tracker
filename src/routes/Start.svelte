@@ -9,6 +9,9 @@
   let starterPreset = "";
   $: builtInPresets = starterPresets.filter((preset) => preset.builtIn);
   $: localPresets = starterPresets.filter((preset) => !preset.builtIn);
+  $: presetQuery = starterPreset
+    ? `?preset=${encodeURIComponent(starterPreset)}`
+    : "";
 
   const refreshSaves = async () => {
     storageSaves = await storage.listSaves();
@@ -21,9 +24,7 @@
   });
 
   const roomId = () => crypto.randomUUID();
-  const presetQuery = () =>
-    starterPreset ? `?preset=${encodeURIComponent(starterPreset)}` : "";
-  const newCoop = () => goto(`/coop/${roomId()}${presetQuery()}`);
+  const newCoop = () => goto(`/coop/${roomId()}${presetQuery}`);
   const loadCoop = (storageKey) =>
     goto(`/coop/${roomId()}`, { state: { storageKey } });
   const trash = async (id) => {
@@ -79,7 +80,7 @@
       </select>
     </label>
     <div class="start-actions">
-      <a href={`/solo${presetQuery()}`} class="start-button">
+      <a href={`/solo${presetQuery}`} class="start-button">
         <span>Start tracking solo</span>
         <i class="sprite" style="--sprite-index: 36" aria-hidden="true"></i>
       </a>

@@ -53,4 +53,13 @@ describe("tracker sessions", () => {
     expect(restored.starterPreset).toEqual(preset);
     expect(restored.areaMaps[0].map.rooms[1].active).toBe(false);
   });
+
+  it("preserves a starter preset when hydrating an already restored session", () => {
+    const preset = createStarterPreset("test", "Test preset");
+    const restored = hydrateTracker(
+      hydrateTracker(serializeTracker(createTracker(preset))),
+    );
+
+    expect(restored.starterPreset).toEqual(preset);
+  });
 });
