@@ -14,7 +14,6 @@
     getCell,
     getSharedState,
     GlobalAction,
-    loadState,
     replaceSharedState,
     resetTracker,
     tracker,
@@ -126,7 +125,7 @@
       $coopClient.setEndpoint(page.url.searchParams.get("endpoint"));
     const presetId = page.url.searchParams.get("preset");
     resetTracker(
-      storageKey ? await loadState(storageKey) : undefined,
+      storageKey ? await storage.loadData(storageKey) : undefined,
       presetId ? storage.loadStarterPreset(presetId) : undefined,
     );
     applyRouteSelections(page.url.searchParams, false);
