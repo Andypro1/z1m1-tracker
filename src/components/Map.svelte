@@ -1,318 +1,282 @@
 <script>
-    import { onMount } from "svelte";
-    import tilesheet from "./tilesheet.js";
-    import Overlay from "./Overlay.svelte";
-    import Premark from "./Premark.svelte";
-    import { actions, updateMapData } from '../services/tracker.js';
-    import toolbars from './toolbars.js';
+  import Overlay from "./Overlay.svelte";
+  import Premark from "./Premark.svelte";
+  import { actions, updateMapData } from "../services/tracker.js";
+  import toolbars from "./toolbars.js";
 
-    //  Props
-    export let data = {};
-    export let layout;
-    export let handleHotkey;
-    export let handleMouseMark;
-  
-    //  My state
-    let initialLoad = false;
-    let rMap;  //  Map display ratio for calculating layout
-    let mouseInMap = false;
-    let [mouseX, mouseY] = [0, 0];
+  export let data = {};
+  export let handleHotkey = () => false;
+  export let handleMouseMark = () => {};
+  export let editActive = false;
+  export let onActiveChange = () => {};
 
-    $: styles = {
-        "map-cols": data.cols,
-        "map-rows": data.rows,
-        "level-cols": data.sectionCols,
-        "level-rows": data.sectionRows,
-        "shadow-color": data.shadowColor,
-        aspect: `${mapTilesheet.pxWidth() / mapTilesheet.pxHeight()}`,
-    };
+  let hoveredAreaId = -1;
+  $: aspect =
+    (data.sectionCols * data.pixelWidth) /
+    data.cols /
+    ((data.sectionRows * data.pixelHeight) / data.rows);
+  $: displayRooms = Array.from({ length: data.rooms.length }, (_, position) => {
+    const row = Math.floor(position / data.sectionCols);
+    const column = position % data.sectionCols;
+    const sourceRow = data.isVflipped ? data.sectionRows - row - 1 : row;
+    const sourceColumn = data.isHflipped
+      ? data.sectionCols - column - 1
+      : column;
+    const areaId = sourceRow * data.sectionCols + sourceColumn;
+    return { ...data.rooms[areaId], areaId, position };
+  });
 
-    //  Assign the active state to every map cell that doesn't specify otherwise
-    $: data.rooms.forEach(r => r.active = (typeof r.active === 'undefined') ? true : r.active);
+  const roomStyle = ({ areaId, position }) => {
+    const row = Math.floor(position / data.sectionCols);
+    const column = position % data.sectionCols;
+    const sourceRow =
+      Math.floor(areaId / data.sectionCols) +
+      Math.floor(data.sectionStartCell / data.cols);
+    const sourceColumn =
+      (areaId % data.sectionCols) + (data.sectionStartCell % data.cols);
+    const x = data.cols > 1 ? (sourceColumn * 100) / (data.cols - 1) : 0;
+    const y = data.rows > 1 ? (sourceRow * 100) / (data.rows - 1) : 0;
+    return `grid-row:${row + 1};grid-column:${column + 1};background-position:${x}% ${y}%`;
+  };
 
-    //  This hack ensures that methods can be run when the
-    //  <svelte:component>'s "this" binding changes in App.svelte
-    //  because it isn't actually tearing down and mounting a new component;
-    //  just changing "this" and all the props.
-    //  The reactive rMap variable triggers the framework to call sizeMapGrid
-    //  when all the props change by virtue of it being marked as reactive with $: rMap.
-    $: if(initialLoad) {
-      sizeMapGrid(rMap);
+  const regionStyle = (region) => {
+    const rowStart = data.isVflipped
+      ? data.sectionRows - region.rowEnd + 1
+      : region.rowStart;
+    const rowEnd = data.isVflipped
+      ? data.sectionRows - region.rowStart + 2
+      : region.rowEnd + 1;
+    const columnStart = data.isHflipped
+      ? data.sectionCols - region.colEnd + 2
+      : region.colStart;
+    const columnEnd = data.isHflipped
+      ? data.sectionCols - region.colStart + 2
+      : region.colEnd;
+    return `background-size:${region.bgSize};background-position:${region.bgPosX} ${region.bgPosY};grid-row:${rowStart}/${rowEnd};grid-column:${columnStart}/${columnEnd}`;
+  };
+
+  const areaPointerDown = (event, area, areaId) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (editActive) {
+      if (event.button === 0 && !area.outofbounds) onActiveChange(areaId);
+      return;
     }
+    if (event.button === 3 || !$actions[event.button]) return;
+    if (
+      !area.rowStart &&
+      (area.active === false || area.active === "false" || area.outofbounds)
+    )
+      return;
+    const action = $actions[event.button];
+    const wasMarked =
+      action === "custom1" || action === "custom2"
+        ? area.custom === Number(action.slice(6))
+        : Boolean(area.marked);
+    updateMapData(areaId, !wasMarked, action);
+    $toolbars.setSubToolbar(action);
+    $toolbars = $toolbars;
+    handleMouseMark(areaId, action);
+  };
+</script>
 
-    $: mapTilesheet = new tilesheet(
-      '',
-      data.pixelWidth,
-      data.pixelHeight,
-      data.rows,
-      data.cols,
-      data.sectionRows,
-      data.sectionCols,
-      data.sectionStartCell
-    );
-  
-    $: rMap = (mapTilesheet.pxWidth() * (mapTilesheet.sectionCols() / mapTilesheet.tileCols()) + (mapTilesheet.sectionCols() - 1)) /
-           (mapTilesheet.pxHeight() * (mapTilesheet.sectionRows() / mapTilesheet.tileRows()) + (mapTilesheet.sectionRows() - 1));
+<svelte:window onkeydown={(event) => handleHotkey(event, hoveredAreaId)} />
 
-    onMount(() => {
-        setTimeout(sizeMapGrid, 0);
-        initialLoad = true;
-    });
-
-
-    $: cssVarStyles = Object.entries(styles)
-      .map(([key, value]) => `--${key}:${value}`)
-      .join(";");
-
-
-    $: getGridPosStyles = (pos) => {
-      const row = Math.floor(pos / data.sectionCols);
-      const col = pos - (row * data.sectionCols);
-
-      return `
-        grid-row: ${row+1};
-        grid-column: ${col+1};
-      `;
-    };
-
-    $: getRooms = () => {
-        if(!data.isHflipped && !data.isVflipped)
-            return data.rooms.map((r, i) => ({...r, areaId: i}));
-
-        if(data.isHflipped && !data.isVflipped) {
-            return data.rooms.map((r, i) => {
-                const newSpot = ((data.sectionCols * Math.floor(i / data.sectionCols)) + data.sectionCols - 1) - (i % data.sectionCols);
-
-                return {...data.rooms[newSpot], areaId: newSpot };
-            });
-        }
-
-        if(data.isVflipped && !data.isHflipped) {
-            const tmp = data.rooms
-            .map((r, i) => {
-                const newSpot = (Math.abs(data.sectionRows * data.sectionCols - i - 1));
-                return {...data.rooms[newSpot], areaId: newSpot };
-            });
-
-            return tmp.map((r, i, a) => {
-                const newSpot = ((data.sectionCols * Math.floor(i / data.sectionCols)) + data.sectionCols - 1) - (i % data.sectionCols);
-                return a[newSpot];
-            });
-        }
-
-        if(data.isVflipped && data.isHflipped) {
-            return data.rooms
-            .map((r, i) => {
-                const newSpot = (Math.abs(data.sectionRows * data.sectionCols - i - 1));
-                return {...data.rooms[newSpot], areaId: newSpot };
-            });
-        }
-
-        return data.rooms.map((r, i) => ({...r, areaId: i}));
-    };
-
-
-    const areaClick = (e, area, areaId) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      //  Guard clause
-      if(!(e.button >= 0 && e.button !== 3) || !$actions[e.button])
-        return;
-
-      const areaType = area.rowStart ? 'region' : 'room';
-      const arrIndex = areaType === 'room' ? areaId : areaId - data.rooms.length;
-
-      if(areaType === 'room' && (!area.active || area.outofbounds))
-        return;
-
-      let wasMarked = areaType === 'region' ? data.gridRegions[arrIndex].marked : data.rooms[arrIndex].marked;
-
-      //  Special case(s) for actions that should not toggle the marked state
-      wasMarked = $actions[e.button] === 'notYetAcquired' ? !wasMarked : wasMarked;
-
-      if($actions[e.button] === 'custom1') {
-        wasMarked = areaType === 'region' ? data.gridRegions[arrIndex].custom === 1 : data.rooms[arrIndex].custom === 1;
-      }
-      else if($actions[e.button] === 'custom2') {
-        wasMarked = areaType === 'region' ? data.gridRegions[arrIndex].custom === 2 : data.rooms[arrIndex].custom === 2;
-      }
-
-      updateMapData(areaId, !wasMarked, $actions[e.button]);
-      data = data;
-
-      $toolbars.setSubToolbar($actions[e.button]);
-      $toolbars = $toolbars;
-
-      handleMouseMark(areaId, area, $actions[e.button], mouseX, mouseY, wasMarked);
-    };
-
-
-    const sizeMapGrid = () => {
-      const errorPx = 30;
-      const errorWidthPx = 42;
-
-      const [wWin, hWin, hTopBar] = [window.innerWidth, window.innerHeight, document.querySelector('.top-bar').clientHeight + errorPx];
-      const ASSUMED_CARD_PAIR_SIZE = 255;
-  
-      const hSCAvail = hWin - hTopBar;
-      const wSCAvail = wWin - ASSUMED_CARD_PAIR_SIZE;
-      const rSCWin = wSCAvail / hSCAvail;
-      
-      const wSCNewMap = rSCWin < rMap ? wSCAvail : hSCAvail * rMap;
-      const hSCNewMap = rSCWin < rMap ? wSCAvail / rMap : hSCAvail;
-      const SCMapArea = wSCNewMap * hSCNewMap;
-  
-      const hBCAvail = hWin - hTopBar - ASSUMED_CARD_PAIR_SIZE;
-      const wBCAvail = wWin;
-      const rBCWin = wBCAvail / hBCAvail;
-  
-      const wBCNewMap = rBCWin < rMap ? wBCAvail : hBCAvail * rMap;
-      const hBCNewMap = rBCWin < rMap ? wBCAvail / rMap : hBCAvail;
-      const BCMapArea = wBCNewMap * hBCNewMap;
-  
-      const rPad = (mapTilesheet.sectionCols() - 1) + errorWidthPx;
-      const bPad = (mapTilesheet.sectionRows() - 1);
-
-      layout(SCMapArea > BCMapArea ?
-             {name: 'side',
-              width: (wSCNewMap - rPad) / mapTilesheet.sectionCols(),
-              height: (hSCNewMap - bPad) / mapTilesheet.sectionRows(),
-              rightPad: rPad,
-              bottomPad: bPad,
-              fullWidth: wSCNewMap,
-              fullHeight: hSCNewMap
-            } :
-             { name: 'bottom',
-                width: (wBCNewMap - rPad) / mapTilesheet.sectionCols(),
-                height: (hBCNewMap - bPad) / mapTilesheet.sectionRows(),
-                rightPad: rPad,
-                bottomPad: bPad,
-                fullWidth: wBCNewMap,
-                fullHeight: hBCNewMap
-            });
-    };
-  </script>
-  
-  <svelte:window on:resize={sizeMapGrid} on:keydown="{(e) => handleHotkey(e, mouseInMap, mouseX, mouseY)}" />
-  
-  <div class="map-grid-container" style={cssVarStyles}>
-    <div class="map-grid {data.class}"
-      on:mousemove={(e) => { mouseX = e.clientX; mouseY = e.clientY; }} on:mouseenter={() => mouseInMap = true } on:mouseleave={() => mouseInMap = false }
-      class:mirrored-h={data.isHflipped} class:mirrored-v={data.isVflipped}>
-      {#each getRooms() as cell, pos}
-        {#if !cell.outofbounds}
+<div
+  class="map-viewport"
+  style={`--map-aspect:${aspect};--section-cols:${data.sectionCols};--section-rows:${data.sectionRows};--map-cols:${data.cols};--map-rows:${data.rows};--shadow-color:${data.shadowColor}`}
+>
+  {#if data.rooms.length || data.gridRegions?.length}
+    <div
+      class="map-grid {data.class}"
+      role="group"
+      aria-label="Trackable cells"
+      class:mirrored-h={data.isHflipped}
+      class:mirrored-v={data.isVflipped}
+      onpointerleave={() => (hoveredAreaId = -1)}
+    >
+      {#each displayRooms as cell}
+        {#if cell.outofbounds}
           <div
-            class="room"
-            class:active={cell.active}
-            class:oob={cell.outofbounds}
-            data-area-id={cell.areaId}
-            style={getGridPosStyles(pos)}
-            on:mousedown={(e) => areaClick(e, cell, cell.areaId)}
-          >
-            {#if !cell.marked && cell.premark}
-              <Premark text={cell.premark} />
-            {/if}
-
-            <Overlay action={cell.action} custom={cell.custom} draw={cell.marked} notAcquired={cell.notAcquired} />
-          </div>
+            style={`grid-row:${Math.floor(cell.position / data.sectionCols) + 1};grid-column:${(cell.position % data.sectionCols) + 1}`}
+          ></div>
         {:else}
-          <div></div>
+          <button
+            type="button"
+            class="room"
+            class:active={cell.active !== false && cell.active !== "false"}
+            aria-label={`Map cell ${cell.areaId + 1}`}
+            aria-pressed={editActive
+              ? cell.active !== false && cell.active !== "false"
+              : undefined}
+            data-area-id={cell.areaId}
+            style={roomStyle(cell)}
+            onpointerenter={() => (hoveredAreaId = cell.areaId)}
+            onpointerdown={(event) => areaPointerDown(event, cell, cell.areaId)}
+          >
+            {#if !cell.marked && cell.premark}<Premark
+                text={cell.premark}
+              />{/if}
+            <Overlay
+              action={cell.action}
+              custom={cell.custom}
+              draw={cell.marked}
+              notAcquired={cell.notAcquired}
+            />
+          </button>
         {/if}
       {/each}
-      {#if data.gridRegions}
-        {#each data.gridRegions as region, pos}
-        <!--  TODO: refactor me pleeeeeeeeeeeeeease  -->
-        {#if data.isHflipped && data.isVflipped}
-        <div
+      {#each data.gridRegions ?? [] as region, index}
+        <button
+          type="button"
           class="grid-region"
-          data-area-id={data.rooms.length + pos}
-          style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {data.sectionRows - region.rowStart + 1} / {data.sectionRows - region.rowEnd + 1}; grid-column: {data.sectionCols - region.colEnd + 2} / {data.sectionCols - region.colStart + 2};"
-          on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
-          >
-          {#if !region.marked && region.premark}
-            <Premark text={region.premark} />
-          {/if}
-
-          <Overlay action={region.action} custom={region.custom} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
-        </div>
-          {:else if data.isVflipped}
-            <div
-              class="grid-region"
-              data-area-id={data.rooms.length + pos}
-              style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {data.sectionRows - region.rowStart + 1} / {data.sectionRows - region.rowEnd + 1}; grid-column: {region.colStart} / {region.colEnd};"
-              on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
-              >
-              {#if !region.marked && region.premark}
-                <Premark text={region.premark} />
-              {/if}
-
-              <Overlay action={region.action} custom={region.custom} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
-            </div>
-          {:else if data.isHflipped}
-            <div
-              class="grid-region"
-              data-area-id={data.rooms.length + pos}
-              style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {region.rowStart} / {region.rowEnd}; grid-column: {data.sectionCols - region.colEnd + 2} / {data.sectionCols - region.colStart + 2};"
-              on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
-              >
-              {#if !region.marked && region.premark}
-                <Premark text={region.premark} />
-              {/if}
-
-              <Overlay action={region.action} custom={region.custom} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
-            </div>
-          {:else}
-            <div
-              class="grid-region"
-              data-area-id={data.rooms.length + pos}
-              style="background-size: {region.bgSize}; background-position-x: {region.bgPosX}; background-position-y: {region.bgPosY}; grid-row: {region.rowStart} / {region.rowEnd}; grid-column: {region.colStart} / {region.colEnd};"
-              on:mousedown={(e) => areaClick(e, region, data.rooms.length + pos)}
-              >
-              {#if !region.marked && region.premark}
-                <Premark text={region.premark} />
-              {/if}
-              
-              <Overlay action={region.action} custom={region.custom} draw={region.marked} notAcquired={region.notAcquired} isRegion="true" />
-            </div>
-          {/if}
-        {/each}
-      {/if}
+          class:active={region.active !== false && region.active !== "false"}
+          aria-label={region.name ?? `Map region ${index + 1}`}
+          aria-pressed={editActive
+            ? region.active !== false && region.active !== "false"
+            : undefined}
+          data-area-id={data.rooms.length + index}
+          style={regionStyle(region)}
+          onpointerenter={() => (hoveredAreaId = data.rooms.length + index)}
+          onpointerdown={(event) =>
+            areaPointerDown(event, region, data.rooms.length + index)}
+        >
+          {#if !region.marked && region.premark}<Premark
+              text={region.premark}
+            />{/if}
+          <Overlay
+            action={region.action}
+            custom={region.custom}
+            draw={region.marked}
+            notAcquired={region.notAcquired}
+            isRegion={true}
+          />
+        </button>
+      {/each}
     </div>
-  </div>
-  
-  <style type="scss">
-    @import "../styles/map-grid.scss";
+  {:else}
+    <p class="empty-panel">This panel does not contain trackable map cells.</p>
+  {/if}
+</div>
 
+<style>
+  .map-viewport {
+    --minimum-cell-inline: 1.875rem;
+    --minimum-cell-block: 1.5rem;
+    width: 100%;
+    height: 100%;
+    container-type: size;
+    overflow: auto;
+    display: grid;
+    place-items: center;
+    overscroll-behavior: contain;
+  }
+  .map-grid {
+    width: max(
+      calc(var(--section-cols) * var(--minimum-cell-inline)),
+      calc(var(--section-rows) * var(--minimum-cell-block) * var(--map-aspect)),
+      min(100cqw, calc(100cqh * var(--map-aspect)))
+    );
+    aspect-ratio: var(--map-aspect);
+    display: grid;
+    grid-template: repeat(var(--section-rows), 1fr) / repeat(
+        var(--section-cols),
+        1fr
+      );
+    gap: 1px;
+    padding: 0.25rem;
+    contain: layout;
+  }
+  .room,
+  .grid-region {
+    position: relative;
+    isolation: isolate;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: 0;
+    padding: 0;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    touch-action: manipulation;
+    transition:
+      transform 100ms ease-out,
+      filter 100ms ease-out;
+  }
+  .room {
+    background-size: calc(var(--map-cols) * 100%) calc(var(--map-rows) * 100%);
+  }
+  .overworld .room {
+    background-image: url("/images/hyrule-q1-halfscale.png");
+  }
+  .dungeon .room {
+    background-image: url("/images/dungeons-halfscale.png");
+  }
+  .zebes .room,
+  .zebes .grid-region {
+    background-image: url("/images/zebes-quarterscale.png");
+  }
+  .room:not(.active),
+  .grid-region:not(.active) {
+    filter: grayscale(0.82) contrast(0.65);
+  }
+  .room:not(.active)::after,
+  .grid-region:not(.active)::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      135deg,
+      #fff5 0 1px,
+      #0005 1px 2px,
+      transparent 2px 6px
+    );
+    mix-blend-mode: soft-light;
+  }
+  .room.active,
+  .grid-region.active {
+    filter: saturate(1.2);
+    cursor: pointer;
+  }
+  .room.active:hover,
+  .room.active:focus-visible,
+  .grid-region.active:hover,
+  .grid-region.active:focus-visible {
+    z-index: 10;
+    outline: 2px solid #fff;
+    outline-offset: -2px;
+    filter: brightness(1.12) saturate(1.25);
+    box-shadow: inset 0 0 0 2px #fff8;
+    transform: scale(1.05);
+  }
+  .mirrored-h .room,
+  .mirrored-h .grid-region {
+    transform: scaleX(-1);
+  }
+  .mirrored-h .room.active:hover,
+  .mirrored-h .room.active:focus-visible,
+  .mirrored-h .grid-region.active:hover,
+  .mirrored-h .grid-region.active:focus-visible {
+    transform: scaleX(-1) scale(1.05);
+  }
+  .empty-panel {
+    margin: auto;
+    padding: 1rem;
+    color: #bbb;
+    text-align: center;
+  }
+  @media (pointer: coarse) {
+    .map-viewport {
+      --minimum-cell-inline: 2rem;
+      --minimum-cell-block: 2rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .room,
     .grid-region {
-      position: relative;
-      align-self: stretch;
-      z-index: 2;
-
-      .zebes & {
-        background-image: url(/images/zebes-quarterscale.png);
-      }
-
-      &:hover {
-        z-index: 10;
-        cursor: pointer;
-
-        filter: drop-shadow(10px 10px 10px var(--shadow-color));
-        -webkit-animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-        animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-      }
-
-      &.active {
-		    filter: saturate(120%);
-      }
+      transition: none;
     }
-
-    .mirrored-h .grid-region {
-      transform: scaleX(-1);
-
-      &:hover {
-        -webkit-animation: mirrored-scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-        animation: mirrored-scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-      }
-    }
-  </style>
+  }
+</style>

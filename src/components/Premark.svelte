@@ -1,38 +1,25 @@
 <script>
-    import toolbars from './toolbars.js';
-
-    //  Props
-    export let text;
-    // export let isRegion = false;
+  export let text;
 </script>
 
-{#if text}
-    <!-- <div class="overlay" class:region={isRegion}> -->
-    <div class="premark">
-        <!-- <div class="marked-backdrop"></div> -->
-        <div>{text}</div>
-    </div>
-{/if}
+{#if text}<span class="premark">{text}</span>{/if}
 
-<style type="scss">
+<style>
   .premark {
-    width: 100%;
-    height: 100%;
     position: absolute;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    color: rgb(255, 255, 255);
-    opacity: 0.9;
-    font-size: calc(var(--map-room-height) * 1px);
-    white-space: nowrap;
+    inset: 0;
+    display: grid;
+    place-items: center;
     overflow: hidden;
+    color: #fff;
+    font:
+      700 1.25rem/1 "Baloo 2",
+      system-ui,
+      sans-serif;
+    text-shadow: 0 1px 2px #000;
+    pointer-events: none;
   }
-
-  /*  Override content flipping if we're in a mirrored map  */
-  :global(.mirrored-h .premark) {
+  :global(.mirrored-h) .premark {
     transform: scaleX(-1);
   }
 </style>

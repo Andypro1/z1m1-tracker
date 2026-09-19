@@ -1,324 +1,303 @@
 <script>
-	import { actions } from '../services/tracker.js';
-   	import toolbars from './toolbars.js';
+  import { actions } from "../services/tracker.js";
+  import toolbars from "./toolbars.js";
 
-    //  Props
-    export let set = 'overworld';
+  export let set = "overworld";
+  $: currentSubToolbar = $toolbars.getCurrentSubBarName();
+  $: mainActions = $toolbars
+    .getMainToolbar(set)
+    .flatMap(({ actions: entries }) => entries);
+  $: subActions = $toolbars
+    .getSubToolbar()
+    .flatMap(({ actions: entries }) => entries);
 
-	$: curSubTb = $toolbars.getCurrentSubBarName();
-
-	//  TODO: move.
-    $: tbActionClass = (action) => {
-        const keycaps = {
-            0: 'LC',
-            1: 'MC',
-            2: 'RC',
-            4: '>C'
-        };
-
-        const i = $actions.findIndex(e => e === action.name);
-
-        return {
-            name: i >= 0 ? `button${i}` : '',
-            keycap: keycaps[i]
-        };
+  const assignment = (action) => {
+    const index = $actions.indexOf(action.name);
+    return {
+      className: index >= 0 ? `button${index}` : "",
+      label: ["LC", "MC", "RC", "", ">C"][index],
     };
+  };
 
-	const tbclick = (e, action) => {
-		e.preventDefault();
-		e.stopPropagation();
+  const choose = (event, action, changeToolbar = true) => {
+    event.preventDefault();
+    if (event.button === 3) return;
+    actions.setPosition(action.name, event.button);
+    if (changeToolbar) $toolbars.setSubToolbar(action.name);
+    $toolbars = $toolbars;
+  };
 
-		//  Use left, middle, right, and forward buttons if available (not back)
-		if(e.button >= 0 && e.button !== 3) {
-			actions.setPosition(action.name, e.button);
-			
-			$toolbars.setSubToolbar(action.name);
-			$toolbars = $toolbars;
-		}
-	};
-
-	const tbhover = (e, action) => {
-		$toolbars.setSubToolbar(action.name);
-		curSubTb = curSubTb;
-	};
+  const show = (action) => {
+    $toolbars.setSubToolbar(action.name);
+    $toolbars = $toolbars;
+  };
 </script>
 
-<!-- <div class="toolbars"> -->
-    {#each $toolbars.getMainToolbar(set) as tb, index (index)}
-        <div class="toolbar">
-            {#each tb.actions as action}
-                <div class="action {action.name} {tbActionClass(action).name}"
-					class:active-tb={curSubTb === action.name}
-					class:custom={action.class === 'custom'}
-                    on:mousedown={(e) => tbclick(e, action)}
-					on:mouseover={(e) => tbhover(e, action)}
-                >
-					{#if action.spriteIndex && !action.shopText }
-						<div class="icon {action} sprite-index{action.spriteIndex}"></div>
-					{:else}
-						{ action.display }
-					{/if}
-					
-					<div class="tb-backdrop"></div>
-					<aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
-					<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys[0]}></aside>
-				</div>
-            {/each}
-        </div>
+<div class="toolbars" class:short-main={mainActions.length < 8}>
+  <div class="toolbar main" aria-label="Primary marking tools">
+    {#each mainActions as action}
+      <button
+        type="button"
+        class="action {action.name} {assignment(action).className}"
+        class:active={currentSubToolbar === action.name}
+        class:custom={action.class === "custom"}
+        title={`${action.display} · ${action.hotkeys.join(" or ")}`}
+        onpointerdown={(event) => choose(event, action)}
+        onpointerenter={() => show(action)}
+      >
+        {#if action.spriteIndex !== undefined && !action.shopText}
+          <i
+            class="sprite"
+            style={`--sprite-index:${action.spriteIndex}`}
+            aria-hidden="true"
+          ></i>
+        {:else}<span>{action.display}</span>{/if}
+        {#if assignment(action).label}<small class="mouse-key"
+            >{assignment(action).label}</small
+          >{/if}
+        <kbd>{action.hotkeys[0]}</kbd>
+      </button>
+    {/each}
+  </div>
 
-		{#each $toolbars.getSubToolbar() as stb}
-			<div class="sub toolbar {curSubTb}">
-				{#each stb.actions as action}
-					<div class="action {tbActionClass(action).name}"
-						class:used={action.used}
-						on:mousedown={(e) => {
-							e.preventDefault();
-							e.stopPropagation();
-	
-							//  Use left, middle, right, and forward buttons if available (not back)
-							if(e.button >= 0 && e.button !== 3)
-								actions.setPosition(action.name, e.button);
-						}}
-					>
-						{#if action.spriteIndex && (typeof action.warpText === 'undefined') && (typeof action.shopText === 'undefined') }
-							<div class="icon sprite-index{action.spriteIndex}"></div>
-						{:else}
-							{ action.display }
-						{/if}
-	
-						{#if action.mapText }
-							<div class:label={action.mapText}>
-								<b>{action.mapText}</b>
-							</div>
-						{/if}
-	
-						<div class="tb-backdrop"></div>
-						<aside class:mouse-overlay={tbActionClass(action).name} data-before={tbActionClass(action).keycap}></aside>
-						<aside class:key-overlay={action.hotkeys} data-before={action.hotkeys}></aside>
-					</div>
-				{/each}
-			</div>
-		{/each}
-	{/each}
-<!-- </div> -->
+  <div
+    class="toolbar sub {currentSubToolbar}"
+    aria-label={`${currentSubToolbar} tools`}
+  >
+    {#each subActions as action}
+      <button
+        type="button"
+        class="action {assignment(action).className}"
+        class:used={action.used}
+        title={`${action.display} · ${action.hotkeys.join(" or ")}`}
+        onpointerdown={(event) => choose(event, action, false)}
+      >
+        {#if action.spriteIndex !== undefined && action.warpText === undefined && action.shopText === undefined}
+          <i
+            class="sprite"
+            style={`--sprite-index:${action.spriteIndex}`}
+            aria-hidden="true"
+          ></i>
+        {:else}<span>{action.display}</span>{/if}
+        {#if action.mapText}<b>{action.mapText}</b>{/if}
+        {#if assignment(action).label}<small class="mouse-key"
+            >{assignment(action).label}</small
+          >{/if}
+        <kbd>{action.hotkeys[0]}</kbd>
+      </button>
+    {/each}
+  </div>
+</div>
 
-<style type="scss">
-    @import "../styles/overlays.scss";
-
-	.toolbar {
-		flex: 0 0 auto;
-
-		display: grid;
-		grid-template-rows: 1fr 1fr;
-		grid-template-columns: 1fr 1fr 1fr 0.5fr;
-		justify-content: flex-start;
-		align-items: flex-start;
-
-		margin: 0rem;
-
-		& .action.cleared { grid-area: 1 / 1; }
-		& .action.notYetAcquired { grid-area: 1 / 2; }
-		& .action.shop { grid-area: 1 / 3; }
-		& .action.warp { grid-area: 2 / 1; }
-		& .action.equip { grid-area: 2 / 2; }
-		& .action.quest { grid-area: 2 / 3; }
-		& .action.custom1 { grid-area: 1 / 4; }
-		& .action.custom2 { grid-area: 2 / 4; }
-	}
-
-	.toolbar .action {
-		margin: 0.3rem;
-		background-color: hsl(0, 0%, 0%);
-
-		background:
-			linear-gradient(217deg, rgba(32,32,32, 0.8), rgba(255,0,0,0) 70.71%),
-			linear-gradient(127deg, rgba(160,160,160, 0.8), rgba(0,255,0,0) 70.71%),
-			linear-gradient(336deg, rgba(0,0,100, 0.5), rgba(0,0,255,0) 70.71%);
-
-		&.active-tb {
-			background: none;
-
-			//  Except for the shop action which has no custom background currently
-			&.shop {
-				background:
-				linear-gradient(217deg, rgba(32,32,32, 0.8), rgba(255,0,0,0) 70.71%),
-				linear-gradient(127deg, rgba(160,160,160, 0.8), rgba(0,255,0,0) 70.71%),
-				linear-gradient(336deg, rgba(0,0,100, 0.5), rgba(0,0,255,0) 70.71%);
-			}
-		}
-
-		color: white;
-		padding: 1rem;
-		width: 4.8rem;
-		height: 4.8rem;
-		border-radius: 0.5rem;
-
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-
-	.action {
-		position: relative;
-		text-align: center;
-		font-size: 1rem;
-		font-weight: 600;
-
-		&.custom {
-			width: 3.8rem;
-			height: 3.8rem;
-			margin-top: 1.3rem;
-			font-size: 0.8rem;
-
-			&.custom1 {
-				box-shadow: inset 0 0 0.5rem 0.3rem red;
-			}
-
-			&.custom2 {
-				box-shadow: inset 0 0 0.5rem 0.3rem rgb(0, 89, 255);
-			}
-		}
-
-		&.button0,
-		&.button1,
-		&.button2,
-		&.button4 {
-			position: relative;
-
-			&:before {
-				content: '';
-				position: absolute;
-				left: 0;
-				top: 0;
-				width: 100%;
-				height: 100%;
-				box-shadow: 0 0 17px 3px #ffff01,0 0 4px 2px #ffff01;
-				z-index: 9999;
-				border-radius: 5px;
-			}
-		}
-
-		&.used {
-			filter: grayscale(1) contrast(0.3);
-		}
-
-		&:hover {
-			z-index: 10;
-			cursor: pointer;
-
-			filter: drop-shadow(8px 8px 8px var(--shadow-color));
-			-webkit-animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-			animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-		}
-	}
-
-	//  Undue subdued filters on the background when hovering
-	.action:hover .tb-backdrop, .active-tb.action .tb-backdrop {
-		filter: none;
-	}
-
-	.tb-backdrop {
-		position: absolute;
-		left: 0; right: 0; top: 0; bottom: 0;
-		width: 100%;
-		height: 100%;
-		z-index: -10;
-
-		border-radius: 0.5rem;
-
-		.warp & {
-			background-image: url("/images/tb.action.warp.png");
-			background-size: contain;
-
-			filter: contrast(35%) grayscale(60%);
-		}
-
-		.equip & {
-			background-image: url("/images/tb.action.equip.png"), linear-gradient(rgba(185, 174, 110, 0.329),rgba(185, 174, 110, 0.329));
-			background-blend-mode: overlay;
-			background-size: contain;
-
-			filter: contrast(35%) grayscale(25%);
-		}
-
-		.quest & {
-			background-image: url("/images/tb.action.quest.png"), linear-gradient(rgba(214, 178, 20, 0.329),rgba(214, 179, 20, 0.329));
-    		background-blend-mode: overlay;
-			background-size: contain;
-
-			filter: brightness(75%);
-		}
-	}
-
-	//  Override toolbar styles for subtoolbars
-	.sub.toolbar {
-		flex: 1 0;
-
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		// height: 100%;
-		// max-width: calc(100vw - 20rem - 24rem);
-		max-height: 11.5rem;
-
-		justify-content: stretch;
-		align-items: stretch;
-
-		& .action:before {
-			content: '';
-			// float: left;
-			padding-top: 100%;
-		}
-
-		& .action {
-			margin: 0.15rem;
-
-			padding: 1rem;
-			width: 3.5rem;
-			height: 3.5rem;
-		}
-	}
-
-
-  //  TODO: Below are dupes with Overlay - draw out and refactor
-  //  Icon art for each equipment type  \\
-  .icon {
-    position: absolute;
-	width: 80%;
-    height: 80%;
-    z-index: 10;
-
-    top: 0; left: 0; right: 0; bottom: 0;
-    margin: auto;
-
-    background: url(/images/sprites-16px.png) no-repeat;
-    background-size: auto 100%;
-    image-rendering: crisp-edges;
-    image-rendering: pixelated;
-
-    //  Class rules for each sprite in sprites-16px.png
-	@for $i from 0 through 39 {
-		&.sprite-index#{$i} {
-			background-position: calc(#{$i} * 100% / 61.5);
-		}
-	}
+<style>
+  .toolbars {
+    --main-width: 27.25rem;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    display: grid;
+    grid-template-columns: var(--main-width) minmax(0, 1fr);
+    gap: 0.4rem;
+    overflow: hidden;
   }
-
-  .label {
+  .toolbars:where(.short-main) {
+    --main-width: 23.85rem;
+  }
+  .toolbar {
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 3.15rem;
+    grid-template-rows: repeat(auto-fit, minmax(2.75rem, 1fr));
+    gap: 0.25rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior: contain;
+    padding: 0.15rem;
+    scrollbar-width: thin;
+  }
+  :global(.layout-vertical) .toolbars {
+    height: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+  :global(.layout-vertical) .toolbar,
+  :global(.layout-vertical) .main,
+  :global(.layout-vertical) .sub {
+    width: auto;
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-auto-rows: 3.15rem;
+    grid-template-columns: repeat(auto-fit, minmax(2.75rem, 1fr));
+    grid-template-rows: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .sub {
+    align-content: start;
+  }
+  .main {
+    width: 100%;
+    overflow-x: hidden;
+  }
+  @container controls (min-height: 6.05rem) {
+    .toolbars {
+      --main-width: 13.65rem;
+    }
+  }
+  @container controls (min-height: 9.05rem) {
+    .toolbars {
+      --main-width: 10.25rem;
+    }
+  }
+  @container controls (min-height: 12.05rem) {
+    .toolbars {
+      --main-width: 6.85rem;
+    }
+  }
+  @container controls (min-height: 21.05rem) {
+    .toolbars.short-main {
+      --main-width: 3.45rem;
+    }
+  }
+  @container controls (min-height: 24.05rem) {
+    .toolbars {
+      --main-width: 3.45rem;
+    }
+  }
+  :global(.layout-vertical) .toolbars > .main {
+    width: 100%;
+  }
+  .action {
+    position: relative;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid #ffffff35;
+    border-radius: 0.45rem;
+    padding: 0.2rem;
+    background: linear-gradient(145deg, #555, #101010);
+    color: #fff;
+    font:
+      600 0.68rem/1.05 "Baloo 2",
+      system-ui,
+      sans-serif;
+    text-align: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      transform 100ms ease-out,
+      filter 100ms ease-out;
+  }
+  .action:hover,
+  .action:focus-visible,
+  .action.active {
+    border-color: #fff;
+    filter: brightness(1.25);
+  }
+  .action:hover,
+  .action:focus-visible {
+    z-index: 1;
+    transform: scale(1.05);
+  }
+  .action.button0,
+  .action.button1,
+  .action.button2,
+  .action.button4 {
+    box-shadow:
+      inset 0 0 0 2px #fff600,
+      0 0 0.35rem #fff600;
+  }
+  .action.used {
+    filter: grayscale(1) contrast(0.55);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .action {
+      transition: none;
+    }
+  }
+  .action.custom1 {
+    box-shadow: inset 0 0 0.45rem 0.2rem #f33;
+  }
+  .action.custom2 {
+    box-shadow: inset 0 0 0.45rem 0.2rem #397dff;
+  }
+  .action.warp,
+  .sub.warp .action {
+    background:
+      linear-gradient(#1117, #1117),
+      url("/images/tb.action.warp.png") center / cover;
+  }
+  .action.equip,
+  .sub.equip .action {
+    background:
+      linear-gradient(#1118, #1118),
+      url("/images/tb.action.equip.png") center / cover;
+  }
+  .action.quest,
+  .sub.quest .action {
+    background:
+      linear-gradient(#1118, #1118),
+      url("/images/tb.action.quest.png") center / cover;
+  }
+  .sprite {
+    width: 80%;
+    aspect-ratio: 1;
+    background: url("/images/sprites-16px.png") no-repeat;
+    background-size: auto 100%;
+    background-position-x: calc(var(--sprite-index) * 100% / 61.5);
+    image-rendering: pixelated;
+  }
+  .action > b {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 1.4rem;
+    text-shadow: 0 1px 2px #000;
+  }
+  kbd,
+  .mouse-key {
+    position: absolute;
+    z-index: 2;
+    border: 1px solid #888;
+    border-radius: 0.2rem;
+    background: #f8f8f8dd;
+    color: #111;
+    font:
+      600 0.55rem/1.1 system-ui,
+      sans-serif;
+    text-transform: uppercase;
+  }
+  kbd {
+    right: 0.1rem;
+    bottom: 0.1rem;
+    padding: 0.08rem 0.16rem;
+  }
+  .mouse-key {
+    left: 0.1rem;
+    top: 0.1rem;
+    padding: 0.08rem;
+  }
+  @media (max-width: 700px) {
+    :global(.layout-horizontal) .toolbars {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: 3.75rem minmax(0, 1fr);
+    }
+    :global(.layout-horizontal) .toolbar,
+    :global(.layout-horizontal) .main,
+    :global(.layout-horizontal) .sub {
+      grid-template-rows: repeat(auto-fit, minmax(2.75rem, 1fr));
+      grid-auto-flow: column;
+    }
+    :global(.layout-horizontal) .main {
       width: 100%;
-      height: 100%;
-      position: absolute;
-	  z-index: 20;
-	  padding-top: 0.25rem;
-
-      color: rgb(255, 255, 255);
-      font-size: 2.5rem;
-      white-space: nowrap;
-      overflow: hidden;
-	  opacity: 1;
-
-      display: flex;
-      justify-content: center; /* align horizontal */
-      align-items: center; /* align vertical */
+      grid-template-rows: 2.75rem;
+      overflow-x: auto;
+    }
   }
 </style>

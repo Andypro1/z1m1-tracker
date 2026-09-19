@@ -1,914 +1,679 @@
-<script context="module">
-    /** @type {import('@sveltejs/kit').Handle} */
-    export async function handle({ event, resolve }) {
-        const response = await resolve(event, {
-            ssr: false
-        });
-
-        return response;
-    }
-</script>
-
 <script>
-	import { onMount, onDestroy } from 'svelte';
-	import { browser } from '$app/env';
-	import { page } from "$app/stores";
-	import '@fortawesome/fontawesome-free/css/all.css';
-	import { tracker, trackerUpdated, loadRawData, getRawData, updateMapStats,
-		updateMapMetadata, hydrateAllToolbarMetadata, getCell, actions, loadState, GlobalAction } from '../services/tracker.js';
-	import Toolbars from "../components/Toolbars.svelte";
-	import toolbars from '../components/toolbars.js';
-	import coopClient from '../services/coop-client.js';
-	import Map from "../components/Map.svelte";
-
-	//  Configure import objects from url params
-	if($page.url.searchParams.get('endpoint'))
-		$coopClient.setEndpoint($page.url.searchParams.get('endpoint'));
-
-	let { coopGuid } = $page.params;
-
-	// let tracker, trackerUpdated, actions, loadState, GlobalAction;
-	let updateMapData;
-
-	//  Route props
-	export let storageKey = '';
-
-	//  My props
-	let activeHotkeySequence = '';
-	let activeHotkeyAreaId = -1;
-	$: layout = 'bottom';
-
-
-	const doLayout = (m) => {
-		layout = m.name;
-
-		styles['map-full-width'] = m.fullWidth;
-		styles['map-full-height'] = m.fullHeight;
-		styles['map-room-width'] = m.width;
-		styles['map-room-height'] = m.height;
-		styles['map-right-padding'] = m.rightPad;
-		styles['map-bottom-padding'] = m.bottomPad;
-	};
-
-
-	const loadAllData = async (data) => {
-		console.log(`loadAllData(): len(${data.length})`);
-
-		const state = await loadRawData(data);
-
-		console.log(`processed data len: ${JSON.stringify(state).length}`);
-
-		//  Only update areaMaps.  Thus far, all other properties
-		//  are ones that shouldn't be shared between coop partners
-		tracker.areaMaps = [...state.areaMaps];
-
-		await hydrateAllToolbarMetadata();
-	};
-
-
-	const dataFromPartner = async (areaId, marked, actionName, areaMapIndex, excludeResend) => {
-		const areaMapIndexnum = +areaMapIndex;
-		const areaIdnum = +areaId;
-		const isMarked = (marked === 'true');
-
-		await updateMapData(areaIdnum, isMarked, actionName, areaMapIndexnum, excludeResend);
-
-		//  Force area stats reevaluation
-		tracker.areaMaps = tracker.areaMaps;
-
-		//  Force toolbars reevaluation
-		$toolbars = $toolbars;
-	};
-
-
-	const metadataFromPartner = async (areaMapIndex, propName, propValue, excludeResend) => {
-		const areaMapIndexnum = +areaMapIndex;
-		const propValueBool   = (propValue === 'true');
-
-		await updateMapMetadata(areaMapIndexnum, propName, propValueBool, excludeResend);
-
-		//  Force area stats reevaluation
-		tracker.areaMaps = tracker.areaMaps;
-	};
-
-
-    //  Dynamic style vars
-    let styles = {
-      'shadow-color': 'rgb(128, 128, 128)'
-    };
-
-    $: cssVarStyles = Object.entries(styles)
-		.map(([key, value]) => `--${key}:${value}`)
-		.join(';');
-
-
-	if(browser) {
-		onMount(async () => {
-			if(history && history.state && history.state.storageKey)
-				storageKey = history.state.storageKey;
-
-			updateMapData = (await import('../services/tracker.js')).updateMapData;
-
-			if(storageKey) {
-				const state = await loadState(storageKey);
-
-				tracker.sessionTimestamp = state.sessionTimestamp;
-				tracker.curAreaMapIndex = state.curAreaMapIndex;
-				// tracker.layout = state.layout;
-				tracker.actions = [...state.actions];
-				tracker.areaMaps = [...state.areaMaps];
-
-				//  Also set stores used by components
-				actions.set([...state.actions]);
-
-				await hydrateAllToolbarMetadata();
-			}
-			else {
-				// TODO: Find a better way to create a fresh copy of the tracker data.
-				// Ensure initialization routines that are typically run get run here.
-				// TODO2:  This is STILL not working.  Repro:
-				//			- Start tracking coop
-				//			- mark some rooms
-				//			- back button
-				//			- Start tracking solo (or coop).  Stale data loads from .mapdata.js imports.
-				const Hyruleq1 = (await import("../components/maps/Hyruleq1.mapdata.js")).default;
-				const ShopsAndStats = (await import("../components/maps/ShopsAndStats.mapdata.js")).default;
-				const Level1 = (await import("../components/maps/Level1q1.mapdata.js")).default;
-				const Level2 = (await import("../components/maps/Level2q1.mapdata.js")).default;
-				const Level3 = (await import("../components/maps/Level3q1.mapdata.js")).default;
-				const Level4 = (await import("../components/maps/Level4q1.mapdata.js")).default;
-				const Level5 = (await import("../components/maps/Level5q1.mapdata.js")).default;
-				const Level6 = (await import("../components/maps/Level6q1.mapdata.js")).default;
-				const Level7 = (await import("../components/maps/Level7q1.mapdata.js")).default;
-				const Level8 = (await import("../components/maps/Level8q1.mapdata.js")).default;
-				const Level9 = (await import("../components/maps/Level9q1.mapdata.js")).default;
-				const Brinstar = (await import("../components/maps/Brinstar.mapdata.js")).default;
-				const Norfair = (await import("../components/maps/Norfair.mapdata.js")).default;
-				const Kraids = (await import("../components/maps/Kraids.mapdata.js")).default;
-				const Ridleys = (await import("../components/maps/Ridleys.mapdata.js")).default;
-				const mapStats = (await import ('../components/areaStatistics.js')).default;
-
-				tracker.sessionTimestamp = +new Date();
-
-				console.log(tracker.sessionTimestamp);
-
-				tracker.curAreaMapIndex = 0;
-				tracker.actions = [
-						'cleared',
-						'warp',
-						'equip',
-						'quest'
-					];
-				tracker.areaMaps = [
-					{ name: 'Hyrule (Q1)', map: Hyruleq1.data, stats: mapStats},
-					{ name: 'Shops & stats', map: ShopsAndStats.data, stats: mapStats},
-					{ name: 'Level 1 (Q1)', map: Level1.data, stats: mapStats},
-					{ name: 'Level 2 (Q1)', map: Level2.data, stats: mapStats},
-					{ name: 'Level 3 (Q1)', map: Level3.data, stats: mapStats},
-					{ name: 'Level 4 (Q1)', map: Level4.data, stats: mapStats},
-					{ name: 'Level 5 (Q1)', map: Level5.data, stats: mapStats},
-					{ name: 'Level 6 (Q1)', map: Level6.data, stats: mapStats},
-					{ name: 'Level 7 (Q1)', map: Level7.data, stats: mapStats},
-					{ name: 'Level 8 (Q1)', map: Level8.data, stats: mapStats},
-					{ name: 'Level 9 (Q1)', map: Level9.data, stats: mapStats},
-					{ name: 'Brinstar', map: Brinstar.data, stats: mapStats},
-					{ name: 'Norfair', map: Norfair.data, stats: mapStats},
-					{ name: 'Kraid\'s', map: Kraids.data, stats: mapStats},
-					{ name: 'Ridley\'s', map: Ridleys.data, stats: mapStats}
-				];
-
-				//  Also set stores used by components
-				actions.set([
-					'cleared',
-					'warp',
-					'equip',
-					'quest'
-				]);
-
-				//  Hydrate all area map statistics
-				tracker.areaMaps.map((a, i) => updateMapStats(i));
-			}
-
-			//  Need to wait to initialize coop to ensure we have a valid storage key (sessionTimestamp)
-			if(coopGuid) {
-				var res = await $coopClient.enable(coopGuid, tracker.sessionTimestamp, loadAllData, getRawData, dataFromPartner, metadataFromPartner);
-
-				console.log(res);
-			}
-			else {
-				var res = await $coopClient.disable();
-			}
-		});
-
-
-		onDestroy(async () => {
-			$coopClient.disable();
-		});
-	}
-
-	const selectMap = (name) => {
-		tracker.curAreaMapIndex = tracker.areaMaps.findIndex(e => e.name === name);
-
-		if(tracker.areaMaps.findIndex(e => e.name === name).length < 1)
-			console.error(`No area map was found with name ${name}.  Logic bug.`);
-	};
-
-	const getAreaCardHotkey = (name) => {
-		const match = Object.values(GlobalAction).filter(ga => ga.name === name);
-
-		if(match && match[0])
-			return match[0].hotkeys[0];
-
-		return '';
-	};
-
-	let mouseInMap = false;
-	let [mouseX, mouseY] = [0, 0];
-
-	const getAreaUnderCursor = (x, y) => {
-		let elem = document.elementFromPoint(x, y);
-
-		while(elem.parentElement && !elem.classList.contains('map-grid')) {
-			if(elem.classList.contains('room') || elem.classList.contains('grid-region'))
-				return elem.dataset.areaId;
-
-			elem = elem.parentElement;
-		}
-
-		return -1;
-	};
-
-
-	const handleMouseMark = (areaId, cell, action, mouseX, mouseY, wasMarked) => {
-		if(!wasMarked) {
-			//  Affect the activeHotkey vars with mouse clicks for
-			//  combined mouse-keyboard sequences
-			const mouseMarkAreaId = getAreaUnderCursor(mouseX, mouseY);
-
-			if(mouseMarkAreaId > -1) {
-				activeHotkeySequence  = $toolbars.getAction(action).hotkeys[0];
-				activeHotkeyAreaId    = mouseMarkAreaId;
-			}
-		}
-
-		//  Force area stats reevaluation
-		tracker.areaMaps = tracker.areaMaps;
-
-		//  Force toolbars reevaluation
-		$toolbars = $toolbars;
-	};
-
-
-	const handleHotkey = (e, mouseInMap, mouseX, mouseY) => {
-		e.preventDefault();
-    	e.stopPropagation();
-
-		//  Update sub-toolbar as needed
-		if(['w', 'e', 'q'].includes(e.key)) {
-			const subTb = e.key === 'w' ? 'warp' : (
-				e.key === 'e' ? 'equip' : (
-					e.key === 'q' ? 'quest' : ''
-				)
-			);
-
-			if(subTb) {
-				$toolbars.setSubToolbar(subTb);
-				$toolbars = $toolbars;
-
-				trackerUpdated();
-			}
-		}
-
-		//  If inside of map, do:
-		//	- build onto the active key combination
-		//	- If the active key combination is valid for a matching Action, do the map action on the current tile/grid region.
-		//	- If the active key combination is not a partial sequence, reset the active key combination
-		if(mouseInMap) {
-			//  First, find the current room and update activeHotkeySequence and activeHotkeyAreaId appropriately
-			const curAreaId = getAreaUnderCursor(mouseX, mouseY);
-
-			if(curAreaId === activeHotkeyAreaId) //hotkey sequence may continue
-				activeHotkeySequence += e.key;
-			else //changed rooms; start a new sequence
-				activeHotkeySequence = e.key;
-
-			activeHotkeyAreaId = curAreaId;
-
-			const cutoverAreaIndex = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
-			const actions = $toolbars.allActions();
-			const actionsArray = [...Object.keys(actions).map(k => actions[k])];
-			const curKeySeq = activeHotkeySequence;
-			let matchingActions = actionsArray.filter(a => a.hotkeys.includes(activeHotkeySequence));
-			let partialSequences = actionsArray.filter(a => a.hotkeys.filter(h => (h.length > activeHotkeySequence.length) && h.startsWith(activeHotkeySequence)).length > 0);
-
-			//  If not a valid sequence, reset to just the incoming key and check again
-			if(matchingActions.length === 0) {
-				activeHotkeySequence = e.key;
-				matchingActions = actionsArray.filter(a => a.hotkeys.includes(activeHotkeySequence));
-				partialSequences = actionsArray.filter(a => a.hotkeys.filter(h => (h.length > activeHotkeySequence.length) && h.startsWith(activeHotkeySequence)).length > 0);
-			}
-
-			if(matchingActions.length) {
-				if((curAreaId !== -1) && (getCell(curAreaId).active !== false)) {
-					const newMarkedValue = matchingActions[0].name === 'notYetAcquired' ? !getCell(curAreaId).notAcquired : true;
-
-					updateMapData(curAreaId, newMarkedValue, matchingActions[0].name);
-					tracker.areaMaps = tracker.areaMaps;
-					$toolbars = $toolbars;
-					return;
-				}
-			}
-			else if(e.key === 'Escape') {
-				//  Special case handling (ESC should unmark but doesn't have a corresponding toolbar action).
-				//  If this needs to be expanded for multiple special cases I'll refactor
-				if(curAreaId !== -1) {
-					updateMapData(curAreaId, false, '');
-					tracker.areaMaps = tracker.areaMaps;
-					$toolbars = $toolbars;
-					return;
-				}
-			}
-
-			if(partialSequences.length === 0)
-				activeHotkeySequence = '';
-		}
-		else { //outside of map
-			//  - reset the active key combination
-			activeHotkeySequence = '';
-		}
-
-		//  - Check for matching "outside map" keys (area cards, settings shortcuts (alt+h, alt+v, etc.)) and take action
-		const globalAction = [...Object.keys(GlobalAction).map(k => GlobalAction[k])].filter(ga => ga.hotkeys.includes(e.key));
-
-		if(globalAction && globalAction[0]) {
-			//  TODO: Flesh out handling once non-area cards are added to global actions like tracker settings, etc.
-			selectMap(globalAction[0].name);
-			trackerUpdated();
-
-			return;
-		}
-	};
+  import { onDestroy, onMount } from "svelte";
+  import { afterNavigate, replaceState } from "$app/navigation";
+  import { page } from "$app/state";
+  import Map from "../components/Map.svelte";
+  import Toolbars from "../components/Toolbars.svelte";
+  import { solveMapLayout } from "../components/map-layout.js";
+  import toolbars from "../components/toolbars.js";
+  import coopClient, { coopStatus } from "../services/coop-client.js";
+  import storage from "../services/storage.js";
+  import {
+    actions,
+    applyRemoteOperation,
+    getCell,
+    getSharedState,
+    GlobalAction,
+    loadState,
+    replaceSharedState,
+    resetTracker,
+    tracker,
+    trackerState,
+    trackerUpdated,
+    updateMapData,
+    updateMapMetadata,
+  } from "../services/tracker.js";
+
+  export let storageKey = "";
+
+  let controlsOpen = true;
+  let areasOpen = true;
+  let activeSequence = "";
+  let activeAreaId = -1;
+  let layout = "horizontal";
+  let controlSize = 156;
+  let areaSize = 112;
+  let layoutReady = false;
+  let routeReady = false;
+  let layoutFrame;
+  $: session = $trackerState;
+  $: currentArea = session.areaMaps[session.curAreaMapIndex];
+  $: mapAspect =
+    (currentArea.map.sectionCols * currentArea.map.pixelWidth) /
+    currentArea.map.cols /
+    ((currentArea.map.sectionRows * currentArea.map.pixelHeight) /
+      currentArea.map.rows);
+  const coopGuid = page.params.coopGuid;
+
+  const selectMap = (name, notify = true) => {
+    const requested = name?.trim().toLocaleLowerCase();
+    const index = tracker.areaMaps.findIndex(
+      (area) => area.name.toLocaleLowerCase() === requested,
+    );
+    if (index < 0 || index === tracker.curAreaMapIndex) return false;
+    tracker.curAreaMapIndex = index;
+    if (notify) trackerUpdated();
+    return true;
+  };
+
+  const selectSubToolbar = (name) => {
+    const requested = name?.trim().toLocaleLowerCase();
+    if (
+      !$toolbars.isAToolbarAction(requested) ||
+      requested === $toolbars.getCurrentSubBarName()
+    )
+      return false;
+    $toolbars.setSubToolbar(requested);
+    $toolbars = $toolbars;
+    return true;
+  };
+
+  const applyRouteSelections = (searchParams, notify = true) => {
+    const mapChanged = selectMap(searchParams.get("map"), notify);
+    selectSubToolbar(searchParams.get("toolbar"));
+    return mapChanged;
+  };
+
+  const syncRoute = (mapName, toolbarName) => {
+    if (!routeReady || !mapName || !toolbarName) return;
+    const url = new URL(page.url);
+    url.searchParams.set("map", mapName);
+    url.searchParams.set("toolbar", toolbarName);
+    if (url.href !== page.url.href) replaceState(url, page.state);
+  };
+
+  afterNavigate(() => {
+    if (!routeReady) return;
+    applyRouteSelections(page.url.searchParams);
+    syncRoute(
+      tracker.areaMaps[tracker.curAreaMapIndex]?.name,
+      $toolbars.getCurrentSubBarName(),
+    );
+  });
+
+  const queueLayout = (
+    aspect = mapAspect,
+    nextControlsOpen = controlsOpen,
+    nextAreasOpen = areasOpen,
+  ) => {
+    if (!layoutReady) return;
+    cancelAnimationFrame(layoutFrame);
+    layoutFrame = requestAnimationFrame(() => {
+      const solution = solveMapLayout({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        aspect,
+        controlsOpen: nextControlsOpen,
+        areasOpen: nextAreasOpen,
+        rem: Number.parseFloat(
+          getComputedStyle(document.documentElement).fontSize,
+        ),
+      });
+      layout = solution.layout;
+      controlSize = solution.controlSize;
+      areaSize = solution.areaSize;
+    });
+  };
+
+  $: if (layoutReady) queueLayout(mapAspect, controlsOpen, areasOpen);
+  $: syncRoute(currentArea?.name, $toolbars.getCurrentSubBarName());
+
+  onMount(async () => {
+    const compactViewport = matchMedia("(max-width: 700px)").matches;
+    controlsOpen = !compactViewport;
+    areasOpen = !compactViewport;
+    if (page.url.searchParams.get("endpoint"))
+      $coopClient.setEndpoint(page.url.searchParams.get("endpoint"));
+    const presetId = page.url.searchParams.get("preset");
+    resetTracker(
+      storageKey ? await loadState(storageKey) : undefined,
+      presetId ? storage.loadStarterPreset(presetId) : undefined,
+    );
+    applyRouteSelections(page.url.searchParams, false);
+    trackerUpdated();
+    layoutReady = true;
+    routeReady = true;
+    syncRoute(
+      tracker.areaMaps[tracker.curAreaMapIndex]?.name,
+      $toolbars.getCurrentSubBarName(),
+    );
+    queueLayout();
+    if (coopGuid)
+      await $coopClient.enable(
+        coopGuid,
+        getSharedState(),
+        replaceSharedState,
+        applyRemoteOperation,
+      );
+  });
+
+  onDestroy(() => {
+    cancelAnimationFrame(layoutFrame);
+    $coopClient.disable();
+  });
+
+  const areaHotkey = (name) =>
+    Object.values(GlobalAction).find((action) => action.name === name)
+      ?.hotkeys[0] ?? "";
+  const statGroups = (stats) =>
+    [
+      {
+        name: "Equipment acquired",
+        short: "E",
+        value: stats.numEquipAcquired,
+        max: stats.maxEquipInArea,
+        color: "#4e8cff",
+      },
+      {
+        name: "Quest items acquired",
+        short: "Q",
+        value: stats.numQuestAcquired,
+        max: stats.maxQuestInArea,
+        color: "#ed4141",
+      },
+      {
+        name: "Equipment spots",
+        short: "E",
+        value: stats.markedEquipSpots,
+        max: stats.maxEquipSpots,
+        color: "#4e8cff",
+      },
+      {
+        name: "Quest spots",
+        short: "Q",
+        value: stats.markedQuestSpots,
+        max: stats.maxQuestSpots,
+        color: "#ed4141",
+      },
+      {
+        name: "Upgrade spots",
+        short: "U",
+        value: stats.markedUpgradeSpots,
+        max: stats.maxUpgradeSpots,
+        color: "#35b85a",
+      },
+    ].filter(({ max }) => max > 0);
+
+  const markWithKeyboard = (event, areaId) => {
+    if (areaId < 0) return false;
+    activeSequence =
+      areaId === activeAreaId ? activeSequence + event.key : event.key;
+    activeAreaId = areaId;
+    const all = Object.values($toolbars.allActions());
+    let matches = all.filter(({ hotkeys }) => hotkeys.includes(activeSequence));
+    let partial = all.some(({ hotkeys }) =>
+      hotkeys.some(
+        (key) =>
+          key.length > activeSequence.length && key.startsWith(activeSequence),
+      ),
+    );
+    if (!matches.length && !partial) {
+      activeSequence = event.key;
+      matches = all.filter(({ hotkeys }) => hotkeys.includes(activeSequence));
+      partial = all.some(({ hotkeys }) =>
+        hotkeys.some((key) => key.length > 1 && key.startsWith(activeSequence)),
+      );
+    }
+    const cell = getCell(areaId);
+    if (
+      matches.length &&
+      cell &&
+      cell.active !== false &&
+      cell.active !== "false" &&
+      !cell.outofbounds
+    ) {
+      const action = matches[0].name;
+      updateMapData(
+        areaId,
+        action === "notYetAcquired" ? Boolean(cell.marked) : true,
+        action,
+      );
+      $toolbars.setSubToolbar(action);
+      $toolbars = $toolbars;
+      return true;
+    }
+    if (event.key === "Escape" && cell) {
+      updateMapData(areaId, false, "");
+      return true;
+    }
+    if (!partial) activeSequence = "";
+    return false;
+  };
+
+  const handleHotkey = (event, areaId) => {
+    if (
+      event.ctrlKey ||
+      event.metaKey ||
+      event.altKey ||
+      /input|textarea|select/i.test(event.target?.tagName)
+    )
+      return;
+    if (markWithKeyboard(event, areaId)) {
+      event.preventDefault();
+      return;
+    }
+    activeSequence = "";
+    const global = Object.values(GlobalAction).find(({ hotkeys }) =>
+      hotkeys.includes(event.key),
+    );
+    if (global) {
+      event.preventDefault();
+      selectMap(global.name);
+    }
+  };
+
+  const handleMouseMark = (areaId, action) => {
+    activeAreaId = areaId;
+    activeSequence = $toolbars.getAction(action)?.hotkeys[0] ?? "";
+  };
 </script>
 
-<svelte:window on:contextmenu="{(e) => e.preventDefault()}" />
+<svelte:head>
+  <title>{currentArea?.name ?? "Tracker"} · Z1M1 Tracker</title>
+  <meta
+    name="description"
+    content="Track Zelda 1 and Metroid 1 crossover randomizer progress."
+  />
+</svelte:head>
 
-<main style="{cssVarStyles}">
-	<section class="top-bar">
-		<Toolbars set={tracker.areaMaps[tracker.curAreaMapIndex].map.class} />
-		<div class="graph-paper map-options">
-			<div class="map-option">
-			  <label>
-				<input type="checkbox" on:change={() => setTimeout(async () =>
-					await updateMapMetadata(tracker.curAreaMapIndex, 'isHflipped', tracker.areaMaps[tracker.curAreaMapIndex].map.isHflipped), 0)}
-					bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isHflipped} />
-				Flip horizontally
-			  </label>
-			</div>
-			<div class="map-option">
-			  <label>
-				<input type="checkbox" on:change={() => setTimeout(async () =>
-					await updateMapMetadata(tracker.curAreaMapIndex, 'isVflipped', tracker.areaMaps[tracker.curAreaMapIndex].map.isVflipped), 0)}
-					bind:checked={tracker.areaMaps[tracker.curAreaMapIndex].map.isVflipped} />
-				Flip vertically
-			  </label>
-			</div>
-		  </div>
-	</section>
-	<div class:bottom-cards-layout={layout === 'bottom'} class:side-cards-layout={layout === 'side'}>
-		<section class="map-section">
-			<Map layout={doLayout} trackerUpdated={trackerUpdated} handleHotkey={handleHotkey} handleMouseMark={handleMouseMark}
-				data={tracker.areaMaps[tracker.curAreaMapIndex].map} actions={tracker.actions}/>
-		</section>
-		<section class="graph-paper area-cards">
-			{#each tracker.areaMaps as area }
-				<div class="area-card" on:click={() => { selectMap(area.name); trackerUpdated(); } }>
-					<aside class="key-overlay" data-before={ getAreaCardHotkey(area.name) }></aside>
-					<div class="name">{ area.name }</div>
-					<div class="stat-bars">
-						<div class="equip-acquired" class:overmarked={area.stats.numEquipAcquired > area.stats.maxEquipInArea}>
-							{#if area.stats.maxEquipInArea > 0}
-								<div class:full={area.stats.numEquipAcquired > 0}></div>
-							{/if}
-							{#if area.stats.maxEquipInArea > 1}
-								<div class:full={area.stats.numEquipAcquired > 1}></div>
-							{/if}
-							{#if area.stats.maxEquipInArea > 2}
-								<div class:full={area.stats.numEquipAcquired > 2}></div>
-							{/if}
-							{#if area.stats.maxEquipInArea > 3}
-								<div class:full={area.stats.numEquipAcquired > 3}></div>
-							{/if}
-						</div>
-						<div class="quest-acquired" class:overmarked={area.stats.numQuestAcquired > area.stats.maxQuestInArea}>
-							{#if area.stats.maxQuestInArea > 0}
-								<div class:full={area.stats.numQuestAcquired > 0}></div>
-							{/if}
-							{#if area.stats.maxQuestInArea > 1}
-								<div class:full={area.stats.numQuestAcquired > 1}></div>
-							{/if}
-						</div>
-						<div class="equip-spots" class:empty={area.stats.maxEquipSpots === 0}>
-							{#if area.stats.maxEquipSpots > 0}
-								<div class:full={area.stats.markedEquipSpots > 0}></div>
-							{/if}
-							{#if area.stats.maxEquipSpots > 1}
-								<div class:full={area.stats.markedEquipSpots > 1}></div>
-							{/if}
-							{#if area.stats.maxEquipSpots > 2}
-								<div class:full={area.stats.markedEquipSpots > 2}></div>
-							{/if}
-							{#if area.stats.maxEquipSpots > 3}
-								<div class:full={area.stats.markedEquipSpots > 3}></div>
-							{/if}
-							{#if area.stats.maxEquipSpots > 4}
-								<div class:full={area.stats.markedEquipSpots > 4}></div>
-							{/if}
-							{#if area.stats.maxEquipSpots > 5}
-								<div class:full={area.stats.markedEquipSpots > 5}></div>
-							{/if}
-							{#if area.stats.maxEquipSpots > 6}
-								<div class:full={area.stats.markedEquipSpots > 6}></div>
-							{/if}
-							{#if area.stats.maxEquipSpots > 7}
-								<div class:full={area.stats.markedEquipSpots > 7}></div>
-							{/if}
-							{#if area.stats.maxEquipSpots > 8}
-								<div class:full={area.stats.markedEquipSpots > 8}></div>
-							{/if}
-							{#if area.stats.maxEquipSpots > 9}
-								<div class:full={area.stats.markedEquipSpots > 9}></div>
-							{/if}
-						</div>
-						<div class="quest-spots" class:empty={area.stats.maxQuestSpots === 0}>
-							{#if area.stats.maxQuestSpots > 0}
-								<div class:full={area.stats.markedQuestSpots > 0}></div>
-							{/if}
-							{#if area.stats.maxQuestSpots > 1}
-								<div class:full={area.stats.markedQuestSpots > 1}></div>
-							{/if}
-							{#if area.stats.maxQuestSpots > 2}
-								<div class:full={area.stats.markedQuestSpots > 2}></div>
-							{/if}
-							{#if area.stats.maxQuestSpots > 3}
-								<div class:full={area.stats.markedQuestSpots > 3}></div>
-							{/if}
-							{#if area.stats.maxQuestSpots > 4}
-								<div class:full={area.stats.markedQuestSpots > 4}></div>
-							{/if}
-							{#if area.stats.maxQuestSpots > 5}
-								<div class:full={area.stats.markedQuestSpots > 5}></div>
-							{/if}
-							{#if area.stats.maxQuestSpots > 6}
-								<div class:full={area.stats.markedQuestSpots > 6}></div>
-							{/if}
-							{#if area.stats.maxQuestSpots > 7}
-								<div class:full={area.stats.markedQuestSpots > 7}></div>
-							{/if}
-							{#if area.stats.maxQuestSpots > 8}
-								<div class:full={area.stats.markedQuestSpots > 8}></div>
-							{/if}
-							{#if area.stats.maxQuestSpots > 9}
-								<div class:full={area.stats.markedQuestSpots > 9}></div>
-							{/if}
-						</div>
-						<div class="upgrade-spots" class:empty={area.stats.maxUpgradeSpots === 0}>
-							{#if area.stats.maxUpgradeSpots > 0}
-								<div class:full={area.stats.markedUpgradeSpots > 0}></div>
-							{/if}
-							{#if area.stats.maxUpgradeSpots > 1}
-								<div class:full={area.stats.markedUpgradeSpots > 1}></div>
-							{/if}
-							{#if area.stats.maxUpgradeSpots > 2}
-								<div class:full={area.stats.markedUpgradeSpots > 2}></div>
-							{/if}
-							{#if area.stats.maxUpgradeSpots > 3}
-								<div class:full={area.stats.markedUpgradeSpots > 3}></div>
-							{/if}
-							{#if area.stats.maxUpgradeSpots > 4}
-								<div class:full={area.stats.markedUpgradeSpots > 4}></div>
-							{/if}
-							{#if area.stats.maxUpgradeSpots > 5}
-								<div class:full={area.stats.markedUpgradeSpots > 5}></div>
-							{/if}
-							{#if area.stats.maxUpgradeSpots > 6}
-								<div class:full={area.stats.markedUpgradeSpots > 6}></div>
-							{/if}
-							{#if area.stats.maxUpgradeSpots > 7}
-								<div class:full={area.stats.markedUpgradeSpots > 7}></div>
-							{/if}
-							{#if area.stats.maxUpgradeSpots > 8}
-								<div class:full={area.stats.markedUpgradeSpots > 8}></div>
-							{/if}
-							{#if area.stats.maxUpgradeSpots > 9}
-								<div class:full={area.stats.markedUpgradeSpots > 9}></div>
-							{/if}
-							{#if area.stats.maxUpgradeSpots > 10}
-								<div class:full={area.stats.markedUpgradeSpots > 10}></div>
-							{/if}
-							{#if area.stats.maxUpgradeSpots > 11}
-								<div class:full={area.stats.markedUpgradeSpots > 11}></div>
-							{/if}
-						</div>
-					</div>
-				</div>
-			{/each}
-		</section>
-	</div>
+<svelte:window
+  oncontextmenu={(event) => event.preventDefault()}
+  onresize={() => queueLayout()}
+/>
+
+<main
+  style={`--control-size:${controlSize}px;--area-size:${areaSize}px`}
+  class:controls-open={controlsOpen}
+  class:layout-horizontal={layout === "horizontal"}
+  class:layout-vertical={layout === "vertical"}
+>
+  <header class="control-dock">
+    <div class="dock-summary">
+      <strong>{currentArea?.name}</strong>
+      {#if coopGuid}<span class="connection {$coopStatus}"
+          >Co-op: {$coopStatus}</span
+        >{/if}
+      <button
+        type="button"
+        class="dock-toggle"
+        aria-expanded={controlsOpen}
+        onclick={() => (controlsOpen = !controlsOpen)}
+      >
+        {controlsOpen ? "Hide controls" : "Show controls"}
+      </button>
+    </div>
+    {#if controlsOpen}
+      <div class="controls">
+        <Toolbars set={currentArea.map.class} />
+        <fieldset>
+          <legend>Map orientation</legend>
+          <label>
+            <input
+              type="checkbox"
+              checked={currentArea.map.isHflipped}
+              onchange={(event) =>
+                updateMapMetadata(
+                  session.curAreaMapIndex,
+                  "isHflipped",
+                  event.currentTarget.checked,
+                )}
+            />
+            Flip horizontally
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={currentArea.map.isVflipped}
+              onchange={(event) =>
+                updateMapMetadata(
+                  session.curAreaMapIndex,
+                  "isVflipped",
+                  event.currentTarget.checked,
+                )}
+            />
+            Flip vertically
+          </label>
+        </fieldset>
+      </div>
+    {/if}
+  </header>
+
+  <div class="workspace" class:areas-collapsed={!areasOpen}>
+    <section class="map-section" aria-label={`${currentArea.name} map`}>
+      <Map data={currentArea.map} {handleHotkey} {handleMouseMark} />
+    </section>
+    <nav class="area-panel" aria-label="Maps">
+      <button
+        type="button"
+        class="area-toggle"
+        aria-expanded={areasOpen}
+        onclick={() => (areasOpen = !areasOpen)}
+      >
+        <span>{areasOpen ? "Hide" : "Areas"}</span><span aria-hidden="true"
+          >{areasOpen ? "›" : "‹"}</span
+        >
+      </button>
+      {#if areasOpen}
+        <div class="area-cards">
+          {#each session.areaMaps as area}
+            <button
+              type="button"
+              class:active={area === currentArea}
+              class="area-card"
+              onclick={() => selectMap(area.name)}
+            >
+              <kbd>{areaHotkey(area.name)}</kbd>
+              <strong>{area.name}</strong>
+              <div class="stat-bars">
+                {#each statGroups(area.stats) as stat}
+                  <div
+                    class="stat"
+                    title={`${stat.name}: ${stat.value} of ${stat.max}`}
+                    style={`--stat-color:${stat.color}`}
+                  >
+                    <span>{stat.short}</span>
+                    <i
+                      style={`--progress:${Math.min(stat.value / stat.max, 1) * 100}%`}
+                    ></i>
+                    {#if stat.value > stat.max}<b>+</b>{/if}
+                  </div>
+                {/each}
+              </div>
+            </button>
+          {/each}
+        </div>
+      {/if}
+    </nav>
+  </div>
 </main>
 
-<style global lang="scss">
-	// * {
-	// 	outline: 1px solid red;
-	// }
-
-	@import "../styles/overlays.scss";
-
-	:global(body) {
-		height: 100vh;
-		background-color: #333;
-	}
-
-	//  CSS preloading of all tracker image assets
-	:global(body::after) {
-		position:absolute; width:0; height:0; overflow:hidden; z-index:-1; // hide images
-		content:  // load images
-			url(/images/hyrule-q1-halfscale.png)
-			url(/images/zebes-quarterscale.png)
-			url(/images/dungeons-halfscale.png)
-			url(/images/sprites-16px.png)
-			url(/images/sprites-warp.png)
-			url(/images/sparkle.png)
-			url(/images/tb.action.quest.png)
-			url(/images/tb.action.equip.png)
-			url(/images/tb.action.warp.png)
-			url(/images/zelda-text.png);
-	}
-
-	main {
-		height: 100vh;
-		font-family: 'Baloo 2', cursive;
-		font-weight: 400;
-
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-		align-items: space-between;
-	}
-
-	.top-bar {
-		flex: 0 0 11.5rem;
-		height: 11.5rem;
-		max-height: 11.5rem;
-
-		margin-top: 0.2rem;
-		margin-left: 0.2rem;
-
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: stretch;
-	}
-
-	.bottom-cards-layout {
-		flex: 1 0 auto;
-
-		display: flex;
-		flex-direction: column;
-
-		.area-cards {
-			flex: 0 0 15rem;
-
-			margin-top: auto;
-			overflow: hidden;
-
-			display: grid;
-			grid-template-rows: repeat(2, 1fr);
-			grid-template-columns: repeat(8, 1fr);
-			gap: 0.3rem;
-
-			.area-card {
-				height: calc((15rem - 0.3rem) / 2);
-			}
-		}
-	}
-
-	.side-cards-layout {
-		flex: 1 0 auto;
-
-		display: flex;
-		flex-direction: row;
-		justify-content: space-around;
-		align-items: center;
-
-		.map-section {
-			margin-left: auto;
-		}
-
-		.area-cards {
-			flex: 0 0 15rem;
-			height: 100%;
-
-			padding-left: 0.5rem;
-			margin-left: auto;
-			overflow: hidden;
-
-			display: grid;
-			grid-template-rows: repeat(8, 1fr);
-			grid-template-columns: 1fr 1fr;
-			gap: 0.3rem;
-
-			.area-card {
-				height: 100%;
-			}
-		}
-	}
-
-
-	.graph-paper {
-		background-color: #d9d3c5;
-		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.3'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-
-		box-shadow: -10px 0 1rem 0 #000b,
-					inset 0 0.5rem 1rem 0.3rem #0004;
-	}
-
-
-	.area-card {
-		position: relative;
-		overflow: hidden;
-
-		border-radius: 0.5rem;
-
-		background-image: url("/images/tb.action.equip.png");//, linear-gradient(rgba(185, 174, 110, 0.329),rgba(185, 174, 110, 0.329));
-		background-image: url("/images/tb.action.equip.png"), linear-gradient(rgba(255, 254, 221, 0.9),rgba(255, 254, 221, 0.75));
-		background-blend-mode: lighten;
-		background-size: contain;
-
-		cursor: pointer;
-		padding: 1rem;
-
-		.bottom-cards-layout .area-cards & {
-			box-shadow: 0.2rem 0 0.2rem 0.2rem #0006;
-		}
-
-		.side-cards-layout .area-cards & {
-			box-shadow: 0.2rem 0.2rem 0.2rem 0.2rem #0006;
-		}
-
-		.name {
-			position: absolute;
-			right: 0; top: 0;
-			margin: 0 0.4rem;
-
-			text-align: center;
-			font-variant: small-caps;
-			font-weight: bold;
-		}
-	}
-
-	/***************************
-	**  Area card stats bars  **
-	***************************/
-
-	.stat-bars {
-		display: flex;
-		flex-direction: column;
-		justify-content: flex-end;
-		align-items: center;
-
-		position: absolute;
-		bottom: 0; left: 0;
-		width: 100%;
-		height: calc(100% - 1rem);
-
-		.empty {
-			display: none !important;
-		}
-
-		.equip-acquired {
-			width: 70%;
-			margin-top: 0.3rem;
-			height: 5px;
-			position: relative;
-
-			display: flex;
-			flex-direction: row;
-			justify-content: stretch;
-			align-items: center;
-
-			div {
-				height: 5px;
-				flex: 1;
-
-				box-shadow: 1px 0 0 0 black;
-				border-bottom: 1px dashed gray;
-
-				background: linear-gradient(to left, transparent 50%, #00ff 50%) right;
-				background-size: 200% 100%;
-				background-position: right bottom;
-				transition: all 0.4s ease;
-			}
-
-			&.overmarked {
-				&:after {
-					position: absolute;
-					top: -1rem; right: -0.8rem;
-					content: '*';
-
-					color: red;
-					font-weight: bold;
-					font-size: 2rem;
-				}
-			}
-
-			& .full {
-				box-shadow: none;
-				border-bottom: none;
-				background-position: left bottom;
-				transition: all 0.4s ease;
-			}
-
-			&:before {
-				content: 'E';
-				font-weight: bold;
-				font-size: 0.7rem;
-				position: absolute;
-				top: -0.5rem; left: -0.5rem;
-			}
-		}
-
-		.quest-acquired {
-			margin-bottom: auto;
-
-			width: 70%;
-			margin-top: 0.3rem;
-			height: 5px;
-			position: relative;
-
-			display: flex;
-			flex-direction: row;
-			justify-content: stretch;
-			align-items: center;
-
-			div {
-				height: 5px;
-				flex: 1;
-
-				box-shadow: 1px 0 0 0 black;
-				border-bottom: 1px dashed gray;
-
-				background: linear-gradient(to left, transparent 50%, #f00f 50%) right;
-				background-size: 200% 100%;
-				background-position: right bottom;
-				transition: all 0.4s ease;
-			}
-
-			&.overmarked {
-				&:after {
-					position: absolute;
-					top: -1rem; right: -0.8rem;
-					content: '*';
-
-					color: red;
-					font-weight: bold;
-					font-size: 2rem;
-				}
-			}
-
-			& .full {
-				box-shadow: none;
-				border-bottom: none;
-				background-position: left bottom;
-				transition: all 0.4s ease;
-			}
-
-			&:before {
-				content: 'Q';
-				font-weight: bold;
-				font-size: 0.7rem;
-				position: absolute;
-				top: -0.5rem; left: -0.5rem;
-			}
-		}
-
-		.equip-spots {
-			width: 70%;
-			margin-top: 0.3rem;
-			height: 5px;
-			position: relative;
-
-			display: flex;
-			flex-direction: row;
-			justify-content: stretch;
-			align-items: center;
-
-			div {
-				height: 5px;
-				flex: 1;
-
-				box-shadow: 1px 0 0 0 black;
-				border-bottom: 1px dashed gray;
-
-				background: linear-gradient(to left, transparent 50%, #00ff 50%) right;
-				background-size: 200% 100%;
-				background-position: right bottom;
-				transition: all 0.4s ease;
-			}
-
-			& .full {
-				box-shadow: none;
-				border-bottom: none;
-				background-position: left bottom;
-				transition: all 0.4s ease;
-			}
-
-			&:before {
-				content: 'E';
-				font-weight: bold;
-				font-size: 0.7rem;
-				position: absolute;
-				top: -0.5rem; left: -0.5rem;
-			}
-		}
-
-		.quest-spots {
-			width: 70%;
-			margin-top: 0.3rem;
-			height: 5px;
-			position: relative;
-
-			display: flex;
-			flex-direction: row;
-			justify-content: stretch;
-			align-items: center;
-
-			div {
-				height: 5px;
-				flex: 1;
-
-				box-shadow: 1px 0 0 0 black;
-				border-bottom: 1px dashed gray;
-
-				background: linear-gradient(to left, transparent 50%, #f00f 50%) right;
-				background-size: 200% 100%;
-				background-position: right bottom;
-				transition: all 0.4s ease;
-			}
-
-			& .full {
-				box-shadow: none;
-				border-bottom: none;
-				background-position: left bottom;
-				transition: all 0.4s ease;
-			}
-
-			&:before {
-				content: 'Q';
-				font-weight: bold;
-				font-size: 0.7rem;
-				position: absolute;
-				top: -0.5rem; left: -0.5rem;
-			}
-		}
-
-		.upgrade-spots {
-			width: 70%;
-			margin-top: 0.3rem;
-			height: 5px;
-			position: relative;
-
-			display: flex;
-			flex-direction: row;
-			justify-content: stretch;
-			align-items: center;
-
-			div {
-				height: 5px;
-				flex: 1;
-
-				box-shadow: 1px 0 0 0 black;
-				border-bottom: 1px dashed gray;
-
-				background: linear-gradient(to left, transparent 50%, rgb(0, 190, 0) 50%) right;
-				background-size: 200% 100%;
-				background-position: right bottom;
-				transition: all 0.4s ease;
-			}
-
-			& .full {
-				box-shadow: none;
-				border-bottom: none;
-				background-position: left bottom;
-				transition: all 0.4s ease;
-			}
-
-			&:before {
-				content: 'U';
-				font-weight: bold;
-				font-size: 0.7rem;
-				position: absolute;
-				top: -0.5rem; left: -0.5rem;
-			}
-		}
-	}
+<style>
+  :global(body) {
+    overflow: hidden;
+    background: #242424;
+  }
+  main {
+    height: 100dvh;
+    display: grid;
+    overflow: hidden;
+    color: #f8f8f8;
+    font-family: "Baloo 2", system-ui, sans-serif;
+  }
+  .layout-horizontal {
+    grid-template-rows: var(--control-size) minmax(0, 1fr);
+  }
+  .layout-vertical {
+    grid-template-columns: var(--control-size) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .control-dock {
+    position: relative;
+    z-index: 20;
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+    border-bottom: 1px solid #ffffff2b;
+    background: #151515;
+    box-shadow: 0 0.25rem 1rem #0008;
+  }
+  .layout-vertical .control-dock {
+    border-right: 1px solid #ffffff2b;
+    border-bottom: 0;
+    box-shadow: 0.25rem 0 1rem #0008;
+  }
+  .dock-summary {
+    min-height: 2.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-inline: 0.65rem;
+  }
+  .dock-summary strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dock-toggle,
+  .area-toggle {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    margin-left: auto;
+    border: 1px solid #ffffff42;
+    border-radius: 0.45rem;
+    background: #303030;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  .dock-toggle:hover,
+  .area-toggle:hover {
+    background: #484848;
+  }
+  .connection {
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background: #444;
+    color: #ddd;
+    font-size: 0.78rem;
+  }
+  .connection.connected {
+    background: #174c2c;
+    color: #9ff5bd;
+  }
+  .connection.reconnecting {
+    background: #563f0c;
+    color: #ffe29a;
+  }
+  .controls {
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    padding: 0 0.5rem 0.5rem;
+    container: controls / size;
+  }
+  .layout-vertical .controls {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    overflow: hidden;
+  }
+  .layout-vertical fieldset {
+    min-width: 0;
+  }
+  fieldset {
+    min-width: 11.5rem;
+    display: grid;
+    align-content: center;
+    gap: 0.25rem;
+    margin: 0;
+    border: 1px solid #ffffff2b;
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.65rem;
+  }
+  legend {
+    padding-inline: 0.25rem;
+    color: #bbb;
+    font-size: 0.78rem;
+  }
+  label {
+    min-height: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+  }
+  label input {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+  .workspace {
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+  }
+  .layout-horizontal .workspace {
+    grid-template-rows: minmax(0, 1fr) var(--area-size);
+  }
+  .layout-vertical .workspace {
+    grid-template-columns: minmax(0, 1fr) var(--area-size);
+  }
+  .map-section {
+    min-width: 0;
+    min-height: 0;
+    background: #303030;
+  }
+  .area-panel {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    background: #d7d0bd;
+    color: #111;
+    box-shadow: 0 -0.35rem 1rem #0008;
+  }
+  .area-toggle {
+    flex: 0 0 2.75rem;
+    align-self: stretch;
+    min-width: 2.75rem;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: #292721;
+    color: #fff;
+    writing-mode: vertical-rl;
+  }
+  .area-toggle span:last-child {
+    font-size: 1.4rem;
+  }
+  .area-cards {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(4.75rem, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: 0.3rem;
+    padding: 0.35rem;
+  }
+  .layout-horizontal .workspace.areas-collapsed .area-toggle {
+    width: 100%;
+    writing-mode: horizontal-tb;
+  }
+  .layout-horizontal .workspace.areas-collapsed .area-toggle span:last-child {
+    display: none;
+  }
+  .layout-horizontal .area-card {
+    min-height: 0;
+  }
+  .layout-vertical .area-panel {
+    box-shadow: -0.35rem 0 1rem #0008;
+  }
+  .layout-vertical .area-cards {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-rows: none;
+    grid-auto-rows: minmax(4.2rem, auto);
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .layout-vertical:not(.controls-open) .dock-summary {
+    justify-content: center;
+    padding: 0;
+  }
+  .layout-vertical:not(.controls-open) .dock-summary > :not(.dock-toggle) {
+    display: none;
+  }
+  .layout-vertical:not(.controls-open) .dock-toggle {
+    align-self: stretch;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    writing-mode: vertical-rl;
+  }
+  .area-card {
+    position: relative;
+    min-height: 3.5rem;
+    display: grid;
+    grid-template-columns: 1.4rem 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 0.1rem 0.25rem;
+    overflow: hidden;
+    border: 1px solid #0003;
+    border-radius: 0.45rem;
+    padding: 0.35rem;
+    background:
+      linear-gradient(#fffde9e8, #e9dfbde8),
+      url("/images/tb.action.equip.png") center / cover;
+    color: #111;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+  }
+  .area-card:hover {
+    border-color: #111;
+    filter: brightness(1.04);
+  }
+  .area-card.active {
+    outline: 3px solid #34a9ff;
+    outline-offset: -3px;
+  }
+  .area-card kbd {
+    grid-row: 1 / 3;
+    align-self: start;
+    border: 1px solid #777;
+    border-radius: 0.25rem;
+    background: #fff;
+    padding: 0.05rem 0.25rem;
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .area-card strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+  }
+  .stat-bars {
+    display: grid;
+    align-content: end;
+    gap: 0.13rem;
+  }
+  .stat {
+    display: grid;
+    grid-template-columns: 0.65rem 1fr auto;
+    align-items: center;
+    gap: 0.18rem;
+    font:
+      600 0.58rem/1 system-ui,
+      sans-serif;
+  }
+  .stat i {
+    height: 0.24rem;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      var(--stat-color) var(--progress),
+      #0002 var(--progress)
+    );
+  }
+  .stat b {
+    color: #c00;
+  }
+  @media (max-width: 700px) {
+    .controls {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr) auto;
+    }
+    fieldset {
+      grid-template-columns: 1fr 1fr;
+    }
+    legend {
+      grid-column: 1 / -1;
+    }
+  }
 </style>

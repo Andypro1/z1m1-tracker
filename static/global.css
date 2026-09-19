@@ -1,180 +1,43 @@
-/*  External fonts  */
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600&display=swap');
-
-/* Basic reset styles */
+:root {
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  color-scheme: dark;
+}
 
 html {
-    box-sizing: border-box;
-    font-size: 16px;
-    /* height: 100%; */
-    user-select: none;
-  }
-  
-  *, *:before, *:after {
-    box-sizing: inherit;
-  }
-  
-  body, h1, h2, h3, h4, h5, h6, p, ol, ul {
-    margin: 0;
-    padding: 0;
-    font-weight: normal;
-
-    /* overflow: hidden; */
-  }
-
-  ol, ul {
-    list-style: none;
-  }
-  
-  img {
-    max-width: 100%;
-    height: auto;
-  }
-
-
-  /*  Map rendering general styles  */
-  .overworld .room {
-    background-image: url(/images/hyrule-q1-halfscale.png);
-  }
-
-  .dungeon .room {
-    background-image: url(/images/dungeons-halfscale.png);
-  }
-
-  .zebes .room {
-    background-image: url(/images/zebes-quarterscale.png);
-  }
-
-  .mirrored-h .room {
-			transform: scaleX(-1);
-  }
-
-  .map-grid-container {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .map-grid {
-		display: grid;
-		gap: 1px;
-
-    justify-content: center;
-    align-items: center;
-
-    padding: 0;
-  }
-
-  .map-options {
-    flex: 0 0 15rem;
-    margin-left: auto;
-    
-    padding-left: 0.5rem;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: stretch;
-  }
-
-  .map-option {
-    width: 100%;
-    padding: 0.2rem;
-    background-color: rgb(214, 214, 214);
-    border-radius: 0.5rem;
-
-    box-shadow: 0.2rem 0.2rem 0.2rem 0.2rem #0006;
-  }
-
-  .map-option label {
-    cursor: pointer;
-  }
-
-  .room {
-		background-size: calc(var(--map-cols) * 100%) calc(var(--map-rows) * 100%);
-    
-    /*  Aspect ratio hack for full browser support  */
-    width: calc(var(--map-room-width) * 1px);
-    padding-bottom: calc(var(--map-room-height) * 1px);
-
-    height: 0;
-    position: relative;
-	}
-
-  .room.active {
-		filter: saturate(120%)
-	}
-
-	.room:not(.active) {
-		filter: grayscale(60%) contrast(0.6);
-	}
-
-  .room.oob {
-    opacity: 0;
-  }
-
-	.room.active:not(.oob):hover {
-		z-index: 10;
-		cursor: pointer;
-
-		filter: drop-shadow(10px 10px 10px var(--shadow-color));
-		-webkit-animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-		animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-	}
-
-  .mirrored-h .room.active:not(.oob):hover {
-		z-index: 10;
-		cursor: pointer;
-
-		filter: drop-shadow(10px 10px 10px var(--shadow-color));
-		-webkit-animation: mirrored-scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-		animation: mirrored-scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
-  }
-
-  
-/*----------------------------------------
- * animation scale-up-center
- * ---------------------------------------*/
- @-webkit-keyframes scale-up-center {
-  0% {
-    -webkit-transform: scale(1);
-            transform: scale(1);
-  }
-  100% {
-    -webkit-transform: scale(1.15);
-            transform: scale(1.15);
-  }
-}
-@keyframes scale-up-center {
-  0% {
-    -webkit-transform: scale(1);
-            transform: scale(1);
-  }
-  100% {
-    -webkit-transform: scale(1.15);
-            transform: scale(1.15);
-  }
+  box-sizing: border-box;
+  font-size: 16px;
+  user-select: none;
 }
 
-/*  Mirrored version for mirrored maps  */
-@-webkit-keyframes mirrored-scale-up-center {
-  0% {
-    -webkit-transform: scaleY(1) scaleX(-1);
-            transform: scaleY(1) scaleX(-1);
-  }
-  100% {
-    -webkit-transform: scaleY(1.15) scaleX(-1.15);
-            transform: scaleY(1.15) scaleX(-1.15);
-  }
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
 }
-@keyframes mirrored-scale-up-center {
-  0% {
-    -webkit-transform: scaleY(1) scaleX(-1);
-            transform: scaleY(1) scaleX(-1);
-  }
-  100% {
-    -webkit-transform: scaleY(1.15) scaleX(-1.15);
-            transform: scaleY(1.15) scaleX(-1.15);
-  }
+html,
+body {
+  min-width: 20rem;
+  min-height: 100%;
+  margin: 0;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
 }

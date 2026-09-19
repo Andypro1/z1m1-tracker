@@ -2,11 +2,11 @@ import { writable } from 'svelte/store';
 
 
 const Action = {
-	cleared: { display: 'cleared', hotkeys: [' ', 'a'], name: 'cleared', mapClass: 'fas fa-check-circle' },
-	notYetAcquired: { display: 'not yet acquired', hotkeys: ['z'], name: 'notYetAcquired', mapClass: 'fas fa-asterisk' },
-	warp: { display: 'warp', hotkeys: ['w'], name: 'warp', mapClass: 'fas fa-door-open', mapText: 'W' },
-	equip: { display: 'equip', hotkeys: ['e'], name: 'equip', mapClass: 'fas fa-gavel', mapText: 'E' },
-	quest: { display: 'quest', hotkeys: ['q'], name: 'quest', mapClass: 'fas fa-trophy', mapText: 'Q' },
+	cleared: { display: 'cleared', hotkeys: [' ', 'a'], name: 'cleared' },
+	notYetAcquired: { display: 'not yet acquired', hotkeys: ['z'], name: 'notYetAcquired' },
+	warp: { display: 'warp', hotkeys: ['w'], name: 'warp', mapText: 'W' },
+	equip: { display: 'equip', hotkeys: ['e'], name: 'equip', mapText: 'E' },
+	quest: { display: 'quest', hotkeys: ['q'], name: 'quest', mapText: 'Q' },
 	shop: { display: 'shop', hotkeys: ['s'], name: 'shop', shopText: 'shop', spriteIndex: 15 },
 	custom1: { display: 'custom 1', hotkeys: ['c'], name: 'custom1', class: 'custom' },
 	custom2: { display: 'custom 2', hotkeys: ['cc'], name: 'custom2', class: 'custom' },

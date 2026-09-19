@@ -1,0 +1,10 @@
+.netlify
+.svelte-kit
+build
+node_modules
+src/components/maps
+src/components/toolbars.js
+src/app.html
+src/global.d.ts
+src/libs
+src/todo.md

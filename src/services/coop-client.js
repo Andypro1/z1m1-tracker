@@ -1,193 +1,118 @@
-import { writable } from 'svelte/store';
-import storage from './storage.js';
+import { writable } from "svelte/store";
+import {
+  applyOperation,
+  message,
+  PROTOCOL_VERSION,
+} from "../shared/protocol.js";
 
+export const coopStatus = writable("offline");
 
-const coopClient = () => {
-    //  TODO: Configurify
-    let endpoint = 'wss://z1m1-server.andypro.net:8081/';
-    let _pingTimer;
-    const _pingTime = 45000;  //ms
-    let conn;
-    let _modeEnabled = false;
-    let _roomGuid;
-    let _myStorageKey;
-    let _loadCallback;
-    let _getSaveDataCallback;
-    let _processDataCallback;
-    let _processMetadataCallback;
+const createClient = () => {
+  let endpoint =
+    import.meta.env.PUBLIC_COOP_ENDPOINT ||
+    (import.meta.env.DEV
+      ? "ws://localhost:8080/"
+      : "wss://z1m1-server.andypro.net:8081/");
+  let socket;
+  let roomId;
+  let initialState;
+  let onSnapshot;
+  let onOperation;
+  let revision = 0;
+  let reconnectTimer;
+  let reconnectAttempt = 0;
+  let enabled = false;
+  const clientId = crypto.randomUUID();
+  const pending = new Map();
 
+  const transmit = (operationId, operation) => {
+    if (socket?.readyState !== WebSocket.OPEN) return;
+    socket.send(
+      message("operation", {
+        roomId,
+        clientId,
+        operationId,
+        baseRevision: revision,
+        operation,
+      }),
+    );
+  };
 
-    const setEndpoint = (_endpoint) => {
-        endpoint = _endpoint;
-        console.log(`Coop endpoint set to ${_endpoint}`);
-    };
-
-    const handlePing = () => {
-        console.log('ping');
-        send(JSON.stringify({ name: 'ping' }));
-
-        _pingTimer = setTimeout(handlePing, _pingTime);
-    };
-
-    const startSession = async () => {
-        try {
-            conn = new WebSocket(endpoint);
-
-
-            conn.onopen = () => {
-                console.log(`socket open.  Sending roomGuid: ${_roomGuid}`);
-
-                handlePing();
-
-                conn.send(JSON.stringify({ name: 'init', room: _roomGuid }));
-            };
-        
-
-            conn.onmessage = async (e) => {
-                let content = undefined;
-                let contentObj = undefined;
-
-                if(e.data) {
-                    if(e.data instanceof Blob) {
-                        content = await e.data.text();
-                    }
-                    else { //string content
-                        content = e.data;
-                    }
-
-                    console.log(`[rcv'd len]: ${content.length}`);
-                    
-                    if(content && content[0] === '{') {
-                        try {
-                            contentObj = JSON.parse(content);
-                        }
-                        catch(e) {
-                            console.log(`Error: ${e}`);
-                        }
-
-                        
-                        if(contentObj.name === 'sendAllData') {
-                            sendAllData();
-                        }
-                        else if(contentObj.name === 'allData') {
-                            loadAllData(contentObj.data);
-                        }
-                        else if(contentObj.name === 'metaUpdate') {
-                            //  Map metadata update (flipped states, etc.)
-                            processTrackerMetadata(...contentObj.data.split(' '));
-                        }
-                    }
-                    else if(content.length && content.split(' ').length) {
-                        //  Regular area update
-                        processTrackerData(...content.split(' '));
-                    }
-                }
-            };
-        
-
-            conn.onclose = () => {
-                clearTimeout(_pingTimer);
-
-                console.log('socket closed.');
-            };
+  const connect = () => {
+    coopStatus.set(reconnectAttempt ? "reconnecting" : "connecting");
+    socket = new WebSocket(endpoint);
+    socket.addEventListener("open", () => {
+      reconnectAttempt = 0;
+      coopStatus.set("connected");
+      socket.send(message("join", { roomId, clientId, state: initialState }));
+    });
+    socket.addEventListener("message", async (event) => {
+      const raw =
+        event.data instanceof Blob ? await event.data.text() : event.data;
+      let incoming;
+      try {
+        incoming = JSON.parse(raw);
+      } catch {
+        return;
+      }
+      if (incoming.v !== PROTOCOL_VERSION) return;
+      if (incoming.type === "snapshot") {
+        revision = incoming.revision;
+        initialState = incoming.state;
+        onSnapshot(incoming.state);
+        for (const [id, operation] of pending) {
+          initialState = applyOperation(initialState, operation);
+          onOperation(operation);
+          transmit(id, operation);
         }
-        catch(e) {
-            return { failed: e };
-        }
+      } else if (incoming.type === "operation") {
+        revision = Math.max(revision, incoming.revision);
+        initialState = applyOperation(initialState, incoming.operation);
+        onOperation(incoming.operation);
+      } else if (incoming.type === "ack") {
+        revision = Math.max(revision, incoming.revision);
+        pending.delete(incoming.operationId);
+      } else if (incoming.type === "error") {
+        console.error(`Co-op server rejected a message: ${incoming.code}`);
+      }
+    });
+    socket.addEventListener("close", () => {
+      if (!enabled) return;
+      coopStatus.set("reconnecting");
+      const delay = Math.min(500 * 2 ** reconnectAttempt++, 15_000);
+      reconnectTimer = setTimeout(connect, delay);
+    });
+    socket.addEventListener("error", () => socket.close());
+  };
 
-        return { succeeded: 1 };
-    };
-
-
-    const enable = async (roomGuid, storageKey, loadCallback, getSaveDataCallback, processDataCallback, processMetadataCallback) => {
-        _modeEnabled  = true;
-        _roomGuid     = roomGuid;
-        _myStorageKey = storageKey;
-        _loadCallback = loadCallback;
-        _getSaveDataCallback = getSaveDataCallback;
-        _processDataCallback = processDataCallback;
-        _processMetadataCallback = processMetadataCallback;
-        
-        const res = await startSession();
-
-        if(res.failed)
-            _modeEnabled = false;
-
-        return res;
-    };
-
-
-    const disable = async () => {
-        _modeEnabled = false;
-
-        if(conn) {
-            try {
-                conn.close();
-            }
-            catch(e) {
-                return { failed: e };
-            }
-        }
-
-        return { succeeded: 'coop disabled' };
-    };
-
-
-    const send = (data, retries) => {
-        if(!_modeEnabled)
-            return;
-
-        if(conn.readyState === WebSocket.OPEN) {
-            conn.send(data);
-            console.log(`sent length: ${data.length}`);
-        }
-        else {
-            if(typeof retries === 'undefined')
-                retries = 3;
-                
-            if(retries > 0) {    
-                retries -= 1;
-                console.log(`could not send; retrying (retries remaining: ${retries}).`);
-
-                setTimeout(() => send(data, retries), 500);
-            }
-        }
-    };
-
-
-    const sendAllData = async () => {
-        let data;
-        
-        if(storage.exists(_myStorageKey)) {
-            data = await storage.loadCompressedData(_myStorageKey);
-        }
-        else {
-            data = await _getSaveDataCallback();
-        }
-
-        send(JSON.stringify({ name: 'allData', data: data }));
-    };
-
-
-    const loadAllData = async (data) => {
-        _loadCallback(data);
-    };
-
-    const processTrackerData = (areaMapIndex, areaId, marked, actionName) => {
-        _processDataCallback(areaId, marked, actionName, areaMapIndex, true);
-    };
-
-    const processTrackerMetadata = (areaMapIndex, propName, propValue) => {
-        _processMetadataCallback(areaMapIndex, propName, propValue, true);
-    };
-
-
-    return {
-        setEndpoint : setEndpoint,
-        enable      : enable,
-        disable     : disable,
-        send        : send
-    };
+  return {
+    setEndpoint: (value) => {
+      endpoint = value;
+    },
+    enable: async (nextRoomId, state, snapshotHandler, operationHandler) => {
+      enabled = true;
+      roomId = nextRoomId;
+      initialState = state;
+      onSnapshot = snapshotHandler;
+      onOperation = operationHandler;
+      connect();
+      return { succeeded: true };
+    },
+    disable: () => {
+      enabled = false;
+      clearTimeout(reconnectTimer);
+      socket?.close();
+      pending.clear();
+      coopStatus.set("offline");
+    },
+    sendOperation: (operation) => {
+      if (!enabled) return;
+      const operationId = crypto.randomUUID();
+      initialState = applyOperation(initialState, operation);
+      pending.set(operationId, operation);
+      transmit(operationId, operation);
+    },
+  };
 };
 
-export default writable(coopClient());
+export default writable(createClient());
