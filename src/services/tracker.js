@@ -1,322 +1,325 @@
-import { writable, get } from 'svelte/store';
-import storage from '../services/storage.js';
-import toolbars from '../components/toolbars.js';
-import coopClient from '../services/coop-client.js';
-import mapStats from '../components/areaStatistics.js';
+import { get, writable } from "svelte/store";
+import toolbars from "../components/toolbars.js";
+import { mapCatalog } from "../components/maps/catalog.js";
+import coopClient from "./coop-client.js";
+import {
+  applyStarterPreset,
+  cellsOf,
+  normalizeStarterPreset,
+} from "./starter-presets.js";
+import storage from "./storage.js";
 
-import Hyruleq1 from "../components/maps/Hyruleq1.mapdata.js";
-import ShopsAndStats from "../components/maps/ShopsAndStats.mapdata.js";
-import Level1 from "../components/maps/Level1q1.mapdata.js";
-import Level2 from "../components/maps/Level2q1.mapdata.js";
-import Level3 from "../components/maps/Level3q1.mapdata.js";
-import Level4 from "../components/maps/Level4q1.mapdata.js";
-import Level5 from "../components/maps/Level5q1.mapdata.js";
-import Level6 from "../components/maps/Level6q1.mapdata.js";
-import Level7 from "../components/maps/Level7q1.mapdata.js";
-import Level8 from "../components/maps/Level8q1.mapdata.js";
-import Level9 from "../components/maps/Level9q1.mapdata.js";
-import Brinstar from "../components/maps/Brinstar.mapdata.js";
-import Norfair from "../components/maps/Norfair.mapdata.js";
-import Kraids from "../components/maps/Kraids.mapdata.js";
-import Ridleys from "../components/maps/Ridleys.mapdata.js";
+const clone = (value) => structuredClone(value);
+const storedCell = ({ marked, action, notAcquired, custom }) => ({
+  ...(marked ? { marked: true } : {}),
+  ...(action ? { action } : {}),
+  ...(notAcquired ? { notAcquired: true } : {}),
+  ...(custom ? { custom } : {}),
+});
 
-
-//  Must contain only JSON-serializable data (no functions, dates, js constants, etc.)
-function trackerFactory() {
-	const _trackData = {
-		sessionTimestamp: +new Date(),
-		curAreaMapIndex: 0,
-		actions: [
-			'cleared',
-			'warp',
-			'equip',
-			'quest'
-		],
-		areaMaps: [
-			{ name: 'Hyrule (Q1)', map: Hyruleq1.data, stats: mapStats},
-			{ name: 'Shops & stats', map: ShopsAndStats.data, stats: mapStats},
-			{ name: 'Level 1 (Q1)', map: Level1.data, stats: mapStats},
-			{ name: 'Level 2 (Q1)', map: Level2.data, stats: mapStats},
-			{ name: 'Level 3 (Q1)', map: Level3.data, stats: mapStats},
-			{ name: 'Level 4 (Q1)', map: Level4.data, stats: mapStats},
-			{ name: 'Level 5 (Q1)', map: Level5.data, stats: mapStats},
-			{ name: 'Level 6 (Q1)', map: Level6.data, stats: mapStats},
-			{ name: 'Level 7 (Q1)', map: Level7.data, stats: mapStats},
-			{ name: 'Level 8 (Q1)', map: Level8.data, stats: mapStats},
-			{ name: 'Level 9 (Q1)', map: Level9.data, stats: mapStats},
-			{ name: 'Brinstar', map: Brinstar.data, stats: mapStats},
-			{ name: 'Norfair', map: Norfair.data, stats: mapStats},
-			{ name: 'Kraid\'s', map: Kraids.data, stats: mapStats},
-			{ name: 'Ridley\'s', map: Ridleys.data, stats: mapStats}
-		]
-	};
-
-	const updateMapStats = (areaMapIndex) => {
-		const area = _trackData.areaMaps[areaMapIndex].map;
-		const cells = area.gridRegions ? area.rooms.concat(area.gridRegions) : area.rooms;
-	
-		const maxEquipSpots = cells.filter(c => c.premark === 'E').length;
-		const maxQuestSpots = cells.filter(c => c.premark === 'Q').length;
-		const maxUpgradeSpots = cells.filter(c => c.premark === 'U').length;
-		const maxMinorSpots = cells.filter(c => c.premark === 'M').length;
-	
-		const totalValidCells = cells.filter(c => (c.active !== 'false') && !c.outofbounds).length;
-	
-		//  TODO: distinguish between marked and non-acquired gear so that users
-		//  can see how much has been accounted for, even if not picked up (low priority)
-		const markedEquipSpots = cells.filter(c => c.premark === 'E' && c.marked && !c.notAcquired).length;
-		const markedQuestSpots = cells.filter(c => c.premark === 'Q' && c.marked && !c.notAcquired).length;
-		const markedUpgradeSpots = cells.filter(c => c.premark === 'U' && c.marked && !c.notAcquired).length;
-		const markedMinorSpots = cells.filter(c => c.premark === 'M' && c.marked && !c.notAcquired).length;
-	
-		const areaMarkedNames = cells
-			.filter(c => c.action && c.marked && !c.notAcquired)
-			.map(c => c.action);
-	
-		const equips = get(toolbars).equipActions().map(e => e.name);
-		const quests = get(toolbars).questActions().map(q => q.name);
-		
-		const maxEquipInArea = area.class.indexOf('overworld') >= 0 ? 4 : 3;
-		const maxQuestInArea = 2;
-
-		const numEquipAcquired = areaMarkedNames.filter(a => equips.includes(a)).length;
-		const numQuestAcquired = areaMarkedNames.filter(a => quests.includes(a)).length;
-	
-		_trackData.areaMaps[areaMapIndex].stats = {
-			maxEquipSpots, maxQuestSpots, maxUpgradeSpots, maxMinorSpots,
-			totalValidCells,
-			markedEquipSpots, markedQuestSpots, markedUpgradeSpots, markedMinorSpots,
-			maxEquipInArea, maxQuestInArea,
-			numEquipAcquired, numQuestAcquired
-		};
-	};
-
-	//  Hydrate all area map statistics before returning the tracker object to the caller
-	_trackData.areaMaps.map((a, i) => updateMapStats(i));
-
-	return _trackData;
+const calculateStats = (map) => {
+  const cells = cellsOf(map);
+  const equips = get(toolbars)
+    .equipActions()
+    .map(({ name }) => name);
+  const quests = get(toolbars)
+    .questActions()
+    .map(({ name }) => name);
+  const acquired = cells.filter((cell) => cell.marked && !cell.notAcquired);
+  const countPremark = (mark, list = cells) =>
+    list.filter((cell) => cell.premark === mark).length;
+  return {
+    maxEquipSpots: countPremark("E"),
+    maxQuestSpots: countPremark("Q"),
+    maxUpgradeSpots: countPremark("U"),
+    maxMinorSpots: countPremark("M"),
+    totalValidCells: cells.filter(
+      (cell) =>
+        cell.active !== false && cell.active !== "false" && !cell.outofbounds,
+    ).length,
+    markedEquipSpots: countPremark("E", acquired),
+    markedQuestSpots: countPremark("Q", acquired),
+    markedUpgradeSpots: countPremark("U", acquired),
+    markedMinorSpots: countPremark("M", acquired),
+    maxEquipInArea: map.class.includes("overworld") ? 4 : 3,
+    maxQuestInArea: 2,
+    numEquipAcquired: acquired.filter((cell) => equips.includes(cell.action))
+      .length,
+    numQuestAcquired: acquired.filter((cell) => quests.includes(cell.action))
+      .length,
+  };
 };
 
-export const tracker = trackerFactory();
-
-
-export const GlobalAction = {
-	hyrule: { display: 'Hyrule', hotkeys: ['h', 'o', '`'], name: 'Hyrule (Q1)' },
-	brinstar: { display: 'Brinstar', hotkeys: ['b'], name: 'Brinstar' },
-	norfair: { display: 'Norfair', hotkeys: ['n'], name: 'Norfair' },
-	kraids: { display: 'Kraid\'s', hotkeys: ['k'], name: 'Kraid\'s' },
-	ridleys: { display: 'Ridley\'s', hotkeys: ['r'], name: 'Ridley\'s' },
-	level1: { display: 'Level 1', hotkeys: ['1'], name: 'Level 1 (Q1)' },
-	level2: { display: 'Level 2', hotkeys: ['2'], name: 'Level 2 (Q1)' },
-	level3: { display: 'Level 3', hotkeys: ['3'], name: 'Level 3 (Q1)' },
-	level4: { display: 'Level 4', hotkeys: ['4'], name: 'Level 4 (Q1)' },
-	level5: { display: 'Level 5', hotkeys: ['5'], name: 'Level 5 (Q1)' },
-	level6: { display: 'Level 6', hotkeys: ['6'], name: 'Level 6 (Q1)' },
-	level7: { display: 'Level 7', hotkeys: ['7'], name: 'Level 7 (Q1)' },
-	level8: { display: 'Level 8', hotkeys: ['8'], name: 'Level 8 (Q1)' },
-	level9: { display: 'Level 9', hotkeys: ['9'], name: 'Level 9 (Q1)' },
-	shopsandstats: { display: 'Shops & stats', hotkeys: ['s'], name: 'Shops & stats' }
+export const createTracker = (starterPreset) => {
+  const preset = normalizeStarterPreset(starterPreset);
+  const areaMaps = mapCatalog.map(([name, data]) => ({
+    name,
+    map: clone(data),
+  }));
+  if (preset) applyStarterPreset(areaMaps, preset);
+  areaMaps.forEach((area) => (area.stats = calculateStats(area.map)));
+  return {
+    version: 2,
+    sessionTimestamp: Date.now(),
+    starterPreset: preset,
+    curAreaMapIndex: 0,
+    actions: ["cleared", "warp", "equip", "quest"],
+    areaMaps,
+  };
 };
 
+export const serializeTracker = (source) => ({
+  version: 2,
+  sessionTimestamp: source.sessionTimestamp,
+  starterPreset: source.starterPreset
+    ? clone(normalizeStarterPreset(source.starterPreset))
+    : null,
+  curAreaMapIndex: source.curAreaMapIndex,
+  actions: [...source.actions],
+  maps: source.areaMaps.map(({ map }) => ({
+    isHflipped: Boolean(map.isHflipped),
+    isVflipped: Boolean(map.isVflipped),
+    cellCount: cellsOf(map).length,
+    cells: Object.fromEntries(
+      cellsOf(map)
+        .map((cell, index) => [index, storedCell(cell)])
+        .filter(([, value]) => Object.keys(value).length),
+    ),
+  })),
+});
 
-function actionsStore() {
-	const { subscribe, set, update } = writable(tracker.actions);
-
-	return Object.freeze({
-		subscribe,
-		set,
-		setPosition: (a, i) => {
-			update(arr => {
-				//  Remove incoming action from all other slots
-				let newActions = arr.map(e => e === a ? '' : e);
-
-				//  Set incoming action to desired slot
-				newActions[i] = a;
-
-				//  Save list to original object and trigger a state save
-				tracker.actions = newActions;
-				trackerUpdated();
-
-				return newActions;
-			});
-		}
-	});
+export const getSharedState = (source = tracker) => {
+  const { starterPreset, maps } = serializeTracker(source);
+  return { starterPreset, maps };
 };
 
+const hydrateMaps = (target, maps = []) => {
+  maps.forEach((savedMap, mapIndex) => {
+    const map = target.areaMaps[mapIndex]?.map;
+    if (!map) return;
+    map.isHflipped = Boolean(savedMap.isHflipped);
+    map.isVflipped = Boolean(savedMap.isVflipped);
+    const cells = cellsOf(map);
+    Object.entries(savedMap.cells ?? {}).forEach(([index, value]) => {
+      if (cells[index]) Object.assign(cells[index], value);
+    });
+  });
+  return target;
+};
+
+const migrateLegacy = (saved) => {
+  const migrated = createTracker();
+  if (!saved?.areaMaps) return migrated;
+  const maps = saved.areaMaps.map(({ map }) => ({
+    isHflipped: Boolean(map.isHflipped),
+    isVflipped: Boolean(map.isVflipped),
+    cells: Object.fromEntries(
+      cellsOf(map)
+        .map((cell, index) => [index, storedCell(cell)])
+        .filter(([, value]) => Object.keys(value).length),
+    ),
+  }));
+  return hydrateMaps(
+    Object.assign(migrated, {
+      sessionTimestamp: saved.sessionTimestamp || migrated.sessionTimestamp,
+      curAreaMapIndex: saved.curAreaMapIndex || 0,
+      actions: Array.isArray(saved.actions)
+        ? [...saved.actions]
+        : migrated.actions,
+    }),
+    maps,
+  );
+};
+
+export const hydrateTracker = (saved) => {
+  if (!saved || saved.version !== 2 || !Array.isArray(saved.maps))
+    return migrateLegacy(saved);
+  const fresh = createTracker(saved.starterPreset);
+  return hydrateMaps(
+    Object.assign(fresh, {
+      sessionTimestamp: saved.sessionTimestamp || fresh.sessionTimestamp,
+      starterPreset: normalizeStarterPreset(saved.starterPreset),
+      curAreaMapIndex: Number.isInteger(saved.curAreaMapIndex)
+        ? saved.curAreaMapIndex
+        : 0,
+      actions: Array.isArray(saved.actions)
+        ? [...saved.actions]
+        : fresh.actions,
+    }),
+    saved.maps,
+  );
+};
+
+export const tracker = createTracker();
+export const trackerState = writable(tracker);
+
+const publish = () => {
+  tracker.areaMaps.forEach(({ map }, index) => {
+    tracker.areaMaps[index].stats = calculateStats(map);
+  });
+  trackerState.set(tracker);
+};
+
+let saveTimer;
+export const trackerUpdated = () => {
+  publish();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => storage.saveData(serializeTracker(tracker)), 80);
+};
+
+const actionsStore = () => {
+  const { subscribe, set } = writable([...tracker.actions]);
+  return {
+    subscribe,
+    set,
+    setPosition: (action, index) => {
+      tracker.actions = tracker.actions.map((value, position) =>
+        position === index ? action : value === action ? "" : value,
+      );
+      set([...tracker.actions]);
+      trackerUpdated();
+    },
+  };
+};
 export const actions = actionsStore();
 
-
-export const trackerUpdated = () => {
-	storage.saveData(tracker);
+export const resetTracker = (saved, starterPreset) => {
+  Object.assign(
+    tracker,
+    saved ? hydrateTracker(saved) : createTracker(starterPreset),
+  );
+  actions.set([...tracker.actions]);
+  get(toolbars).hydrateAllMetadata(tracker.areaMaps);
+  publish();
+  return tracker;
 };
 
-
-//  TODO: De-dupe this exported function with the member function trackerFactory.updateMapStats() above
-export const updateMapStats = (areaMapIndex) => {
-	const area = tracker.areaMaps[areaMapIndex].map;
-	const cells = area.gridRegions ? area.rooms.concat(area.gridRegions) : area.rooms;
-
-	const maxEquipSpots = cells.filter(c => c.premark === 'E').length;
-	const maxQuestSpots = cells.filter(c => c.premark === 'Q').length;
-	const maxUpgradeSpots = cells.filter(c => c.premark === 'U').length;
-	const maxMinorSpots = cells.filter(c => c.premark === 'M').length;
-
-	const totalValidCells = cells.filter(c => (c.active !== 'false') && !c.outofbounds).length;
-
-	//  TODO: distinguish between marked and non-acquired gear so that users
-	//  can see how much has been accounted for, even if not picked up (low priority)
-	const markedEquipSpots = cells.filter(c => c.premark === 'E' && c.marked && !c.notAcquired).length;
-	const markedQuestSpots = cells.filter(c => c.premark === 'Q' && c.marked && !c.notAcquired).length;
-	const markedUpgradeSpots = cells.filter(c => c.premark === 'U' && c.marked && !c.notAcquired).length;
-	const markedMinorSpots = cells.filter(c => c.premark === 'M' && c.marked && !c.notAcquired).length;
-
-	const areaMarkedNames = cells
-		.filter(c => c.action && c.marked && !c.notAcquired)
-		.map(c => c.action);
-
-	const equips = get(toolbars).equipActions().map(e => e.name);
-	const quests = get(toolbars).questActions().map(q => q.name);
-	
-	const maxEquipInArea = area.class.indexOf('overworld') >= 0 ? 4 : 3;
-	const maxQuestInArea = 2;
-
-	const numEquipAcquired = areaMarkedNames.filter(a => equips.includes(a)).length;
-	const numQuestAcquired = areaMarkedNames.filter(a => quests.includes(a)).length;
-
-	tracker.areaMaps[areaMapIndex].stats = {
-		maxEquipSpots, maxQuestSpots, maxUpgradeSpots, maxMinorSpots,
-		totalValidCells,
-		markedEquipSpots, markedQuestSpots, markedUpgradeSpots, markedMinorSpots,
-		maxEquipInArea, maxQuestInArea,
-		numEquipAcquired, numQuestAcquired
-	};
+export const replaceSharedState = (state) => {
+  const local = serializeTracker(tracker);
+  resetTracker({
+    ...local,
+    starterPreset:
+      "starterPreset" in state ? state.starterPreset : local.starterPreset,
+    maps: state.maps,
+  });
+  trackerUpdated();
 };
 
-
-//  Adds metadata to toolbar actions as they get used.
-//  Used to add a class to the toolbar action so the user knows the item has already been placed.
-const updateToolbarActions = (wasMarked, actionName, areaMapIndex, areaId) => {
-	return get(toolbars).updateActionUsedStatus(wasMarked, actionName, areaMapIndex, areaId);
+export const getCell = (areaId, mapIndex = tracker.curAreaMapIndex) => {
+  const map = tracker.areaMaps[mapIndex].map;
+  const index = Number(areaId);
+  return index >= map.rooms.length
+    ? map.gridRegions?.[index - map.rooms.length]
+    : map.rooms[index];
 };
 
-
-export const hydrateAllToolbarMetadata = async () => {
-	return await get(toolbars).hydrateAllMetadata(tracker.areaMaps);
+const setCell = (mapIndex, cellIndex, value) => {
+  const cell = getCell(cellIndex, mapIndex);
+  if (!cell) return false;
+  delete cell.marked;
+  delete cell.action;
+  delete cell.notAcquired;
+  delete cell.custom;
+  Object.assign(cell, value);
+  return true;
 };
 
-
-export const getCell = (areaId) => {
-	const regionsStartAreaId = tracker.areaMaps[tracker.curAreaMapIndex].map.rooms.length;
-	const isRegion           = areaId >= regionsStartAreaId;
-
-	return isRegion ? tracker.areaMaps[tracker.curAreaMapIndex].map.gridRegions[areaId - regionsStartAreaId] :
-		tracker.areaMaps[tracker.curAreaMapIndex].map.rooms[areaId];
+export const applyRemoteOperation = (operation) => {
+  if (operation.kind === "cell")
+    setCell(operation.mapIndex, operation.cellIndex, operation.value);
+  else if (operation.kind === "map")
+    Object.assign(
+      tracker.areaMaps[operation.mapIndex]?.map ?? {},
+      operation.value,
+    );
+  get(toolbars).hydrateAllMetadata(tracker.areaMaps);
+  trackerUpdated();
 };
 
-
-export const updateMapData = async (areaId, marked, actionName, areaMapIndex, excludeResend) => {
-	const ami 				 = (typeof areaMapIndex !== 'undefined') ? areaMapIndex : tracker.curAreaMapIndex;
-	const regionsStartAreaId = tracker.areaMaps[ami].map.rooms.length;
-	const isRegion           = areaId >= regionsStartAreaId;
-
-	//  isReminder is a simple toggle stored in the area as a boolean
-	const isReminder         = actionName === 'notYetAcquired';
-	const isCustom			 = actionName.substring(0, 6) === 'custom';
-
-	if(isRegion) {
-		if(isReminder) {
-			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].notAcquired = 
-				!tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].notAcquired;
-		}
-		else if(isCustom) {
-			const customNumber = +actionName.substring(6);
-			const curCustom = tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].custom;
-
-			if(customNumber === curCustom)
-				tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].custom = undefined;
-			else
-				tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].custom = customNumber;
-		}
-		else {
-			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].marked = marked;
-			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].action = actionName;
-		}
-
-		//  Clear toggled properties if cell was unmarked
-		if(!marked) {
-			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].notAcquired = undefined;
-			tracker.areaMaps[ami].map.gridRegions[areaId - regionsStartAreaId].custom      = undefined;
-		}
-	}
-	else { //room
-		if(isReminder) {
-			tracker.areaMaps[ami].map.rooms[areaId].notAcquired = 
-				!tracker.areaMaps[ami].map.rooms[areaId].notAcquired;
-		}
-		else if(isCustom) {
-			const customNumber = +actionName.substring(6);
-			const curCustom = tracker.areaMaps[ami].map.rooms[areaId].custom;
-
-			if(customNumber === curCustom)
-				tracker.areaMaps[ami].map.rooms[areaId].custom = undefined;
-			else
-				tracker.areaMaps[ami].map.rooms[areaId].custom = customNumber;
-		}
-		else {
-			tracker.areaMaps[ami].map.rooms[areaId].marked = marked;
-			tracker.areaMaps[ami].map.rooms[areaId].action = actionName;
-		}
-
-		//  Clear toggled properties if cell was unmarked
-		if(!marked) {
-			tracker.areaMaps[ami].map.rooms[areaId].notAcquired = undefined;
-			tracker.areaMaps[ami].map.rooms[areaId].custom      = undefined;
-		}
-	}
-
-	//  Tell all "subscribers" about our state change (coop if enabled, current map statistics, and local storage)
-	if(!excludeResend)
-		get(coopClient).send(`${ami} ${areaId} ${marked} ${actionName}`);
-
-	if(!isReminder && !isCustom)
-		updateToolbarActions(marked, actionName, ami, +areaId);
-
-	updateMapStats(ami);
-	trackerUpdated();
+export const updateMapData = (
+  areaId,
+  marked,
+  actionName,
+  areaMapIndex = tracker.curAreaMapIndex,
+  excludeResend = false,
+) => {
+  const cell = getCell(areaId, areaMapIndex);
+  if (!cell) return;
+  if (actionName === "notYetAcquired" && !cell.marked) return;
+  if (actionName === "notYetAcquired") cell.notAcquired = !cell.notAcquired;
+  else if (actionName.startsWith("custom")) {
+    const custom = Number(actionName.slice(6));
+    cell.custom = cell.custom === custom ? undefined : custom;
+  } else if (marked) {
+    cell.marked = true;
+    cell.action = actionName;
+  } else {
+    delete cell.marked;
+    delete cell.action;
+    delete cell.notAcquired;
+    delete cell.custom;
+  }
+  const operation = {
+    kind: "cell",
+    mapIndex: areaMapIndex,
+    cellIndex: Number(areaId),
+    value: storedCell(cell),
+  };
+  if (!excludeResend) get(coopClient).sendOperation(operation);
+  get(toolbars).hydrateAllMetadata(tracker.areaMaps);
+  trackerUpdated();
 };
 
-
-//  Used for universal handling of non-map-mark actions.
-//  Currently only used for area h-flipped and v-flipped states
-export const updateMapMetadata = async (areaMapIndex, propName, propValue, excludeResend) => {
-	const ami = (typeof areaMapIndex !== 'undefined') ? areaMapIndex : tracker.curAreaMapIndex;
-
-	if(typeof tracker.areaMaps[ami].map[propName] !== 'undefined') {
-		tracker.areaMaps[ami].map[propName] = propValue;
-	}
-
-	//  Tell all "subscribers" about our state change (coop if enabled, current map statistics, and local storage)
-	if(!excludeResend)
-		get(coopClient).send(JSON.stringify({ name: 'metaUpdate', data: `${ami} ${propName} ${propValue}`} ));
-
-	//  No current metadata requires that the map stats be recalculated; skip for now
-	//updateMapStats(ami);
-	trackerUpdated();
+export const updateMapMetadata = (
+  areaMapIndex = tracker.curAreaMapIndex,
+  property,
+  value,
+  excludeResend = false,
+) => {
+  if (!["isHflipped", "isVflipped"].includes(property)) return;
+  tracker.areaMaps[areaMapIndex].map[property] = Boolean(value);
+  const operation = {
+    kind: "map",
+    mapIndex: areaMapIndex,
+    value: { [property]: Boolean(value) },
+  };
+  if (!excludeResend) get(coopClient).sendOperation(operation);
+  trackerUpdated();
 };
 
-
-export const loadState = async (storageKey) => {
-	const data = await storage.loadData(storageKey);
-	
-	return data;
+export const updateMapStats = (index) => {
+  tracker.areaMaps[index].stats = calculateStats(tracker.areaMaps[index].map);
 };
+export const hydrateAllToolbarMetadata = () =>
+  get(toolbars).hydrateAllMetadata(tracker.areaMaps);
+export const loadState = async (key) =>
+  hydrateTracker(await storage.loadData(key));
+export const loadRawData = async (data) =>
+  hydrateTracker(await storage.decodeRawData(data));
+export const getRawData = async () => JSON.stringify(serializeTracker(tracker));
 
-export const loadRawData = async (data) => {
-	const res = await storage.decodeRawData(data);
-
-	return res;
-};
-
-export const getRawData = async () => {
-	return storage.packageData(tracker);
+export const GlobalAction = {
+  hyrule: { display: "Hyrule", hotkeys: ["h", "o", "`"], name: "Hyrule (Q1)" },
+  brinstar: { display: "Brinstar", hotkeys: ["b"], name: "Brinstar" },
+  norfair: { display: "Norfair", hotkeys: ["n"], name: "Norfair" },
+  kraids: { display: "Kraid's", hotkeys: ["k"], name: "Kraid's" },
+  ridleys: { display: "Ridley's", hotkeys: ["r"], name: "Ridley's" },
+  ...Object.fromEntries(
+    Array.from({ length: 9 }, (_, index) => {
+      const level = index + 1;
+      return [
+        `level${level}`,
+        {
+          display: `Level ${level}`,
+          hotkeys: [String(level)],
+          name: `Level ${level} (Q1)`,
+        },
+      ];
+    }),
+  ),
+  shopsandstats: {
+    display: "Shops & stats",
+    hotkeys: ["s"],
+    name: "Shops & stats",
+  },
 };

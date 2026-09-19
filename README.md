@@ -1,26 +1,68 @@
-# z1m1-tracker
- Zelda Metroid Crossover Randomizer web tracker for solo or coop tracking
+# Z1M1 Tracker
 
-# coop-wss-server.js
+A responsive solo and cooperative progress tracker for the Zelda 1 / Metroid 1 crossover randomizer.
 
- Found in /src/server/coop-wss-server.js (or coop-server.js if you don't want to use encryption).
+## Requirements
 
- Notes on how to host this hands-off:
+- Node.js 22.12 or newer (Node 24 is also supported)
+- npm 10 or newer
 
- Install certbot for your distro
- npm install pm2@latest -g
- 
- Set up coop-wss-server.js as a pm2 process (see pm2 docs; it's easy to do)
+## Development
 
- Make a crontab entry for the user that runs pm2 (ap, in the example below):
+```sh
+npm install
+npm run dev
+```
 
- 30 6 * * * certbot renew --deploy-hook "chown ap:ap /etc/letsencrypt/live/terraria.andypro.net/fullchain.pem; chown ap:ap /etc/letsencrypt/live/terraria.andypro.net/privkey.pem; /usr/local/lib/nodejs/node-v14.17.3-linux-x64/bin/pm2 reload z1m1-wss-server" --config-dir /home/ap/.certbot/config --logs-dir /home/ap/.certbot/logs --work-dir /home/ap/.certbot/work
+Run the client and co-op server together with `npm run dev:all`. Other useful checks are:
 
- The above will ask certbot to renew the TLS cert when it's close to expiry.  If it renews, it will then run the deploy-hook which will chown the files to your specified user and then tell pm2 to restart the process which will then pick up the new certificate files.
+```sh
+npm run check
+npm run lint
+npm test
+npm run build
+```
 
- # suggested additions and changes
+The static production site is written to `build/`. Netlify is configured to serve `200.html` as the SPA fallback.
 
- - Fix button layout overflow for mobile viewports [MuffinJets]
- - Add upgrade items: E-tanks, missiles, heart containers, etc. [DesertPrinter]
- - Disable / check off equipment items without placing (starting equipment) [DesertPrinter]
- 
+## Co-op server
+
+The server implements protocol v2: an authoritative in-memory room state with validated JSON operations, ordered revisions, operation deduplication, reconnect replay, WebSocket heartbeats, and a `/health` endpoint.
+
+```sh
+npm run server
+```
+
+Configuration can be supplied in `src/server/.env`:
+
+```dotenv
+PORT=8080
+HOST=0.0.0.0
+CERT_PATH=/path/to/fullchain.pem
+KEY_PATH=/path/to/privkey.pem
+```
+
+Leave both certificate paths unset for plain WebSockets. When TLS is enabled, certificate changes are reloaded without restarting the process. Set `PUBLIC_COOP_ENDPOINT` in the client build environment when the server is not hosted at the default endpoint.
+
+Protocol messages use this envelope:
+
+```json
+{
+  "v": 2,
+  "type": "operation",
+  "roomId": "...",
+  "clientId": "...",
+  "operationId": "...",
+  "baseRevision": 0,
+  "operation": {}
+}
+```
+
+Clients join with a sparse map snapshot. Subsequent `cell` and `map` operations contain only the changed state; the server replies with snapshots, acknowledgements, broadcasts, or structured errors.
+
+## Client behavior
+
+- Sessions use fresh cloned map definitions, so starting a new tracker never inherits stale state.
+- Saves contain only mutable cell/orientation data. Existing compressed saves are migrated when opened.
+- The map uses container-based sizing and retains a minimum cell target size. Dense maps pan inside their viewport rather than forcing the whole page to overflow.
+- The controls and area selector can be collapsed independently and start collapsed on viewports up to 700px wide.
