@@ -4,11 +4,19 @@
   import storage from "../services/storage.js";
 
   let storageSaves = [];
+  let savesReady = false;
   let starterPresets = [];
   let starterPreset = "";
+  $: builtInPresets = starterPresets.filter((preset) => preset.builtIn);
+  $: localPresets = starterPresets.filter((preset) => !preset.builtIn);
+
+  const refreshSaves = async () => {
+    storageSaves = await storage.listSaves();
+    savesReady = true;
+  };
 
   onMount(() => {
-    storageSaves = storage.listSaves();
+    refreshSaves();
     starterPresets = storage.listStarterPresets();
   });
 
@@ -18,9 +26,9 @@
   const newCoop = () => goto(`/coop/${roomId()}${presetQuery()}`);
   const loadCoop = (storageKey) =>
     goto(`/coop/${roomId()}`, { state: { storageKey } });
-  const trash = (id) => {
+  const trash = async (id) => {
     storage.deleteData(id);
-    storageSaves = storage.listSaves();
+    await refreshSaves();
   };
   const label = (item, value) => {
     if (!value.trim()) return;
@@ -58,9 +66,16 @@
       <span>Starter preset</span>
       <select bind:value={starterPreset}>
         <option value="">Map defaults</option>
-        {#each starterPresets as preset}
-          <option value={preset.id}>{preset.name}</option>
-        {/each}
+        {#if builtInPresets.length}<optgroup label="Built-in presets">
+            {#each builtInPresets as preset}
+              <option value={preset.id}>{preset.name}</option>
+            {/each}
+          </optgroup>{/if}
+        {#if localPresets.length}<optgroup label="My presets">
+            {#each localPresets as preset}
+              <option value={preset.id}>{preset.name}</option>
+            {/each}
+          </optgroup>{/if}
       </select>
     </label>
     <div class="start-actions">
@@ -80,7 +95,9 @@
 
   <section aria-labelledby="previous-sessions">
     <h2 id="previous-sessions">Previous sessions</h2>
-    {#if storageSaves.length}
+    {#if !savesReady}
+      <p class="empty">Loading saved sessions…</p>
+    {:else if storageSaves.length}
       <ul class="sessions">
         {#each storageSaves as item (item.key)}
           <li>
@@ -96,6 +113,9 @@
                   />
                 </label>
               {/if}
+              <span class="session-preset"
+                >Starter preset: {item.presetName}</span
+              >
               <time datetime={new Date(item.key).toISOString()}
                 >{item.display}</time
               >
@@ -255,6 +275,10 @@
   .session-details time {
     color: #bbb;
     font-size: 0.9rem;
+  }
+  .session-preset {
+    color: #ddd;
+    overflow-wrap: anywhere;
   }
   .session-actions {
     display: flex;

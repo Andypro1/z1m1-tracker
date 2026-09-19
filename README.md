@@ -66,3 +66,17 @@ Clients join with a sparse map snapshot. Subsequent `cell` and `map` operations 
 - Saves contain only mutable cell/orientation data. Existing compressed saves are migrated when opened.
 - The map uses container-based sizing and retains a minimum cell target size. Dense maps pan inside their viewport rather than forcing the whole page to overflow.
 - The controls and area selector can be collapsed independently and start collapsed on viewports up to 700px wide.
+
+## Publishing starter presets
+
+Starter presets created in `/dev/presets` are local to that browser until they
+are added to the repository. To publish one for every user:
+
+1. Open `/dev/presets`, create or edit the preset, and select **Download JSON**.
+2. Place the downloaded file in `src/data/starter-presets/`.
+3. Run `npm test` and `npm run build`.
+4. Commit the JSON file and deploy the rebuilt application.
+
+Every `*.json` file in that directory is validated and bundled automatically.
+Published IDs must be unique. Published presets are read-only in the editor;
+use **Duplicate** to create an editable browser-local copy.

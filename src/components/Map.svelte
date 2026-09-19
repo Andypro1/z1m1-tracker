@@ -8,6 +8,7 @@
   export let handleHotkey = () => false;
   export let handleMouseMark = () => {};
   export let editActive = false;
+  export let readOnly = false;
   export let onActiveChange = () => {};
 
   let hoveredAreaId = -1;
@@ -58,6 +59,7 @@
   const areaPointerDown = (event, area, areaId) => {
     event.preventDefault();
     event.stopPropagation();
+    if (readOnly) return;
     if (editActive) {
       if (event.button === 0 && !area.outofbounds) onActiveChange(areaId);
       return;
@@ -103,6 +105,7 @@
         {:else}
           <button
             type="button"
+            disabled={readOnly}
             class="room"
             class:active={cell.active !== false && cell.active !== "false"}
             aria-label={`Map cell ${cell.areaId + 1}`}
@@ -129,6 +132,7 @@
       {#each data.gridRegions ?? [] as region, index}
         <button
           type="button"
+          disabled={readOnly}
           class="grid-region"
           class:active={region.active !== false && region.active !== "false"}
           aria-label={region.name ?? `Map region ${index + 1}`}
@@ -239,6 +243,10 @@
   .grid-region.active {
     filter: saturate(1.2);
     cursor: pointer;
+  }
+  .room:disabled,
+  .grid-region:disabled {
+    cursor: default;
   }
   .room.active:hover,
   .room.active:focus-visible,

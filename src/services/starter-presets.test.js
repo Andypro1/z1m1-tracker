@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createBuiltInStarterPresetCatalog } from "./starter-preset-catalog.js";
 import {
   applyStarterPreset,
   cellsOf,
@@ -38,5 +39,26 @@ describe("starter presets", () => {
     applyStarterPreset(maps, preset);
     expect(preset.maps[0].inactive).toEqual([1]);
     expect(cellsOf(maps[0].map)[1].active).toBe(false);
+  });
+
+  it("builds a validated read-only catalog", () => {
+    const preset = createStarterPreset("published", "Published");
+    const catalog = createBuiltInStarterPresetCatalog({
+      "published.json": preset,
+    });
+    expect(catalog[0]).toMatchObject({
+      id: "published",
+      builtIn: true,
+      source: "published.json",
+    });
+    expect(() =>
+      createBuiltInStarterPresetCatalog({
+        "first.json": preset,
+        "second.json": preset,
+      }),
+    ).toThrow(/Duplicate built-in starter preset id/);
+    expect(() =>
+      createBuiltInStarterPresetCatalog({ "invalid.json": {} }),
+    ).toThrow(/Invalid built-in starter preset/);
   });
 });

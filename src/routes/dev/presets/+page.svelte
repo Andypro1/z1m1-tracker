@@ -15,6 +15,7 @@
   let maps = [];
   let mapIndex = 0;
   let dirty = false;
+  let builtIn = false;
   let notice = "";
   let removeArmed = false;
 
@@ -38,10 +39,13 @@
   const edit = (preset) => {
     presetId = preset.id;
     presetName = preset.name;
+    builtIn = preset.builtIn === true;
     maps = mapsForStarterPreset(preset);
     mapIndex = Math.min(mapIndex, maps.length - 1);
     dirty = false;
-    notice = "";
+    notice = builtIn
+      ? "Built-in presets are read-only. Duplicate this preset to customize it."
+      : "";
     removeArmed = false;
   };
   const create = () => {
@@ -54,7 +58,18 @@
     const preset = storage.loadStarterPreset(event.currentTarget.value);
     if (preset) edit(preset);
   };
+  const duplicate = () => {
+    const preset = starterPresetFromMaps(
+      crypto.randomUUID(),
+      `${presetName} copy`,
+      maps,
+    );
+    edit(preset);
+    dirty = true;
+    notice = "Editing a local copy of the built-in preset.";
+  };
   const toggleCell = (areaId) => {
+    if (builtIn) return;
     const cell = cellsOf(currentArea.map)[Number(areaId)];
     if (!cell || cell.outofbounds) return;
     if (cell.active === false) delete cell.active;
@@ -65,6 +80,7 @@
     removeArmed = false;
   };
   const setCurrentMap = (active) => {
+    if (builtIn) return;
     cellsOf(currentArea.map).forEach((cell) => {
       if (cell.outofbounds) return;
       if (active) delete cell.active;
@@ -76,6 +92,7 @@
     removeArmed = false;
   };
   const save = () => {
+    if (builtIn) return;
     const preset = starterPresetFromMaps(presetId, presetName, maps);
     if (!preset) {
       notice = "Enter a preset name before saving.";
@@ -87,7 +104,7 @@
     notice = "Preset saved and available for new sessions.";
   };
   const remove = () => {
-    if (!saved) return;
+    if (!saved || builtIn) return;
     if (!removeArmed) {
       removeArmed = true;
       notice = `Click Remove again to delete “${presetName}”.`;
@@ -139,7 +156,9 @@
       <select value={saved ? presetId : ""} onchange={selectPreset}>
         <option value="" disabled>No saved preset selected</option>
         {#each presets as preset}
-          <option value={preset.id}>{preset.name}</option>
+          <option value={preset.id}
+            >{preset.name}{preset.builtIn ? " · built in" : ""}</option
+          >
         {/each}
       </select>
     </label>
@@ -147,6 +166,7 @@
       <span>Preset name</span>
       <input
         bind:value={presetName}
+        readonly={builtIn}
         oninput={() => {
           dirty = true;
           notice = "";
@@ -157,10 +177,20 @@
     </label>
     <div class="actions">
       <button type="button" onclick={create}>New</button>
-      <button type="button" class="primary" onclick={save} disabled={!dirty}
-        >Save</button
+      <button type="button" onclick={duplicate} disabled={!builtIn}
+        >Duplicate</button
       >
-      <button type="button" class="danger" onclick={remove} disabled={!saved}
+      <button
+        type="button"
+        class="primary"
+        onclick={save}
+        disabled={!dirty || builtIn}>Save</button
+      >
+      <button
+        type="button"
+        class="danger"
+        onclick={remove}
+        disabled={!saved || builtIn}
         >{removeArmed ? "Confirm remove" : "Remove"}</button
       >
     </div>
@@ -182,6 +212,7 @@
         <Map
           data={currentArea.map}
           editActive={true}
+          readOnly={builtIn}
           onActiveChange={toggleCell}
         />
       </section>
@@ -189,11 +220,15 @@
         <h2>{currentArea.name}</h2>
         <p><strong>{inactiveCount}</strong> of {editableCount} tiles grayed</p>
         <div class="map-actions">
-          <button type="button" onclick={() => setCurrentMap(false)}
-            >Gray all</button
+          <button
+            type="button"
+            onclick={() => setCurrentMap(false)}
+            disabled={builtIn}>Gray all</button
           >
-          <button type="button" onclick={() => setCurrentMap(true)}
-            >Enable all</button
+          <button
+            type="button"
+            onclick={() => setCurrentMap(true)}
+            disabled={builtIn}>Enable all</button
           >
         </div>
         <label class="output">
