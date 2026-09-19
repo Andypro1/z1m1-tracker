@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "id": "6ae3f667-7725-4326-a4a0-89d2af0a1deb",
+  "name": "All tiles enabled",
+  "maps": [
+    {
+      "name": "Hyrule (Q1)",
+      "inactive": []
+    },
+    {
+      "name": "Shops & stats",
+      "inactive": []
+    },
+    {
+      "name": "Level 1 (Q1)",
+      "inactive": []
+    },
+    {
+      "name": "Level 2 (Q1)",
+      "inactive": []
+    },
+    {
+      "name": "Level 3 (Q1)",
+      "inactive": []
+    },
+    {
+      "name": "Level 4 (Q1)",
+      "inactive": []
+    },
+    {
+      "name": "Level 5 (Q1)",
+      "inactive": []
+    },
+    {
+      "name": "Level 6 (Q1)",
+      "inactive": []
+    },
+    {
+      "name": "Level 7 (Q1)",
+      "inactive": []
+    },
+    {
+      "name": "Level 8 (Q1)",
+      "inactive": []
+    },
+    {
+      "name": "Level 9 (Q1)",
+      "inactive": []
+    },
+    {
+      "name": "Brinstar",
+      "inactive": []
+    },
+    {
+      "name": "Norfair",
+      "inactive": []
+    },
+    {
+      "name": "Kraid's",
+      "inactive": []
+    },
+    {
+      "name": "Ridley's",
+      "inactive": []
+    }
+  ]
+}
