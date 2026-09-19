@@ -1,3 +1,4 @@
+import { env } from "$env/dynamic/public";
 import { writable } from "svelte/store";
 import {
   applyOperation,
@@ -9,7 +10,7 @@ export const coopStatus = writable("offline");
 
 const createClient = () => {
   let endpoint =
-    import.meta.env.PUBLIC_COOP_ENDPOINT ||
+    env.PUBLIC_COOP_ENDPOINT ||
     (import.meta.env.DEV
       ? "ws://localhost:8080/"
       : "wss://z1m1-server.andypro.net:8081/");
